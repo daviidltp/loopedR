@@ -1,6 +1,9 @@
 export const Colors = {
   background: '#000000',
+  backgroundSoft: '#111111',
+  backgroundUltraSoft: '#252525',
   spotifyGreen: '#1DB954',
+  appleRed: '#fa233b',
   white: '#FFFFFF',
   gray: {
     100: '#F5F5F5',

@@ -1,157 +1,243 @@
-import React from 'react';
-import { StyleSheet, Text, View } from 'react-native';
+import { StackNavigationProp } from '@react-navigation/stack';
+import * as Haptics from 'expo-haptics';
+import React, { useCallback, useRef, useState } from 'react';
+import { Animated, StyleSheet, Text, View } from 'react-native';
+import { Notifier, NotifierComponents } from 'react-native-notifier';
 import { Colors } from '../../constants/Colors';
-import { SpotifyIcon } from '../icons/SpotifyIcon';
-import { Button } from '../ui/Button';
+import { useSpotifyAuth } from '../../hooks/useSpotifyAuth';
+import { useWelcomeAnimations } from '../../hooks/useWelcomeAnimations';
+import { RootStackParamList } from '../../navigation/AppNavigator';
+import { ConfirmationDialog } from '../ui/ConfirmationDialog';
+import { ConnectionBottomSheet, ConnectionBottomSheetRef } from '../ui/ConnectionBottomSheet';
 import { Layout } from '../ui/Layout';
+import { OnboardingCarousel } from '../ui/OnboardingCarousel';
+import { ResizingButton } from '../ui/ResizingButton';
 
-export const WelcomeScreen: React.FC = () => {
-  const handleConnectSpotify = () => {
-    // TODO: Implementar conexión con Spotify
-    console.log('Conectando con Spotify...');
-  };
+type WelcomeScreenNavigationProp = StackNavigationProp<RootStackParamList, 'Welcome'>;
+
+interface WelcomeScreenProps {
+  navigation: WelcomeScreenNavigationProp;
+}
+
+export const WelcomeScreen: React.FC<WelcomeScreenProps> = ({ navigation }) => {
+  const bottomSheetRef = useRef<ConnectionBottomSheetRef>(null);
+  const [showSkipAlert, setShowSkipAlert] = useState(false);
+  const [isAuthenticating, setIsAuthenticating] = useState(false);
+  
+  // Usar hooks personalizados
+  const { isFirstLoad, titlePositionY, backgroundOpacity, contentOpacity } = useWelcomeAnimations();
+  
+  const { connectSpotify } = useSpotifyAuth({
+    onSuccess: (userProfile) => {
+      console.log('Usuario autenticado:', userProfile);
+      setIsAuthenticating(false);
+      // Navegar a la pantalla de creación de perfil
+      navigation.navigate('CreateProfile');
+    },
+    onError: (error) => {
+      console.error('Error en autenticación:', error);
+      setIsAuthenticating(false);
+    },
+  });
+
+  const handleOpenSheet = useCallback(() => {
+    // No abrir el sheet si ya estamos autenticando
+    if (isAuthenticating) return;
+    
+    setTimeout(() => {
+      bottomSheetRef.current?.expand();
+      // Añadir vibración suave al abrir
+      Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
+    }, 100);
+  }, [isAuthenticating]);
+
+  const handleConnectSpotify = useCallback(async () => {
+    // Marcar que estamos autenticando para evitar reabrir el sheet
+    setIsAuthenticating(true);
+    
+    // Cerrar el BottomSheet
+    bottomSheetRef.current?.close();
+    
+    // Esperar un poco para que se cierre el BottomSheet antes de abrir el navegador
+    setTimeout(async () => {
+      await connectSpotify();
+    }, 100);
+  }, [connectSpotify]);
+
+  const handleConnectAppleMusic = useCallback(() => {
+    // Cerrar el BottomSheet primero
+    bottomSheetRef.current?.close();
+    
+    try {
+      Notifier.showNotification({
+        title: 'Próximamente en looped',
+        description: 'Apple Music estará disponible pronto',
+        duration: 3000,
+        queueMode: 'reset',
+        Component: NotifierComponents.Alert,
+        componentProps: {
+          alertType: 'info',
+          backgroundColor: Colors.appleRed,
+          textColor: Colors.white,
+          titleStyle: {
+            paddingTop: 24,
+            fontSize: 20,
+            fontWeight: '900',
+            color: Colors.white,
+            marginBottom: 4,
+          },
+          descriptionStyle: {
+            fontSize: 14,
+            fontWeight: '500',
+            color: Colors.white,
+          },
+        },
+        containerStyle: () => ({
+          minHeight: 80,
+          borderBottomLeftRadius: 20,
+          borderBottomRightRadius: 20,
+          shadowColor: Colors.white,
+          shadowOffset: { width: 0, height: 4 },
+          shadowOpacity: 0.15,
+          shadowRadius: 8,
+          elevation: 8,
+        }),
+      });
+      console.log('Notificación enviada correctamente');
+    } catch (error) {
+      console.error('Error mostrando notificación:', error);
+    }
+  }, []);
+
+  const handleShowSkipAlert = useCallback(() => {
+    // No cerrar el BottomSheet, solo mostrar la alerta
+    setShowSkipAlert(true);
+  }, []);
+
+  const handleContinueWithoutConnection = useCallback(() => {
+    setShowSkipAlert(false);
+    // Cerrar el BottomSheet después de confirmar
+    bottomSheetRef.current?.close();
+    // Aquí puedes agregar la lógica para continuar sin conexión
+  }, []);
+
+  const handleCancelSkipAlert = useCallback(() => {
+    setShowSkipAlert(false);
+  }, []);
 
   return (
-    <Layout>
-      <View style={styles.container}>
-        {/* Header Section */}
-        <View style={styles.headerSection}>
-          <Text style={styles.title}>Looped</Text>
-          <Text style={styles.subtitle}>
-            Comparte tu música{'\n'}con tus amigos
-          </Text>
-          <Text style={styles.description}>
-            Cada domingo, sube tus bucles musicales de la semana y descubre qué están escuchando tus amigos.
-          </Text>
-        </View>
-
-        {/* Music Note Animation Placeholder */}
-        <View style={styles.illustrationSection}>
-          <View style={styles.musicNote}>
-            <Text style={styles.musicNoteText}>♪</Text>
-          </View>
-          <View style={[styles.musicNote, styles.musicNote2]}>
-            <Text style={styles.musicNoteText}>♫</Text>
-          </View>
-          <View style={[styles.musicNote, styles.musicNote3]}>
-            <Text style={styles.musicNoteText}>♪</Text>
-          </View>
-        </View>
-
-        {/* Bottom Section with Button */}
-        <View style={styles.bottomSection}>
-          <Button
-            onPress={handleConnectSpotify}
-            size="large"
-            fullWidth
-            style={styles.connectButton}
+    <>
+      <Layout>
+        {/* Overlay negro para la animación inicial */}
+        {isFirstLoad && (
+          <Animated.View 
+            style={[
+              styles.blackOverlay,
+              { opacity: backgroundOpacity }
+            ]}
+          />
+        )}
+        
+        <View style={styles.container}>
+          {/* Título fijo */}
+          <Animated.View 
+            style={[
+              styles.titleContainer,
+              {
+                transform: [{
+                  translateY: titlePositionY.interpolate({
+                    inputRange: [0, 1],
+                    outputRange: [0, 300], // 0 = posición final (arriba), 300 = centro de pantalla
+                  })
+                }]
+              }
+            ]}
           >
-            <View style={styles.buttonContent}>
-              <SpotifyIcon size={24} color={Colors.white} />
-              <Text style={styles.buttonText}>Conectar con Spotify</Text>
-            </View>
-          </Button>
-          
-          <Text style={styles.disclaimer}>
-            Al continuar, aceptas nuestros términos de servicio y política de privacidad.
-          </Text>
+            <Text style={styles.title}>looped</Text>
+          </Animated.View>
+
+          {/* Contenido principal con carrusel */}
+          <Animated.View 
+            style={[
+              styles.mainContent,
+              { opacity: isFirstLoad ? contentOpacity : 1 }
+            ]}
+          >
+            <OnboardingCarousel />
+          </Animated.View>
+
+          {/* Botón fijo abajo */}
+          <Animated.View 
+            style={[
+              styles.bottomSection,
+              { opacity: isFirstLoad ? contentOpacity : 1 }
+            ]}
+          >
+            <ResizingButton
+              onPress={handleOpenSheet}
+              title="Conecta tu cuenta"
+              backgroundColor={Colors.white}
+              textColor={Colors.background}
+            />
+          </Animated.View>
+
+          <ConnectionBottomSheet
+            ref={bottomSheetRef}
+            onConnectSpotify={handleConnectSpotify}
+            onConnectAppleMusic={handleConnectAppleMusic}
+            onShowSkipAlert={handleShowSkipAlert}
+          />
         </View>
-      </View>
-    </Layout>
+      </Layout>
+
+      {/* Modal completamente independiente */}
+      {showSkipAlert && (
+        <ConfirmationDialog
+          visible={showSkipAlert}
+          title="Continuar sin vinculación"
+          description="Si continúas, en todas tus publicaciones se alertará de que esa puede no ser tu música más escuchada realmente"
+          onCancel={handleCancelSkipAlert}
+          onConfirm={handleContinueWithoutConnection}
+        />
+      )}
+    </>
   );
 };
 
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    paddingHorizontal: 24,
-    paddingVertical: 20,
   },
-  headerSection: {
-    flex: 0.4,
-    justifyContent: 'center',
-    alignItems: 'center',
+  blackOverlay: {
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0,
+    backgroundColor: Colors.background,
+    zIndex: 10,
+  },
+  titleContainer: {
     paddingTop: 60,
+    paddingBottom: 20,
+    paddingHorizontal: 24,
+    zIndex: 11,
   },
   title: {
     fontSize: 48,
-    fontWeight: 'bold',
-    color: Colors.white,
+    fontWeight: '300',
+    fontFamily: 'Raleway-Bold',
     textAlign: 'center',
-    marginBottom: 16,
     letterSpacing: -1,
-  },
-  subtitle: {
-    fontSize: 24,
-    fontWeight: '600',
-    color: Colors.spotifyGreen,
-    textAlign: 'center',
-    marginBottom: 16,
-    lineHeight: 32,
-  },
-  description: {
-    fontSize: 16,
-    color: Colors.gray[400],
-    textAlign: 'center',
-    lineHeight: 24,
-    paddingHorizontal: 20,
-  },
-  illustrationSection: {
-    flex: 0.4,
-    justifyContent: 'center',
-    alignItems: 'center',
-    position: 'relative',
-  },
-  musicNote: {
-    position: 'absolute',
-    width: 60,
-    height: 60,
-    borderRadius: 30,
-    backgroundColor: Colors.spotifyGreen,
-    justifyContent: 'center',
-    alignItems: 'center',
-    opacity: 0.8,
-  },
-  musicNote2: {
-    top: -30,
-    left: -40,
-    backgroundColor: Colors.gray[700],
-    opacity: 0.6,
-  },
-  musicNote3: {
-    bottom: -20,
-    right: -30,
-    backgroundColor: Colors.gray[600],
-    opacity: 0.4,
-  },
-  musicNoteText: {
-    fontSize: 28,
     color: Colors.white,
-    fontWeight: 'bold',
+  },
+  mainContent: {
+    flex: 1,
+    width: '100%',
   },
   bottomSection: {
-    flex: 0.2,
-    justifyContent: 'flex-end',
-    paddingBottom: 20,
+    paddingVertical: 20,
+    paddingBottom: 40,
+    paddingHorizontal: 24,
   },
-  connectButton: {
-    marginBottom: 16,
-  },
-  buttonContent: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 12,
-  },
-  buttonText: {
-    fontSize: 18,
-    fontWeight: '600',
-    color: Colors.white,
-  },
-  disclaimer: {
-    fontSize: 12,
-    color: Colors.gray[500],
-    textAlign: 'center',
-    lineHeight: 16,
-    paddingHorizontal: 20,
-  },
-}); 
+});

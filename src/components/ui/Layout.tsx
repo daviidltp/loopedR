@@ -1,31 +1,36 @@
+import * as SystemUI from 'expo-system-ui';
 import React from 'react';
-import { StatusBar, StyleSheet, View } from 'react-native';
+import { StyleSheet, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Colors } from '../../constants/Colors';
 
 interface LayoutProps {
   children: React.ReactNode;
   style?: object;
+  excludeBottomSafeArea?: boolean;
 }
 
-export const Layout: React.FC<LayoutProps> = ({ children, style }) => {
+export const Layout: React.FC<LayoutProps> = ({ children, style, excludeBottomSafeArea = false}) => {
   const insets = useSafeAreaInsets();
+
+  React.useEffect(() => {
+    SystemUI.setBackgroundColorAsync(Colors.background);
+  }, []);
+
+  const bottomPadding = excludeBottomSafeArea 
+    ? 0 
+    : 0;
 
   return (
     <View style={[styles.container, style]}>
-      <StatusBar 
-        barStyle="light-content" 
-        backgroundColor="transparent" 
-        translucent 
-      />
+
       <View
         style={[
           styles.content,
           {
-            paddingTop: insets.top,
-            paddingBottom: insets.bottom,
             paddingLeft: insets.left,
             paddingRight: insets.right,
+            paddingBottom: 0,
           },
         ]}
       >
