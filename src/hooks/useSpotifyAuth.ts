@@ -10,15 +10,15 @@ WebBrowser.maybeCompleteAuthSession();
 interface UseSpotifyAuthParams {
   onSuccess?: (userProfile: any) => void;
   onError?: (error: any) => void;
+  onCancel?: () => void;
 }
 
-export const useSpotifyAuth = ({ onSuccess, onError }: UseSpotifyAuthParams) => {
-  // Generar el redirect URI
-  const redirectUri = AuthSession.makeRedirectUri({
-    scheme: 'loopedr',
-  });
+export const useSpotifyAuth = ({ onSuccess, onError, onCancel }: UseSpotifyAuthParams) => {
+  // Usar redirect URI fijo (más confiable)
+  const redirectUri = 'loopedr://redirect';
   
-  console.log('Redirect URI generado:', redirectUri);
+  console.log('Redirect URI usado:', redirectUri);
+  console.log('Verificar que este URI esté en Spotify Developers Console');
 
   // Configurar la solicitud de autorización de Spotify
   const [request, response, promptAsync] = AuthSession.useAuthRequest(
@@ -64,10 +64,15 @@ export const useSpotifyAuth = ({ onSuccess, onError }: UseSpotifyAuthParams) => 
         handleSpotifyAuth(code);
       }
     } else if (response?.type === 'error') {
+      console.error('Error en autenticación OAuth:', response.params);
+      onError?.(response.params);
       Alert.alert(
         'Error de autorización',
         response.params?.error_description || 'Error desconocido'
       );
+    } else if (response?.type === 'dismiss' || response?.type === 'cancel') {
+      console.log('Autenticación cancelada por el usuario');
+      onCancel?.();
     }
   }, [response]);
 

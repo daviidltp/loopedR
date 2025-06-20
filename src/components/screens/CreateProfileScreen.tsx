@@ -5,7 +5,6 @@ import {
     Keyboard,
     Platform,
     StyleSheet,
-    Text,
     TouchableWithoutFeedback,
     View
 } from 'react-native';
@@ -16,11 +15,11 @@ import Animated, {
     withTiming,
 } from 'react-native-reanimated';
 import { Colors } from '../../constants/Colors';
-import { useFonts } from '../../hooks/useFonts';
+import { useAuth } from '../../contexts/AuthContext';
 import { RootStackParamList } from '../../navigation/AppNavigator';
-import { Layout } from '../ui/Layout';
-import { ResizingButton } from '../ui/ResizingButton';
-import { TextInput } from '../ui/TextInput';
+import { ResizingButton } from '../ui/buttons/ResizingButton';
+import { TextInput } from '../ui/forms/TextInput';
+import { Layout } from '../ui/layout/Layout';
 
 type CreateProfileScreenNavigationProp = StackNavigationProp<RootStackParamList, 'CreateProfile'>;
 
@@ -35,10 +34,13 @@ export const CreateProfileScreen: React.FC<CreateProfileScreenProps> = ({ naviga
   const [name, setName] = useState('');
   const [username, setUsername] = useState('');
   const [usernameError, setUsernameError] = useState('');
+  const [nameError, setNameError] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const [keyboardHeight, setKeyboardHeight] = useState(0);
   const [isKeyboardVisible, setIsKeyboardVisible] = useState(false);
-  const fontsLoaded = useFonts();
+
+  // Usar contexto de autenticación
+  const { setUserProfileData } = useAuth();
 
   // Animaciones con react-native-reanimated
   const slideAnim = useSharedValue(0);
@@ -82,6 +84,28 @@ export const CreateProfileScreen: React.FC<CreateProfileScreenProps> = ({ naviga
     Keyboard.dismiss();
   }, []);
 
+  // Validar nombre
+  const validateName = useCallback((value: string) => {
+    if (!value.trim()) {
+      setNameError('');
+      return;
+    }
+
+    if (value.length < 2) {
+      setNameError('El nombre debe tener al menos 2 caracteres');
+      return;
+    }
+
+    // Validar que solo contenga letras, espacios, puntos y guiones
+    const validChars = /^[a-zA-ZáéíóúüñÁÉÍÓÚÜÑ\s.-]*$/;
+    if (!validChars.test(value)) {
+      setNameError('El nombre no puede contener esos caracteres');
+      return;
+    }
+
+    setNameError('');
+  }, []);
+
   // Validar disponibilidad del nombre de usuario
   const validateUsername = useCallback((value: string) => {
     if (!value.trim()) {
@@ -94,6 +118,13 @@ export const CreateProfileScreen: React.FC<CreateProfileScreenProps> = ({ naviga
       return;
     }
 
+    // Validar que solo contenga caracteres permitidos
+    const validChars = /^[a-zA-Z0-9._]*$/;
+    if (!validChars.test(value)) {
+      setUsernameError('El nombre de usuario no puede contener esos caracteres');
+      return;
+    }
+
     if (EXISTING_USERNAMES.includes(value.toLowerCase())) {
       setUsernameError('Este nombre de usuario ya está en uso');
       return;
@@ -102,6 +133,12 @@ export const CreateProfileScreen: React.FC<CreateProfileScreenProps> = ({ naviga
     setUsernameError('');
   }, []);
 
+  // Manejar cambio en el campo nombre
+  const handleNameChange = useCallback((value: string) => {
+    setName(value);
+    validateName(value);
+  }, [validateName]);
+
   // Manejar cambio en el campo username
   const handleUsernameChange = useCallback((value: string) => {
     setUsername(value);
@@ -109,7 +146,9 @@ export const CreateProfileScreen: React.FC<CreateProfileScreenProps> = ({ naviga
   }, [validateUsername]);
 
   // Verificar si el botón debe estar habilitado
-  const isButtonEnabled = name.trim().length > 0 && username.trim().length >= 3 && !usernameError;
+  const isButtonEnabled = 
+    name.trim().length >= 2 && !nameError &&
+    username.trim().length >= 3 && !usernameError;
 
   // Manejar creación del perfil
   const handleCreateProfile = useCallback(async () => {
@@ -121,25 +160,16 @@ export const CreateProfileScreen: React.FC<CreateProfileScreenProps> = ({ naviga
       // Simular llamada a API
       await new Promise(resolve => setTimeout(resolve, 1500));
 
-      Alert.alert(
-        '¡Perfil creado!',
-        `Bienvenido ${name}! Tu perfil ha sido creado exitosamente.`,
-        [
-          {
-            text: 'Continuar',
-            onPress: () => {
-              // Navegar a la aplicación principal
-              navigation.replace('MainApp');
-            }
-          }
-        ]
-      );
+      // Guardar datos del perfil en el contexto
+      await setUserProfileData(username, name);
+
+      navigation.replace('MainApp');
     } catch (error) {
       Alert.alert('Error', 'No se pudo crear el perfil. Inténtalo de nuevo.');
     } finally {
       setIsLoading(false);
     }
-  }, [isButtonEnabled, name]);
+  }, [isButtonEnabled, name, username, setUserProfileData, navigation]);
 
   // Estilos animados
   const animatedContainerStyle = useAnimatedStyle(() => ({
@@ -155,34 +185,32 @@ export const CreateProfileScreen: React.FC<CreateProfileScreenProps> = ({ naviga
     <Layout excludeBottomSafeArea={true}>
       <TouchableWithoutFeedback onPress={dismissKeyboard}>
         <Animated.View style={[styles.container, animatedContainerStyle]}>
-          {/* Título */}
-          <View style={styles.titleContainer}>
-            <Text style={styles.title}>Crea tu perfil</Text>
-          </View>
-
           {/* Contenido principal */}
-          <View style={styles.mainContent}>
+          <View style={styles.content}>
             <View style={styles.formContainer}>
               <TextInput
                 label="¿Cómo quieres que te llamemos?"
                 value={name}
-                onChangeText={setName}
-                placeholder="Tu nombre"
+                onChangeText={handleNameChange}
+                placeholder="Nombre"
                 maxLength={50}
                 autoCapitalize="words"
                 autoCorrect={false}
+                error={nameError}
+                isValid={name.length >= 2 && !nameError}
               />
 
               <TextInput
                 label="Elige tu nombre de usuario"
                 value={username}
                 onChangeText={handleUsernameChange}
-                placeholder="usuario123"
+                placeholder="username"
                 maxLength={30}
                 autoCapitalize="none"
                 autoCorrect={false}
                 error={usernameError}
                 isValid={username.length >= 3 && !usernameError}
+                showFixedAtSymbol={true}
               />
             </View>
           </View>
@@ -209,25 +237,13 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: Colors.background, // Asegurar fondo negro
   },
-  titleContainer: {
-    paddingTop: 60,
-    paddingBottom: 40,
-    paddingHorizontal: 24,
-  },
-  title: {
-    fontSize: 48,
-    fontWeight: '300',
-    fontFamily: 'Raleway-Bold',
-    textAlign: 'center',
-    letterSpacing: -1,
-    color: Colors.white,
-  },
-  mainContent: {
+  content: {
     flex: 1,
     paddingHorizontal: 24,
+    paddingTop: 20,
   },
   formContainer: {
-    marginTop: 20,
+    flex: 1,
   },
   bottomSection: {
     position: 'absolute',

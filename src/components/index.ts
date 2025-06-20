@@ -1,12 +1,14 @@
 // UI Components
-export { ConnectionBottomSheet } from './ui/ConnectionBottomSheet';
-export type { ConnectionBottomSheetRef } from './ui/ConnectionBottomSheet';
-export { Layout } from './ui/Layout';
-export { OnboardingCarousel } from './ui/OnboardingCarousel';
-export { ResizingButton } from './ui/ResizingButton';
-export { TextInput } from './ui/TextInput';
+export { ResizingButton } from './ui/buttons/ResizingButton';
+export { OnboardingCarousel } from './ui/carousels/OnboardingCarousel';
+export { TextInput } from './ui/forms/TextInput';
+export { Layout } from './ui/layout/Layout';
+export { ConnectionBottomSheet, ConnectionBottomSheetRef } from './ui/modals/ConnectionBottomSheet';
 
 // Icons
+export { AppleMusicIcon } from './icons/AppleMusicIcon';
+export { CheckIcon } from './icons/CheckIcon';
+export { CrossIcon } from './icons/CrossIcon';
 export { SpotifyIcon } from './icons/SpotifyIcon';
 
 // Screens

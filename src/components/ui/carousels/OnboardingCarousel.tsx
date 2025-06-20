@@ -1,15 +1,15 @@
 import React, { useEffect, useRef, useState } from 'react';
 import {
-  Animated,
-  Dimensions,
-  NativeScrollEvent,
-  NativeSyntheticEvent,
-  ScrollView,
-  StyleSheet,
-  Text,
-  View,
+    Animated,
+    Dimensions,
+    NativeScrollEvent,
+    NativeSyntheticEvent,
+    ScrollView,
+    StyleSheet,
+    Text,
+    View,
 } from 'react-native';
-import { Colors } from '../../constants/Colors';
+import { Colors } from '../../../constants/Colors';
 
 const { width: screenWidth } = Dimensions.get('window');
 

@@ -2,10 +2,10 @@ import BottomSheet, { BottomSheetBackdrop, BottomSheetView } from '@gorhom/botto
 import React, { forwardRef, useCallback, useImperativeHandle, useMemo, useRef } from 'react';
 import { StyleSheet, Text, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import { Colors } from '../../constants/Colors';
-import { AppleMusicIcon } from '../icons/AppleMusicIcon';
-import { SpotifyIcon } from '../icons/SpotifyIcon';
-import { ResizingButton } from './ResizingButton';
+import { Colors } from '../../../constants/Colors';
+import { AppleMusicIcon } from '../../icons/AppleMusicIcon';
+import { SpotifyIcon } from '../../icons/SpotifyIcon';
+import { ResizingButton } from '../buttons/ResizingButton';
 
 // Componente de fondo personalizado para redondear bordes
 const BottomSheetBackground = ({ style }: any) => (
@@ -37,7 +37,7 @@ export const ConnectionBottomSheet = forwardRef<ConnectionBottomSheetRef, Connec
     const bottomSheetRef = useRef<BottomSheet>(null);
     const insets = useSafeAreaInsets();
 
-    const snapPoints = useMemo(() => ['28%'], []);
+    const snapPoints = useMemo(() => ['32%'], []);
 
     const handleCloseSheet = useCallback(() => {
       bottomSheetRef.current?.close();

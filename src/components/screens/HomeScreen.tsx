@@ -1,11 +1,11 @@
 import React from 'react';
 import { StyleSheet, Text, View } from 'react-native';
 import { Colors } from '../../constants/Colors';
-import { Layout } from '../ui/Layout';
+import { Layout } from '../ui/layout/Layout';
 
 export const HomeScreen: React.FC = () => {
   return (
-    <Layout includeTabBarPadding>
+    <Layout>
       <View style={styles.container}>
         <View style={styles.content}>
           <Text style={styles.title}>Home</Text>

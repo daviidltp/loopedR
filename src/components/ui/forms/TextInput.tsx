@@ -1,12 +1,15 @@
 import React, { useRef, useState } from 'react';
 import { Animated, TextInput as RNTextInput, StyleSheet, Text, TextInputProps, View } from 'react-native';
-import { Colors } from '../../constants/Colors';
+import { Colors } from '../../../constants/Colors';
+import { CheckIcon } from '../../icons/CheckIcon';
+import { CrossIcon } from '../../icons/CrossIcon';
 
 interface CustomTextInputProps extends TextInputProps {
   label: string;
   error?: string;
   isValid?: boolean;
   showUserPrefix?: boolean;
+  showFixedAtSymbol?: boolean;
 }
 
 export const TextInput: React.FC<CustomTextInputProps> = ({
@@ -14,9 +17,11 @@ export const TextInput: React.FC<CustomTextInputProps> = ({
   error,
   isValid,
   showUserPrefix = false,
+  showFixedAtSymbol = false,
   onFocus,
   onBlur,
   value,
+  onChangeText,
   ...props
 }) => {
   const [isFocused, setIsFocused] = useState(false);
@@ -50,46 +55,30 @@ export const TextInput: React.FC<CustomTextInputProps> = ({
     onBlur?.(e);
   };
 
+  // Función para manejar cambios en el texto (permitir todos los caracteres)
+  const handleTextChange = (text: string) => {
+    // Siempre permitir escribir cualquier caracter, la validación se hace después
+    onChangeText?.(text);
+  };
+
+  // Color neutral para todos los estados - sin cambio de color en focus
   const getBorderColor = () => {
-    if (error) return Colors.appleRed;
-    if (isValid) return Colors.spotifyGreen;
-    return Colors.backgroundUltraSoft;
+    return Colors.backgroundUltraSoft; // Siempre el mismo color
   };
-
-  const getActiveColor = () => {
-    if (error) return Colors.appleRed;
-    if (isValid) return Colors.spotifyGreen;
-    return Colors.white;
-  };
-
-  const borderColor = animatedValue.interpolate({
-    inputRange: [0, 1],
-    outputRange: [getBorderColor(), getActiveColor()],
-  });
-
-  const borderWidth = animatedValue.interpolate({
-    inputRange: [0, 1],
-    outputRange: [1, 2],
-  });
 
   const shadowOpacity = animatedValue.interpolate({
     inputRange: [0, 1],
-    outputRange: [0, 0.15],
+    outputRange: [0, 0.1],
   });
 
   const shadowRadius = animatedValue.interpolate({
     inputRange: [0, 1],
-    outputRange: [0, 8],
+    outputRange: [0, 4],
   });
 
   const backgroundColor = animatedValue.interpolate({
     inputRange: [0, 1],
-    outputRange: [Colors.backgroundUltraSoft, Colors.backgroundSoft],
-  });
-
-  const prefixTop = animatedValue.interpolate({
-    inputRange: [0, 1],
-    outputRange: [16, -8],
+    outputRange: [Colors.backgroundSoft, Colors.appleRed],
   });
 
   const prefixFontSize = animatedValue.interpolate({
@@ -99,40 +88,62 @@ export const TextInput: React.FC<CustomTextInputProps> = ({
 
   const prefixColor = animatedValue.interpolate({
     inputRange: [0, 1],
-    outputRange: [Colors.gray[400], Colors.white],
+    outputRange: [Colors.gray[400], Colors.gray[300]],
   });
 
   return (
     <View style={styles.container}>
       <Text style={styles.label}>{label}</Text>
-      <View style={[styles.inputContainer, { borderColor: getBorderColor() }]}>
-        {showUserPrefix && (
-          <Animated.Text
-            style={[
-              styles.prefix,
-              {
-                top: prefixTop,
-                fontSize: prefixFontSize,
-                color: prefixColor,
-              }
-            ]}
-          >
-            @
-          </Animated.Text>
+      <Animated.View 
+        style={[
+          styles.inputContainer, 
+          { 
+            borderColor: getBorderColor(),
+            backgroundColor,
+            shadowColor: Colors.background,
+            shadowOffset: {
+              width: 0,
+              height: 2,
+            },
+            shadowOpacity,
+            shadowRadius,
+            elevation: isFocused ? 2 : 0,
+          }
+        ]}
+      >
+
+        {/* @ fijo para showFixedAtSymbol */}
+        {showFixedAtSymbol && (
+          <Text style={styles.fixedAtSymbol}>@</Text>
         )}
+
         <RNTextInput
           {...props}
           value={value}
+          onChangeText={handleTextChange}
           style={[
             styles.input,
-            showUserPrefix && { paddingLeft: shouldShowPrefixUp ? 18 : 35 }
+            showUserPrefix && { paddingLeft: shouldShowPrefixUp ? 18 : 35 },
+            showFixedAtSymbol && { paddingLeft: 35 },
+            (error || isValid) && { paddingRight: 45 } // Espacio para el icono
           ]}
           placeholderTextColor={Colors.gray[400]}
           onFocus={handleFocus}
           onBlur={handleBlur}
-          selectionColor={isValid ? Colors.spotifyGreen : Colors.white}
+          selectionColor={Colors.gray[300]}
         />
-      </View>
+        
+        {/* Icono de validación */}
+        {(error || isValid) && (
+          <View style={styles.validationIcon}>
+            {error ? (
+              <CrossIcon size={20} color={Colors.appleRed} />
+            ) : isValid ? (
+              <CheckIcon size={20} color={Colors.spotifyGreen} />
+            ) : null}
+          </View>
+        )}
+      </Animated.View>
       {error && (
         <Text style={styles.errorText}>{error}</Text>
       )}
@@ -152,24 +163,35 @@ const styles = StyleSheet.create({
   },
   inputContainer: {
     height: 52,
-    borderRadius: 16,
-    backgroundColor: Colors.backgroundUltraSoft,
+    borderRadius: 12,
+    backgroundColor: Colors.backgroundSoft,
     borderWidth: 1,
     position: 'relative',
+    justifyContent: 'center',
+    paddingLeft: 5,
   },
   input: {
     flex: 1,
     paddingHorizontal: 18,
     fontSize: 16,
     color: Colors.white,
-    fontWeight: '500',
+    fontWeight: '400',
     includeFontPadding: false,
     textAlignVertical: 'center',
+
   },
-  prefix: {
+  fixedAtSymbol: {
     position: 'absolute',
     left: 18,
+    fontSize: 16,
+    paddingBottom: 5,
     fontWeight: '500',
+    color: Colors.gray[300],
+    zIndex: 1,
+  },
+  validationIcon: {
+    position: 'absolute',
+    right: 18,
     zIndex: 1,
   },
   errorText: {

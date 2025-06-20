@@ -6,10 +6,14 @@
     "orientation": "portrait",
     "icon": "./assets/images/icon.png",
     "scheme": "loopedr",
+    "linking": {
+      "prefixes": ["loopedr://"]
+    },
     "userInterfaceStyle": "automatic",
     "newArchEnabled": true,
     "ios": {
-      "supportsTablet": true
+      "supportsTablet": true,
+      "bundleIdentifier": "com.daviidltp.loopedR" 
     },
     "android": {
       "adaptiveIcon": {
@@ -35,6 +39,9 @@
           "backgroundColor": "#ffffff"
         }
       ]
+    ],
+    "assetBundlePatterns": [
+      "assets/fonts/**"
     ],
     "experiments": {
       "typedRoutes": true

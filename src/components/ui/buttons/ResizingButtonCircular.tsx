@@ -27,9 +27,9 @@ const styles = StyleSheet.create({
         justifyContent: "center",
         shadowColor: "#000",
         shadowOffset: { width: 0, height: 3 },
-        shadowOpacity: 0.3,
+        shadowOpacity: 1,
         shadowRadius: 6,
-        elevation: 8,
+        elevation: 0,
     },
 });
 

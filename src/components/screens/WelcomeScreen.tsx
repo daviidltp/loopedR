@@ -1,17 +1,18 @@
 import { StackNavigationProp } from '@react-navigation/stack';
 import * as Haptics from 'expo-haptics';
 import React, { useCallback, useRef, useState } from 'react';
-import { Animated, StyleSheet, Text, View } from 'react-native';
+import { Animated, StyleSheet, View } from 'react-native';
 import { Notifier, NotifierComponents } from 'react-native-notifier';
 import { Colors } from '../../constants/Colors';
+import { useAuth } from '../../contexts/AuthContext';
 import { useSpotifyAuth } from '../../hooks/useSpotifyAuth';
 import { useWelcomeAnimations } from '../../hooks/useWelcomeAnimations';
 import { RootStackParamList } from '../../navigation/AppNavigator';
-import { ConfirmationDialog } from '../ui/ConfirmationDialog';
-import { ConnectionBottomSheet, ConnectionBottomSheetRef } from '../ui/ConnectionBottomSheet';
-import { Layout } from '../ui/Layout';
-import { OnboardingCarousel } from '../ui/OnboardingCarousel';
-import { ResizingButton } from '../ui/ResizingButton';
+import { ResizingButton } from '../ui/buttons/ResizingButton';
+import { OnboardingCarousel } from '../ui/carousels/OnboardingCarousel';
+import { Layout } from '../ui/layout/Layout';
+import { ConfirmationDialog } from '../ui/modals/ConfirmationDialog';
+import { ConnectionBottomSheet, ConnectionBottomSheetRef } from '../ui/modals/ConnectionBottomSheet';
 
 type WelcomeScreenNavigationProp = StackNavigationProp<RootStackParamList, 'Welcome'>;
 
@@ -24,18 +25,27 @@ export const WelcomeScreen: React.FC<WelcomeScreenProps> = ({ navigation }) => {
   const [showSkipAlert, setShowSkipAlert] = useState(false);
   const [isAuthenticating, setIsAuthenticating] = useState(false);
   
+  // Usar contexto de autenticación
+  const { setUser } = useAuth();
+  
   // Usar hooks personalizados
-  const { isFirstLoad, titlePositionY, backgroundOpacity, contentOpacity } = useWelcomeAnimations();
+  const { isFirstLoad, titlePositionY, titleFontSize, backgroundOpacity, contentOpacity } = useWelcomeAnimations();
   
   const { connectSpotify } = useSpotifyAuth({
     onSuccess: (userProfile) => {
       console.log('Usuario autenticado:', userProfile);
       setIsAuthenticating(false);
+      // Guardar usuario en el contexto
+      setUser(userProfile);
       // Navegar a la pantalla de creación de perfil
       navigation.navigate('CreateProfile');
     },
     onError: (error) => {
       console.error('Error en autenticación:', error);
+      setIsAuthenticating(false);
+    },
+    onCancel: () => {
+      console.log('Autenticación cancelada');
       setIsAuthenticating(false);
     },
   });
@@ -153,7 +163,19 @@ export const WelcomeScreen: React.FC<WelcomeScreenProps> = ({ navigation }) => {
               }
             ]}
           >
-            <Text style={styles.title}>looped</Text>
+            <Animated.Text 
+              style={[
+                styles.title,
+                {
+                  fontSize: titleFontSize.interpolate({
+                    inputRange: [0, 1],
+                    outputRange: [32, 48], // De 48rpx (inicial) a 32px (final)
+                  })
+                }
+              ]}
+            >
+              looped
+            </Animated.Text>
           </Animated.View>
 
           {/* Contenido principal con carrusel */}
@@ -218,13 +240,12 @@ const styles = StyleSheet.create({
     zIndex: 10,
   },
   titleContainer: {
-    paddingTop: 60,
+    paddingTop: 40,
     paddingBottom: 20,
     paddingHorizontal: 24,
     zIndex: 11,
   },
   title: {
-    fontSize: 48,
     fontWeight: '300',
     fontFamily: 'Raleway-Bold',
     textAlign: 'center',

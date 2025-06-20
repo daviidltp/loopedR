@@ -1,6 +1,6 @@
 import React, { useEffect, useRef } from 'react';
 import { Animated, Pressable, StyleSheet, Text, View } from 'react-native';
-import { Colors } from '../../constants/Colors';
+import { Colors } from '../../../constants/Colors';
 
 interface ConfirmationDialogProps {
   visible: boolean;

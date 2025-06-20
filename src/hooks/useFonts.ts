@@ -1,22 +1,23 @@
 import * as Font from 'expo-font';
 import { useEffect, useState } from 'react';
+import { FONT_ASSETS } from '../constants/Fonts';
 
 export const useFonts = () => {
   const [fontsLoaded, setFontsLoaded] = useState(false);
+  const [fontError, setFontError] = useState<string | null>(null);
 
   useEffect(() => {
     const loadFonts = async () => {
       try {
-        await Font.loadAsync({
-          'Raleway-Light': require('../../assets/fonts/Raleway/static/Raleway-Light.ttf'),
-          'Raleway-Regular': require('../../assets/fonts/Raleway/static/Raleway-Regular.ttf'),
-          'Raleway-Medium': require('../../assets/fonts/Raleway/static/Raleway-Medium.ttf'),
-          'Raleway-SemiBold': require('../../assets/fonts/Raleway/static/Raleway-SemiBold.ttf'),
-          'Raleway-Bold': require('../../assets/fonts/Raleway/static/Raleway-Bold.ttf'),
-        });
+        console.log('🔤 Iniciando carga de fuentes...');
+        
+        await Font.loadAsync(FONT_ASSETS);
+        
+        console.log('✅ Fuentes cargadas exitosamente');
         setFontsLoaded(true);
       } catch (error) {
-        console.error('Error loading fonts:', error);
+        console.error('❌ Error loading fonts:', error);
+        setFontError(error instanceof Error ? error.message : 'Error desconocido');
         setFontsLoaded(true); // Set to true anyway to avoid blocking the app
       }
     };
@@ -24,5 +25,5 @@ export const useFonts = () => {
     loadFonts();
   }, []);
 
-  return fontsLoaded;
+  return { fontsLoaded, fontError };
 }; 

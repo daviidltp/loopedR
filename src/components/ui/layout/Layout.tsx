@@ -2,7 +2,7 @@ import * as SystemUI from 'expo-system-ui';
 import React from 'react';
 import { StyleSheet, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import { Colors } from '../../constants/Colors';
+import { Colors } from '../../../constants/Colors';
 
 interface LayoutProps {
   children: React.ReactNode;
