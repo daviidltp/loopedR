@@ -30,7 +30,8 @@ export const Layout: React.FC<LayoutProps> = ({ children, style, excludeBottomSa
           {
             paddingLeft: insets.left,
             paddingRight: insets.right,
-            paddingBottom: 0,
+            paddingBottom: insets.bottom,
+            paddingTop: insets.top,
           },
         ]}
       >

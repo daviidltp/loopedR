@@ -3,6 +3,7 @@ export const Colors = {
   backgroundSoft: '#111111',
   backgroundUltraSoft: '#252525',
   spotifyGreen: '#1DB954',
+  secondaryGreen: '#00B290',
   appleRed: '#fa233b',
   white: '#FFFFFF',
   gray: {

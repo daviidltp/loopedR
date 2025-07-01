@@ -49,13 +49,26 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         AsyncStorage.getItem(STORAGE_KEYS.PROFILE_COMPLETED),
       ]);
 
+      console.log('AuthContext - Datos cargados:', {
+        hasUserData: !!userData,
+        authStatus,
+        profileCompleted
+      });
+
       if (userData && authStatus === 'logged_in') {
         const parsedUser = JSON.parse(userData);
         setUser(parsedUser);
         setHasCompletedProfile(profileCompleted === 'true');
+      } else {
+        // Asegurarnos que los estados estén limpios si no hay datos
+        setUser(null);
+        setHasCompletedProfile(false);
       }
     } catch (error) {
       console.error('Error cargando datos del usuario:', error);
+      // En caso de error, también limpiamos los estados
+      setUser(null);
+      setHasCompletedProfile(false);
     } finally {
       setIsLoading(false);
     }
@@ -96,6 +109,9 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
   const logout = async () => {
     try {
+      // Pequeño delay para evitar conflictos de renderizado
+      await new Promise(resolve => setTimeout(resolve, 100));
+      
       await Promise.all([
         AsyncStorage.removeItem(STORAGE_KEYS.USER),
         AsyncStorage.removeItem(STORAGE_KEYS.AUTH_STATUS),

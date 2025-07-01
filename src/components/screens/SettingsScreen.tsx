@@ -9,12 +9,15 @@ import {
 } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Colors } from '../../constants/Colors';
+import { useAuth } from '../../contexts/AuthContext';
+import { clearSpotifySession } from '../../utils/spotifyAuth';
 import { ResizingButton } from '../ui/buttons/ResizingButton';
 import { SettingsOption } from '../ui/sections/SettingsSection';
 
 export const SettingsScreen = () => {
   const insets = useSafeAreaInsets();
   const navigation = useNavigation();
+  const { logout } = useAuth();
 
   // Manejar el botón físico de Android
   useEffect(() => {
@@ -36,9 +39,23 @@ export const SettingsScreen = () => {
     // Aquí irá la navegación
   };
 
-  const handleLogout = () => {
-    console.log('Cerrar sesión');
-    // Aquí irá la lógica de cerrar sesión
+  const handleLogout = async () => {
+    try {
+      console.log('Cerrando sesión...');
+      
+      // Limpiar sesión de Spotify si existe
+      await clearSpotifySession();
+      
+      // Cerrar sesión usando el contexto de autenticación
+      await logout();
+      
+      console.log('Sesión cerrada correctamente');
+      // El AppNavigator automáticamente cambiará al Stack Navigator de Welcome
+      // cuando isLoggedIn sea false
+      
+    } catch (error) {
+      console.error('Error al cerrar sesión:', error);
+    }
   };
 
   return (

@@ -1,11 +1,12 @@
 import BottomSheet, { BottomSheetBackdrop, BottomSheetView } from '@gorhom/bottom-sheet';
 import React, { forwardRef, useCallback, useImperativeHandle, useMemo, useRef } from 'react';
-import { StyleSheet, Text, View } from 'react-native';
+import { StyleSheet, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Colors } from '../../../constants/Colors';
 import { AppleMusicIcon } from '../../icons/AppleMusicIcon';
 import { SpotifyIcon } from '../../icons/SpotifyIcon';
 import { ResizingButton } from '../buttons/ResizingButton';
+import { AppText } from '../Text';
 
 // Componente de fondo personalizado para redondear bordes
 const BottomSheetBackground = ({ style }: any) => (
@@ -99,9 +100,9 @@ export const ConnectionBottomSheet = forwardRef<ConnectionBottomSheetRef, Connec
       >
         <BottomSheetView style={styles.sheetContent}>
           {/* Texto descriptivo arriba de los botones */}
-          <Text style={styles.sheetTitle}>
+          <AppText variant="h3" color={Colors.white} style={styles.sheetTitle} numberOfLines={2}>
             Vincula Looped con tu plataforma favorita
-          </Text>
+          </AppText>
           
           <View style={styles.buttonsContainer}>
             {/* Botones de conexión con gap de 10 */}
@@ -158,7 +159,7 @@ const styles = StyleSheet.create({
   },
   sheetTitle: {
     fontSize: 24,
-    paddingHorizontal: 40,
+    paddingHorizontal: 0,
     lineHeight: 28,
     fontWeight: '600',
     color: Colors.white,

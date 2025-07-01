@@ -1,11 +1,12 @@
 import React, { ReactElement } from "react";
-import { ActivityIndicator, Pressable, StyleSheet, Text } from "react-native";
+import { ActivityIndicator, Pressable, StyleSheet } from "react-native";
 import Animated, {
     interpolate,
     useAnimatedStyle,
     useSharedValue,
     withTiming,
 } from "react-native-reanimated";
+import { AppText } from "../Text/AppText";
 
 export interface ResizingButtonProps {
     accessibilityHint?: string;
@@ -28,8 +29,7 @@ const styles = StyleSheet.create({
         alignItems: "center",
         borderRadius: 16,
         flexDirection: "row",
-        gap: 8,
-        height: 48,
+        height: 52,
         justifyContent: "center",
         paddingHorizontal: 16,
         paddingVertical: 10,
@@ -39,12 +39,24 @@ const styles = StyleSheet.create({
         shadowRadius: 4,
         elevation: 0,
         borderWidth: 1,
+        position: "relative",
     },
-    title: {
-        flexShrink: 1,
-        fontSize: 16,
-        fontWeight: "700",
-        textAlign: "center",
+    iconContainer: {
+        position: "absolute",
+        left: 30,
+        zIndex: 1,
+    },
+    textContainer: {
+        flex: 1,
+        alignItems: "center",
+        justifyContent: "center",
+        position: "relative",
+    },
+    contentGroup: {
+        flexDirection: "row",
+        alignItems: "center",
+        width: "100%",
+        justifyContent: "center",
     },
 });
 
@@ -116,18 +128,18 @@ export const ResizingButton = ({
                 {isLoading ? (
                     <ActivityIndicator color={textColor} size={18} />
                 ) : (
-                    <>
+                    <Animated.View style={styles.contentGroup}>
                         {icon && (
-                            <React.Fragment>
-                                <Text style={{ marginRight: 6 }}>
-                                    {icon}
-                                </Text>
-                            </React.Fragment>
+                            <Animated.View style={styles.iconContainer}>
+                                {icon}
+                            </Animated.View>
                         )}
-                        <Text numberOfLines={1} style={[styles.title, { color: textColor }]}>
-                            {title}
-                        </Text>
-                    </>
+                        <Animated.View style={styles.textContainer}>
+                            <AppText variant="bodyLarge" fontWeight="semiBold" numberOfLines={1} color={textColor}>
+                                {title}
+                            </AppText>
+                        </Animated.View>
+                    </Animated.View>
                 )}
             </Animated.View>
         </Pressable>

@@ -15,3 +15,6 @@ export * from './navigation';
 
 // Carousel components
 export * from './carousels';
+
+// Text components
+export * from './Text';

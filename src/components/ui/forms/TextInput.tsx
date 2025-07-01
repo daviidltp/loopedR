@@ -3,9 +3,10 @@ import { Animated, TextInput as RNTextInput, StyleSheet, Text, TextInputProps, V
 import { Colors } from '../../../constants/Colors';
 import { CheckIcon } from '../../icons/CheckIcon';
 import { CrossIcon } from '../../icons/CrossIcon';
+import { AppText } from '../Text/AppText';
 
 interface CustomTextInputProps extends TextInputProps {
-  label: string;
+  label?: string;
   error?: string;
   isValid?: boolean;
   showUserPrefix?: boolean;
@@ -61,26 +62,6 @@ export const TextInput: React.FC<CustomTextInputProps> = ({
     onChangeText?.(text);
   };
 
-  // Color neutral para todos los estados - sin cambio de color en focus
-  const getBorderColor = () => {
-    return Colors.backgroundUltraSoft; // Siempre el mismo color
-  };
-
-  const shadowOpacity = animatedValue.interpolate({
-    inputRange: [0, 1],
-    outputRange: [0, 0.1],
-  });
-
-  const shadowRadius = animatedValue.interpolate({
-    inputRange: [0, 1],
-    outputRange: [0, 4],
-  });
-
-  const backgroundColor = animatedValue.interpolate({
-    inputRange: [0, 1],
-    outputRange: [Colors.backgroundSoft, Colors.appleRed],
-  });
-
   const prefixFontSize = animatedValue.interpolate({
     inputRange: [0, 1],
     outputRange: [16, 12],
@@ -93,79 +74,79 @@ export const TextInput: React.FC<CustomTextInputProps> = ({
 
   return (
     <View style={styles.container}>
-      <Text style={styles.label}>{label}</Text>
-      <Animated.View 
-        style={[
-          styles.inputContainer, 
-          { 
-            borderColor: getBorderColor(),
-            backgroundColor,
-            shadowColor: Colors.background,
-            shadowOffset: {
-              width: 0,
-              height: 2,
-            },
-            shadowOpacity,
-            shadowRadius,
-            elevation: isFocused ? 2 : 0,
-          }
-        ]}
-      >
-
-        {/* @ fijo para showFixedAtSymbol */}
-        {showFixedAtSymbol && (
-          <Text style={styles.fixedAtSymbol}>@</Text>
-        )}
-
-        <RNTextInput
-          {...props}
-          value={value}
-          onChangeText={handleTextChange}
+      {label && <AppText variant='body' fontFamily='poppins' color={Colors.white} style={styles.label}>{label}</AppText>}
+      <View style={styles.inputWrapper}>
+        <View style={styles.errorContainer}>
+          {error && (
+            <Text style={styles.errorText} numberOfLines={2}>{error}</Text>
+          )}
+        </View>
+        <Animated.View 
           style={[
-            styles.input,
-            showUserPrefix && { paddingLeft: shouldShowPrefixUp ? 18 : 35 },
-            showFixedAtSymbol && { paddingLeft: 35 },
-            (error || isValid) && { paddingRight: 45 } // Espacio para el icono
+            styles.inputContainer, 
+            { 
+              backgroundColor: isFocused ? 'rgba(255, 255, 255, 0.1)' : 'rgba(255, 255, 255, 0.05)',
+            }
           ]}
-          placeholderTextColor={Colors.gray[400]}
-          onFocus={handleFocus}
-          onBlur={handleBlur}
-          selectionColor={Colors.gray[300]}
-        />
-        
-        {/* Icono de validación */}
-        {(error || isValid) && (
-          <View style={styles.validationIcon}>
-            {error ? (
-              <CrossIcon size={20} color={Colors.appleRed} />
-            ) : isValid ? (
-              <CheckIcon size={20} color={Colors.spotifyGreen} />
-            ) : null}
-          </View>
-        )}
-      </Animated.View>
-      {error && (
-        <Text style={styles.errorText}>{error}</Text>
-      )}
+        >
+          {showFixedAtSymbol && (
+            <Text style={styles.fixedAtSymbol}>@</Text>
+          )}
+
+          <RNTextInput
+            {...props}
+            value={value}
+            onChangeText={handleTextChange}
+            style={[
+              styles.input,
+              showUserPrefix && { paddingLeft: shouldShowPrefixUp ? 18 : 35 },
+              showFixedAtSymbol && { paddingLeft: 35 },
+              (error || isValid) && { paddingRight: 45 } // Espacio para el icono
+            ]}
+            placeholderTextColor={Colors.gray[400]}
+            onFocus={handleFocus}
+            onBlur={handleBlur}
+            selectionColor={Colors.gray[300]}
+          />
+          
+          {/* Icono de validación */}
+          {(error || isValid) && (
+            <View style={styles.validationIcon}>
+              {error ? (
+                <CrossIcon size={20} color={Colors.appleRed} />
+              ) : isValid ? (
+                <CheckIcon size={20} color={Colors.spotifyGreen} />
+              ) : null}
+            </View>
+          )}
+        </Animated.View>
+      </View>
     </View>
   );
 };
 
 const styles = StyleSheet.create({
   container: {
-    marginBottom: 20,
+    marginBottom: 16,
   },
   label: {
-    fontSize: 16,
-    fontWeight: '600',
-    color: Colors.white,
     marginBottom: 8,
   },
+  inputWrapper: {
+    position: 'relative',
+  },
+  errorContainer: {
+    position: 'absolute',
+    top: '100%',
+    width: '100%',
+    minHeight: 40,
+    justifyContent: 'flex-start',
+    paddingTop: 8,
+    paddingLeft: 5,
+  },
   inputContainer: {
-    height: 52,
-    borderRadius: 12,
-    backgroundColor: Colors.backgroundSoft,
-    borderWidth: 1,
+    height: 62,
+    borderRadius: 16,
     position: 'relative',
     justifyContent: 'center',
     paddingLeft: 5,
@@ -173,12 +154,11 @@ const styles = StyleSheet.create({
   input: {
     flex: 1,
     paddingHorizontal: 18,
-    fontSize: 16,
+    fontSize: 18,
     color: Colors.white,
-    fontWeight: '400',
+    fontFamily: 'Raleway-Regular',
     includeFontPadding: false,
     textAlignVertical: 'center',
-
   },
   fixedAtSymbol: {
     position: 'absolute',
@@ -197,8 +177,6 @@ const styles = StyleSheet.create({
   errorText: {
     fontSize: 14,
     color: Colors.appleRed,
-    marginTop: 6,
-    fontWeight: '500',
-    marginLeft: 4,
+    fontFamily: 'Roboto',
   },
 }); 

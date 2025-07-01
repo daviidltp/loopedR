@@ -1,4 +1,6 @@
 import { BottomTabBarButtonProps, createBottomTabNavigator } from '@react-navigation/bottom-tabs';
+import { BlurView } from 'expo-blur';
+import { LinearGradient } from 'expo-linear-gradient';
 import React, { useEffect, useRef } from 'react';
 import { BackHandler, Dimensions, Pressable, StyleSheet, View } from 'react-native';
 import Animated, { interpolate, useAnimatedStyle, useSharedValue, withTiming } from 'react-native-reanimated';
@@ -116,8 +118,6 @@ export const BottomNavigationBar = ({ onUploadPress }: { onUploadPress?: () => v
     return () => backHandler.remove();
   }, []);
 
-
-
   return (
     <View style={styles.container}>
       <Tab.Navigator
@@ -127,6 +127,21 @@ export const BottomNavigationBar = ({ onUploadPress }: { onUploadPress?: () => v
           tabBarShowLabel: false,
           tabBarActiveTintColor: Colors.white,
           tabBarInactiveTintColor: Colors.white,
+          tabBarBackground: () => (
+            <BlurView
+              intensity={40}
+              tint="systemUltraThinMaterialDark"
+              style={styles.blurContainer}
+              experimentalBlurMethod="dimezisBlurView"
+            >
+              <LinearGradient
+                colors={['rgba(0, 0, 0, 0.4)', 'rgba(0, 0, 0, 1.0)']}
+                style={styles.gradientOverlay}
+                start={{ x: 0, y: 0 }}
+                end={{ x: 0, y: 1 }}
+              />
+            </BlurView>
+          ),
           tabBarIcon: ({ focused }) => {
             let IconComponent;
             let iconSize = 22;
@@ -203,14 +218,14 @@ const styles = StyleSheet.create({
     position: 'relative',
   },
   tabBar: {
-    backgroundColor: 'rgba(0, 0, 0, 0.4)', // Mucho más transparente para ver el fondo
+    backgroundColor: 'transparent',
     borderTopWidth: 0,
     borderTopLeftRadius: 32,
     borderTopRightRadius: 32,
     height: 80,
     bottom: 0,
     paddingHorizontal: 12,
-    paddingTop: 0,
+    paddingBottom: 10,
     elevation: 0,
     position: 'absolute',
     flexDirection: 'row',
@@ -219,11 +234,8 @@ const styles = StyleSheet.create({
       width: 0,
       height: -8,
     },
-    shadowOpacity: 0.2,
-    shadowRadius: 16,
-    // Efecto de blur moderno para ver el contenido detrás
-    backdropFilter: 'blur(20px)',
-    // Para mejorar la transparencia en diferentes plataformas
+    shadowOpacity: 0.3,
+    shadowRadius: 20,
     overflow: 'hidden',
   },
   tabBarItem: {
@@ -260,6 +272,21 @@ const styles = StyleSheet.create({
     width: 28,
     height: 28,
     borderRadius: 14,
-    backgroundColor: Colors.gray[400],
+    backgroundColor: Colors.appleRed,
+  },
+  blurContainer: {
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0,
+    borderTopLeftRadius: 32,
+    borderTopRightRadius: 32,
+    overflow: 'hidden',
+  },
+  gradientOverlay: {
+    flex: 1,
+    borderTopLeftRadius: 32,
+    borderTopRightRadius: 32,
   },
 }); 

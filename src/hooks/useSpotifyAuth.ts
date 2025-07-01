@@ -14,11 +14,11 @@ interface UseSpotifyAuthParams {
 }
 
 export const useSpotifyAuth = ({ onSuccess, onError, onCancel }: UseSpotifyAuthParams) => {
-  // Usar redirect URI fijo (más confiable)
-  const redirectUri = 'loopedr://redirect';
+  // Generar redirect URI dinámicamente para Expo
+  const redirectUri = AuthSession.makeRedirectUri();
   
-  console.log('Redirect URI usado:', redirectUri);
-  console.log('Verificar que este URI esté en Spotify Developers Console');
+  //console.log('Redirect URI usado:', redirectUri);
+  //console.log('Para producción, agregar este URI a Spotify Developers Console');
 
   // Configurar la solicitud de autorización de Spotify
   const [request, response, promptAsync] = AuthSession.useAuthRequest(

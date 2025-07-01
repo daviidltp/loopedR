@@ -4,6 +4,7 @@ export { OnboardingCarousel } from './ui/carousels/OnboardingCarousel';
 export { TextInput } from './ui/forms/TextInput';
 export { Layout } from './ui/layout/Layout';
 export { ConnectionBottomSheet, ConnectionBottomSheetRef } from './ui/modals/ConnectionBottomSheet';
+export { Post, PostComments, PostDescription, PostHeader, SpotifyWrappedContent } from './ui/Post';
 
 // Icons
 export { AppleMusicIcon } from './icons/AppleMusicIcon';

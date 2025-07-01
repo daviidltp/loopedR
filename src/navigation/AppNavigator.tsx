@@ -1,6 +1,6 @@
 import { Ionicons } from '@expo/vector-icons';
 import { CardStyleInterpolators, createStackNavigator } from '@react-navigation/stack';
-import React from 'react';
+import React, { useEffect } from 'react';
 import { ActivityIndicator, Platform, TouchableNativeFeedback, TouchableOpacity, View } from 'react-native';
 import { CreateProfileScreen, WelcomeScreen } from '../components';
 import { SettingsScreen } from '../components/screens/SettingsScreen';
@@ -65,25 +65,106 @@ const LoadingScreen = () => (
 export const AppNavigator = () => {
   const { isLoading, isLoggedIn, hasCompletedProfile } = useAuth();
 
+  // Log para debugging
+  useEffect(() => {
+    console.log('AppNavigator - Estado de autenticación:', { 
+      isLoading, 
+      isLoggedIn, 
+      hasCompletedProfile,
+      user: isLoggedIn ? 'exists' : 'null'  // No loggeamos el objeto completo por seguridad
+    });
+  }, [isLoading, isLoggedIn, hasCompletedProfile]);
+
   // Mostrar pantalla de carga mientras se determina el estado
   if (isLoading) {
     return <LoadingScreen />;
   }
 
-  // Determinar la pantalla inicial basada en el estado de autenticación
-  const getInitialRouteName = (): keyof RootStackParamList => {
-    if (!isLoggedIn) {
-      return 'Welcome';
-    }
-    if (!hasCompletedProfile) {
-      return 'CreateProfile';
-    }
-    return 'MainApp';
-  };
+  // Renderizado condicional basado en el estado de autenticación
+  if (!isLoggedIn) {
+    // Usuario no autenticado - mostrar welcome
+    return (
+      <Stack.Navigator
+        key="welcome-stack"
+        initialRouteName="Welcome"
+        screenOptions={{
+          headerShown: false,
+          gestureEnabled: true,
+          gestureDirection: 'horizontal',
+          cardStyleInterpolator: CardStyleInterpolators.forRevealFromBottomAndroid,
+        }}
+      >
+        <Stack.Screen 
+          name="Welcome" 
+          component={WelcomeScreen}
+        />
+        <Stack.Screen 
+          name="CreateProfile" 
+          component={CreateProfileScreen}
+          options={({ navigation }) => ({
+            headerShown: false,
+            headerStyle: {
+              backgroundColor: Colors.background,
+              elevation: 0,
+              shadowOpacity: 0,
+              borderBottomWidth: 0,
+              height: 100,
+            },
+            
+            cardStyleInterpolator: CardStyleInterpolators.forHorizontalIOS,
+          })}
+        />
+      </Stack.Navigator>
+    );
+  }
 
+  if (!hasCompletedProfile) {
+    // Usuario autenticado pero sin perfil completado
+    return (
+      <Stack.Navigator
+        key="create-profile-stack"
+        initialRouteName="CreateProfile"
+        screenOptions={{
+          headerShown: false,
+          gestureEnabled: true,
+          gestureDirection: 'horizontal',
+          cardStyleInterpolator: CardStyleInterpolators.forRevealFromBottomAndroid,
+        }}
+      >
+        <Stack.Screen 
+          name="CreateProfile" 
+          component={CreateProfileScreen}
+          options={({ navigation }) => ({
+            headerShown: false,
+            headerTitleAlign: 'center',
+            headerStyle: {
+              backgroundColor: Colors.background,
+              elevation: 0,
+              shadowOpacity: 0,
+              borderBottomWidth: 0,
+              height: 100,
+            },
+            headerTitleStyle: {
+              fontSize: 32,
+              fontWeight: '300',
+              fontFamily: 'MerriweatherSans-Light',
+              letterSpacing: -0.5,
+              color: Colors.white,
+              textAlign: 'left',
+              lineHeight: 40,
+            },
+            cardStyleInterpolator: CardStyleInterpolators.forHorizontalIOS,
+          })}
+        />
+      </Stack.Navigator>
+    );
+  }
+
+  // Usuario autenticado y con perfil completado - mostrar app principal
   return (
     <Stack.Navigator
-      initialRouteName={getInitialRouteName()}
+      key="main-app-stack"
+      initialRouteName="MainApp"
       screenOptions={{
         headerShown: false,
         gestureEnabled: true,
@@ -91,48 +172,6 @@ export const AppNavigator = () => {
         cardStyleInterpolator: CardStyleInterpolators.forRevealFromBottomAndroid,
       }}
     >
-      <Stack.Screen 
-        name="Welcome" 
-        component={WelcomeScreen}
-      />
-      <Stack.Screen 
-        name="CreateProfile" 
-        component={CreateProfileScreen}
-        options={({ navigation }) => ({
-          headerShown: true,
-          headerTitle: 'Crea tu perfil',
-          headerTitleAlign: 'center',
-          headerLeft: () => (
-            <HeaderBackButton onPress={() => navigation.goBack()} />
-          ),
-          headerLeftContainerStyle: {
-            paddingLeft: 8, // Padding adicional del contenedor
-          },
-          headerTitleContainerStyle: {
-            left: 0,
-            right: 0,
-            bottom: 1,
-
-          },
-          headerStyle: {
-            backgroundColor: Colors.background,
-            elevation: 0,
-            shadowOpacity: 0,
-            borderBottomWidth: 0,
-            height: 100,
-          },
-          headerTitleStyle: {
-            fontSize: 32,
-            fontWeight: '300',
-            fontFamily: 'Raleway-Bold',
-            letterSpacing: -0.5, // Reducido de -1 para evitar superposición de letras
-            color: Colors.white,
-            textAlign: 'left',
-            lineHeight: 40, // Ajustar line height para mejor alineación vertical
-          },
-          cardStyleInterpolator: CardStyleInterpolators.forHorizontalIOS,
-        })}
-      />
       <Stack.Screen 
         name="MainApp" 
         component={BottomNavigationBar}
