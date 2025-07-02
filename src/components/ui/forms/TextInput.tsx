@@ -1,4 +1,4 @@
-import React, { useRef, useState } from 'react';
+import React, { forwardRef, useRef, useState } from 'react';
 import { Animated, TextInput as RNTextInput, StyleSheet, Text, TextInputProps, View } from 'react-native';
 import { Colors } from '../../../constants/Colors';
 import { CheckIcon } from '../../icons/CheckIcon';
@@ -11,20 +11,22 @@ interface CustomTextInputProps extends TextInputProps {
   isValid?: boolean;
   showUserPrefix?: boolean;
   showFixedAtSymbol?: boolean;
+  helperText?: string;
 }
 
-export const TextInput: React.FC<CustomTextInputProps> = ({
+export const TextInput = forwardRef<RNTextInput, CustomTextInputProps>(({
   label,
   error,
   isValid,
   showUserPrefix = false,
   showFixedAtSymbol = false,
+  helperText,
   onFocus,
   onBlur,
   value,
   onChangeText,
   ...props
-}) => {
+}, ref) => {
   const [isFocused, setIsFocused] = useState(false);
   const animatedValue = useRef(new Animated.Value(0)).current;
 
@@ -76,11 +78,6 @@ export const TextInput: React.FC<CustomTextInputProps> = ({
     <View style={styles.container}>
       {label && <AppText variant='body' fontFamily='poppins' color={Colors.white} style={styles.label}>{label}</AppText>}
       <View style={styles.inputWrapper}>
-        <View style={styles.errorContainer}>
-          {error && (
-            <Text style={styles.errorText} numberOfLines={2}>{error}</Text>
-          )}
-        </View>
         <Animated.View 
           style={[
             styles.inputContainer, 
@@ -95,6 +92,7 @@ export const TextInput: React.FC<CustomTextInputProps> = ({
 
           <RNTextInput
             {...props}
+            ref={ref}
             value={value}
             onChangeText={handleTextChange}
             style={[
@@ -120,10 +118,19 @@ export const TextInput: React.FC<CustomTextInputProps> = ({
             </View>
           )}
         </Animated.View>
+        <AppText 
+          variant='body' 
+          style={[
+            styles.helperText,
+            error && styles.errorText
+          ]}
+        >
+          {error || helperText}
+        </AppText>
       </View>
     </View>
   );
-};
+});
 
 const styles = StyleSheet.create({
   container: {
@@ -134,15 +141,6 @@ const styles = StyleSheet.create({
   },
   inputWrapper: {
     position: 'relative',
-  },
-  errorContainer: {
-    position: 'absolute',
-    top: '100%',
-    width: '100%',
-    minHeight: 40,
-    justifyContent: 'flex-start',
-    paddingTop: 8,
-    paddingLeft: 5,
   },
   inputContainer: {
     height: 62,
@@ -174,9 +172,15 @@ const styles = StyleSheet.create({
     right: 18,
     zIndex: 1,
   },
-  errorText: {
+  helperText: {
+    paddingTop: 20,
     fontSize: 14,
+    color: Colors.white,
+    opacity: 0.6,
+    lineHeight: 20,
+  },
+  errorText: {
     color: Colors.appleRed,
-    fontFamily: 'Roboto',
+    opacity: 1,
   },
 }); 

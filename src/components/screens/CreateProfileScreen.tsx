@@ -1,10 +1,11 @@
 import { StackNavigationProp } from '@react-navigation/stack';
-import React, { useCallback, useEffect, useState } from 'react';
+import React, { useCallback, useEffect, useRef, useState } from 'react';
 import {
   Alert,
   BackHandler,
   Keyboard,
   Platform,
+  TextInput as RNTextInput,
   StyleSheet,
   TouchableWithoutFeedback,
   View
@@ -18,6 +19,9 @@ import Animated, {
 import { Colors } from '../../constants/Colors';
 import { useAuth } from '../../contexts/AuthContext';
 import { RootStackParamList } from '../../navigation/AppNavigator';
+import { DefaultAvatar } from '../ui/Avatar/DefaultAvatar';
+import { PresetAvatarGrid } from '../ui/Avatar/PresetAvatarGrid';
+import { UploadButton } from '../ui/Avatar/UploadButton';
 import { ResizingButton } from '../ui/buttons/ResizingButton';
 import { TextInput } from '../ui/forms/TextInput';
 import { Layout } from '../ui/layout/Layout';
@@ -33,7 +37,7 @@ interface CreateProfileScreenProps {
   navigation: CreateProfileScreenNavigationProp;
 }
 
-type ProfileStep = 'name' | 'username';
+type ProfileStep = 'name' | 'username' | 'avatar';
 
 // ===========================
 // CONSTANTS
@@ -64,10 +68,12 @@ export const CreateProfileScreen: React.FC<CreateProfileScreenProps> = ({ naviga
   const [username, setUsername] = useState('');
   const [usernameError, setUsernameError] = useState('');
   const [nameError, setNameError] = useState('');
+  const [selectedAvatar, setSelectedAvatar] = useState<string>();
   const [isLoading, setIsLoading] = useState(false);
   const [keyboardHeight, setKeyboardHeight] = useState(0);
   const [isKeyboardVisible, setIsKeyboardVisible] = useState(false);
   const [currentStep, setCurrentStep] = useState<ProfileStep>('name');
+  const [shouldFocusNameInput, setShouldFocusNameInput] = useState(true);
 
   // ===========================
   // CONTEXT & HOOKS
@@ -83,6 +89,8 @@ export const CreateProfileScreen: React.FC<CreateProfileScreenProps> = ({ naviga
   const nameStepOpacityAnim = useSharedValue(1);
   const usernameStepSlideAnim = useSharedValue(SLIDE_DISTANCE);
   const usernameStepOpacityAnim = useSharedValue(0);
+  const avatarStepSlideAnim = useSharedValue(SLIDE_DISTANCE);
+  const avatarStepOpacityAnim = useSharedValue(0);
   const buttonBottom = useSharedValue(20);
 
   // ===========================
@@ -94,6 +102,9 @@ export const CreateProfileScreen: React.FC<CreateProfileScreenProps> = ({ naviga
       if (currentStep === 'username') {
         handleBackToName();
         return true; // Prevent default behavior
+      } else if (currentStep === 'avatar') {
+        handleBackToUsername();
+        return true;
       }
       return false; // Allow app exit
     });
@@ -213,7 +224,9 @@ export const CreateProfileScreen: React.FC<CreateProfileScreenProps> = ({ naviga
   
   const isButtonEnabled = currentStep === 'name' 
     ? name.trim().length >= 2 && !nameError
-    : username.trim().length >= 3 && !usernameError;
+    : currentStep === 'username'
+    ? username.trim().length >= 3 && !usernameError
+    : selectedAvatar !== undefined;
 
   // ===========================
   // ANIMATION FUNCTIONS
@@ -273,6 +286,74 @@ export const CreateProfileScreen: React.FC<CreateProfileScreenProps> = ({ naviga
     }, STEP_CHANGE_DELAY);
   }, []);
 
+  const animateToAvatarStep = useCallback(() => {
+    // Cerrar el teclado
+    Keyboard.dismiss();
+
+    // Animate username step exit
+    usernameStepSlideAnim.value = withTiming(-SLIDE_DISTANCE, {
+      duration: ANIMATION_DURATION,
+      easing: ANIMATION_EASING
+    });
+    usernameStepOpacityAnim.value = withTiming(0, {
+      duration: FADE_DURATION,
+      easing: ANIMATION_EASING
+    });
+    
+    // Animate avatar step entrance
+    avatarStepSlideAnim.value = withTiming(0, {
+      duration: ANIMATION_DURATION,
+      easing: ANIMATION_EASING
+    });
+    avatarStepOpacityAnim.value = withTiming(1, {
+      duration: ANIMATION_DURATION,
+      easing: ANIMATION_EASING
+    });
+    
+    setTimeout(() => {
+      setCurrentStep('avatar');
+    }, STEP_CHANGE_DELAY);
+  }, []);
+
+  const handleBackToUsername = useCallback(() => {
+    // Animate avatar step exit
+    avatarStepSlideAnim.value = withTiming(SLIDE_DISTANCE, {
+      duration: ANIMATION_DURATION,
+      easing: ANIMATION_EASING
+    });
+    avatarStepOpacityAnim.value = withTiming(0, {
+      duration: FADE_DURATION,
+      easing: ANIMATION_EASING
+    });
+    
+    // Animate username step entrance
+    usernameStepSlideAnim.value = withTiming(0, {
+      duration: ANIMATION_DURATION,
+      easing: ANIMATION_EASING
+    });
+    usernameStepOpacityAnim.value = withTiming(1, {
+      duration: ANIMATION_DURATION,
+      easing: ANIMATION_EASING
+    });
+    
+    setTimeout(() => {
+      setCurrentStep('username');
+    }, STEP_CHANGE_DELAY);
+  }, []);
+
+  // ===========================
+  // HANDLERS
+  // ===========================
+
+  const handleUploadAvatar = useCallback(() => {
+    // TODO: Implementar lógica de subida de imagen
+    Alert.alert('Próximamente', 'La funcionalidad de subir imagen estará disponible pronto');
+  }, []);
+
+  const handleSelectPresetAvatar = useCallback((avatarPath: string) => {
+    setSelectedAvatar(avatarPath);
+  }, []);
+
   // ===========================
   // MAIN ACTION HANDLERS
   // ===========================
@@ -283,8 +364,11 @@ export const CreateProfileScreen: React.FC<CreateProfileScreenProps> = ({ naviga
     if (currentStep === 'name') {
       // First step: transition to username
       animateStepTransition();
+    } else if (currentStep === 'username') {
+      // Second step: transition to avatar
+      animateToAvatarStep();
     } else {
-      // Second step: create profile and navigate
+      // Final step: create profile and navigate
       setIsLoading(true);
 
       try {
@@ -303,7 +387,7 @@ export const CreateProfileScreen: React.FC<CreateProfileScreenProps> = ({ naviga
         setIsLoading(false);
       }
     }
-  }, [isButtonEnabled, currentStep, name, username, setUserProfileData, navigation, animateStepTransition]);
+  }, [isButtonEnabled, currentStep, name, username, selectedAvatar, setUserProfileData, navigation, animateStepTransition, animateToAvatarStep]);
 
   // ===========================
   // ANIMATED STYLES
@@ -319,9 +403,40 @@ export const CreateProfileScreen: React.FC<CreateProfileScreenProps> = ({ naviga
     opacity: usernameStepOpacityAnim.value,
   }));
 
+  const avatarStepAnimatedStyle = useAnimatedStyle(() => ({
+    transform: [{ translateX: avatarStepSlideAnim.value }],
+    opacity: avatarStepOpacityAnim.value,
+  }));
+
   const buttonAnimatedStyle = useAnimatedStyle(() => ({
     bottom: buttonBottom.value,
   }));
+
+  // ===========================
+  // REFS
+  // ===========================
+
+  const nameInputRef = useRef<RNTextInput>(null);
+  const usernameInputRef = useRef<RNTextInput>(null);
+
+  useEffect(() => {
+    if (shouldFocusNameInput && currentStep === 'name') {
+      const timer = setTimeout(() => {
+        nameInputRef.current?.focus();
+        setShouldFocusNameInput(false);
+      }, 300);
+
+      return () => clearTimeout(timer);
+    }
+  }, [shouldFocusNameInput]);
+
+  useEffect(() => {
+    if (currentStep === 'name') {
+      nameInputRef.current?.focus();
+    } else if (currentStep === 'username') {
+      usernameInputRef.current?.focus();
+    }
+  }, [currentStep]);
 
   // ===========================
   // RENDER
@@ -348,6 +463,7 @@ export const CreateProfileScreen: React.FC<CreateProfileScreenProps> = ({ naviga
               <View style={styles.formContainer}>
                 <View>
                   <TextInput
+                    ref={nameInputRef}
                     value={name}
                     onChangeText={handleNameChange}
                     placeholder="Tu nombre"
@@ -355,15 +471,8 @@ export const CreateProfileScreen: React.FC<CreateProfileScreenProps> = ({ naviga
                     autoCapitalize="words"
                     autoCorrect={false}
                     error={nameError}
-                    isValid={name.length >= 2 && !nameError}
+                    helperText="Este nombre será visible en tu perfil, pero no es tu nombre de usuario"
                   />
-                  
-                  <AppText 
-                    variant="body"
-                    style={styles.helperText}
-                  >
-                    Este nombre será visible en tu perfil, pero no es tu nombre de usuario
-                  </AppText>
                 </View>
               </View>
             </Animated.View>
@@ -381,6 +490,7 @@ export const CreateProfileScreen: React.FC<CreateProfileScreenProps> = ({ naviga
               
               <View style={styles.formContainer}>
                 <TextInput
+                  ref={usernameInputRef}
                   value={username}
                   onChangeText={handleUsernameChange}
                   placeholder="username"
@@ -390,17 +500,55 @@ export const CreateProfileScreen: React.FC<CreateProfileScreenProps> = ({ naviga
                   error={usernameError}
                   isValid={username.length >= 3 && !usernameError}
                   showFixedAtSymbol={true}
+                  helperText="No te preocupes, podrás cambiarlo más adelante"
                 />
+              </View>
+            </Animated.View>
+
+            {/* Step 3: Avatar Selection (Always Rendered) */}
+            <Animated.View style={[styles.stepContainer, avatarStepAnimatedStyle]}>
+              <AppText 
+                variant="h1"
+                fontWeight="bold"
+                fontFamily='raleway'
+                style={styles.title}
+              >
+                Elige tu imagen de perfil
+              </AppText>
+              
+              <View style={styles.formContainer}>
+                <View style={styles.avatarSection}>
+                  <View style={styles.defaultAvatarContainer}>
+                    <DefaultAvatar 
+                      name={name} 
+                      size={200}
+                      borderStyle='dashed'
+                    />
+                    <View style={styles.uploadButtonContainer}>
+                      <UploadButton 
+                        onPress={handleUploadAvatar}
+                        size={40}
+                      />
+                    </View>
+                  </View>
+
+                  <View style={styles.presetAvatarsContainer}>
+                    <PresetAvatarGrid
+                      onSelectAvatar={handleSelectPresetAvatar}
+                      selectedAvatar={selectedAvatar}
+                    />
+                  </View>
+                </View>
               </View>
             </Animated.View>
             
           </View>
 
-          {/* Continue Button (Static, only moves with keyboard) */}
+          {/* Continue Button */}
           <Animated.View style={[styles.buttonContainer, buttonAnimatedStyle]}>
             <ResizingButton
               onPress={handleContinue}
-              title="Continuar"
+              title={currentStep === 'avatar' ? 'Comenzar' : 'Continuar'}
               backgroundColor={Colors.white}
               textColor={Colors.background}
               isDisabled={!isButtonEnabled}
@@ -440,20 +588,13 @@ const styles = StyleSheet.create({
     fontWeight: '200',
     color: Colors.white,
     textAlign: 'left',
-    marginBottom: 20,
+    marginBottom: 30,
     letterSpacing: -0.5,
     lineHeight: 40,
-    marginTop: 20,
+    marginTop: 40,
   },
   formContainer: {
     flex: 1,
-  },
-  helperText: {
-    paddingTop: 20,
-    fontSize: 14,
-    color: Colors.white,
-    opacity: 0.6,
-    lineHeight: 20,
   },
   buttonContainer: {
     position: 'absolute',
@@ -461,5 +602,25 @@ const styles = StyleSheet.create({
     right: 0,
     paddingTop: 20,
     paddingHorizontal: 24,
+  },
+  avatarSection: {
+    alignItems: 'center',
+  },
+  defaultAvatarContainer: {
+    position: 'relative',
+    marginBottom: 80,
+  },
+  uploadButtonContainer: {
+    position: 'absolute',
+    right: '5%',
+    bottom: '3%',
+    transform: [
+      { translateX: 0 }, // Radio / 2
+      { translateY: 0 }, // Radio / 2
+    ],
+  },
+  presetAvatarsContainer: {
+    width: '100%',
+    paddingHorizontal: 10,
   },
 }); 
