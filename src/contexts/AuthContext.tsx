@@ -2,14 +2,14 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import React, { createContext, useContext, useEffect, useState } from 'react';
 
 interface UserProfile {
-  id: string;
-  display_name: string;
-  email: string;
-  images: Array<{ url: string; height: number; width: number }>;
-  followers: { total: number };
-  country: string;
-  username?: string;
-  name?: string;
+  id?: string;
+  display_name?: string;
+  email?: string;
+  images?: Array<{ url: string; height: number; width: number }>;
+  followers?: { total: number };
+  country?: string;
+  username: string;
+  name: string;
 }
 
 interface AuthContextType {
@@ -43,19 +43,17 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const loadUserData = async () => {
     try {
       setIsLoading(true);
-      const [userData, authStatus, profileCompleted] = await Promise.all([
+      const [userData, profileCompleted] = await Promise.all([
         AsyncStorage.getItem(STORAGE_KEYS.USER),
-        AsyncStorage.getItem(STORAGE_KEYS.AUTH_STATUS),
         AsyncStorage.getItem(STORAGE_KEYS.PROFILE_COMPLETED),
       ]);
 
       console.log('AuthContext - Datos cargados:', {
         hasUserData: !!userData,
-        authStatus,
         profileCompleted
       });
 
-      if (userData && authStatus === 'logged_in') {
+      if (userData) {
         const parsedUser = JSON.parse(userData);
         setUser(parsedUser);
         setHasCompletedProfile(profileCompleted === 'true');
@@ -87,23 +85,22 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   };
 
   const setUserProfileData = async (username: string, name: string) => {
-    if (user) {
-      const updatedUser = {
-        ...user,
-        username,
-        name,
-      };
-      
-      try {
-        await Promise.all([
-          AsyncStorage.setItem(STORAGE_KEYS.USER, JSON.stringify(updatedUser)),
-          AsyncStorage.setItem(STORAGE_KEYS.PROFILE_COMPLETED, 'true'),
-        ]);
-        setUser(updatedUser);
-        setHasCompletedProfile(true);
-      } catch (error) {
-        console.error('Error guardando datos del perfil:', error);
-      }
+    const userData = {
+      username,
+      name,
+      // Si hay un usuario previo, mantener sus datos de Spotify
+      ...(user || {}),
+    };
+    
+    try {
+      await Promise.all([
+        AsyncStorage.setItem(STORAGE_KEYS.USER, JSON.stringify(userData)),
+        AsyncStorage.setItem(STORAGE_KEYS.PROFILE_COMPLETED, 'true'),
+      ]);
+      setUser(userData);
+      setHasCompletedProfile(true);
+    } catch (error) {
+      console.error('Error guardando datos del perfil:', error);
     }
   };
 
@@ -135,7 +132,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const contextValue: AuthContextType = {
     user,
     isLoading,
-    isLoggedIn: !!user,
+    isLoggedIn: hasCompletedProfile,
     hasCompletedProfile,
     setUser: handleSetUser,
     setUserProfileData,

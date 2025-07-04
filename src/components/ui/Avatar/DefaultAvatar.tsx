@@ -1,6 +1,5 @@
 import React from 'react';
 import { Image, Pressable, StyleSheet } from 'react-native';
-import { Asset } from 'react-native-image-picker';
 import { Colors } from '../../../constants/Colors';
 import { AppText } from '../Text/AppText';
 
@@ -10,7 +9,7 @@ interface DefaultAvatarProps {
   borderStyle?: 'solid' | 'dashed';
   onPress?: () => void;
   disabled?: boolean;
-  selectedImage?: Asset | null;
+  selectedImage?: any;
 }
 
 export const DefaultAvatar: React.FC<DefaultAvatarProps> = ({ 
@@ -19,7 +18,7 @@ export const DefaultAvatar: React.FC<DefaultAvatarProps> = ({
   borderStyle = 'solid',
   onPress,
   disabled = false,
-  selectedImage
+  selectedImage,
 }) => {
   const getInitials = (name: string): string => {
     const words = name.trim().split(/\s+/);
@@ -46,6 +45,7 @@ export const DefaultAvatar: React.FC<DefaultAvatarProps> = ({
           borderRadius: 100,
           backgroundColor: "#1A1A1A",
           opacity: disabled ? 0.5 : 1,
+          overflow: 'hidden',
         }
       ]}
       onPress={onPress}
@@ -54,9 +54,9 @@ export const DefaultAvatar: React.FC<DefaultAvatarProps> = ({
       accessibilityLabel={`Avatar de ${name}`}
     >
       {selectedImage ? (
-        <Image
-          source={{ uri: selectedImage.uri }}
-          style={[styles.image, { width: size, height: size, borderRadius: 100 }]}
+        <Image 
+          source={selectedImage}
+          style={styles.selectedImage}
           resizeMode="cover"
         />
       ) : (
@@ -88,7 +88,7 @@ const styles = StyleSheet.create({
     textAlignVertical: 'center',
     lineHeight: 60,
   },
-  image: {
+  selectedImage: {
     width: '100%',
     height: '100%',
   },

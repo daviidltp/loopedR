@@ -1,4 +1,5 @@
 import * as AuthSession from 'expo-auth-session';
+import Constants from 'expo-constants';
 import * as WebBrowser from 'expo-web-browser';
 import { useEffect } from 'react';
 import { Alert } from 'react-native';
@@ -14,11 +15,10 @@ interface UseSpotifyAuthParams {
 }
 
 export const useSpotifyAuth = ({ onSuccess, onError, onCancel }: UseSpotifyAuthParams) => {
-  // Generar redirect URI dinámicamente para Expo
-  const redirectUri = AuthSession.makeRedirectUri();
-  
-  //console.log('Redirect URI usado:', redirectUri);
-  //console.log('Para producción, agregar este URI a Spotify Developers Console');
+  // Generar redirect URI basado en el entorno
+  const redirectUri = Constants.appOwnership === 'expo' 
+    ? AuthSession.makeRedirectUri() 
+    : 'loopedr://callback';
 
   // Configurar la solicitud de autorización de Spotify
   const [request, response, promptAsync] = AuthSession.useAuthRequest(
@@ -40,49 +40,49 @@ export const useSpotifyAuth = ({ onSuccess, onError, onCancel }: UseSpotifyAuthP
   // Manejar autenticación completa con tokens
   const handleSpotifyAuth = async (authorizationCode: string) => {
     try {
-      // Intercambiar código por tokens usando el mismo redirect URI
       const tokens = await exchangeCodeForTokens(authorizationCode, redirectUri);
-      console.log('Tokens obtenidos:', tokens);
-      
-      // Obtener perfil del usuario
       const userProfile = await getUserProfile(tokens.access_token);
-      console.log('Perfil de usuario:', userProfile);
-      
-      // Llamar callback de éxito
-      onSuccess?.(userProfile);
+      if (onSuccess) {
+        onSuccess(userProfile);
+      }
     } catch (error) {
       console.error('Error en autenticación:', error);
-      onError?.(error);
+      if (onError) {
+        onError(error);
+      }
+      Alert.alert(
+        'Error de autenticación',
+        'No se pudo completar la autenticación con Spotify'
+      );
     }
   };
 
   // Manejar respuesta de OAuth
   useEffect(() => {
-    if (response?.type === 'success') {
-      const { code } = response.params;
-      if (code) {
-        handleSpotifyAuth(code);
+    if (response) {
+      if (response.type === 'success') {
+        const { code } = response.params;
+        if (code) {
+          handleSpotifyAuth(code);
+        } else {
+          onError?.({ error: 'No authorization code received' });
+        }
+      } else if (response.type === 'error') {
+        onError?.(response.params);
+        Alert.alert(
+          'Error de autorización',
+          response.params?.error_description || 'Error desconocido'
+        );
+      } else if (response.type === 'dismiss' || response.type === 'cancel') {
+        onCancel?.();
       }
-    } else if (response?.type === 'error') {
-      console.error('Error en autenticación OAuth:', response.params);
-      onError?.(response.params);
-      Alert.alert(
-        'Error de autorización',
-        response.params?.error_description || 'Error desconocido'
-      );
-    } else if (response?.type === 'dismiss' || response?.type === 'cancel') {
-      console.log('Autenticación cancelada por el usuario');
-      onCancel?.();
     }
   }, [response]);
 
   const connectSpotify = async () => {
     try {
-      // Cerrar cualquier sesión existente antes de conectar
       await clearSpotifySession();
-      
-      // Proceder con la autenticación
-      await promptAsync();
+      await promptAsync({ showInRecents: true });
     } catch (error) {
       console.error('Error abriendo OAuth:', error);
       Alert.alert('Error', 'No se pudo abrir la autenticación de Spotify');

@@ -6,16 +6,12 @@ import { ResizingButtonCircular } from '../buttons/ResizingButtonCircular';
 
 interface UploadButtonProps {
   size?: number;
-  onPress: () => void;
   disabled?: boolean;
-  isLoading?: boolean;
 }
 
 export const UploadButton: React.FC<UploadButtonProps> = ({ 
   size = 40,
-  onPress,
   disabled = false,
-  isLoading = false
 }) => {
   const IconComponent = () => (
     <View style={[styles.iconContainer, { right: size * 0.17, bottom: size * 0.2 }]}>
@@ -25,13 +21,12 @@ export const UploadButton: React.FC<UploadButtonProps> = ({
 
   return (
     <ResizingButtonCircular
-      onPress={onPress}
+      onPress={() => {}}
       size={size}
       backgroundColor={Colors.secondaryGreen}
       icon={<IconComponent />}
       isDisabled={disabled}
-      isLoading={isLoading}
-      accessibilityLabel="Subir imagen de perfil"
+      accessibilityLabel="Botón decorativo de subir imagen"
     />
   );
 };

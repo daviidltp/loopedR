@@ -63,26 +63,23 @@ const LoadingScreen = () => (
 );
 
 export const AppNavigator = () => {
-  const { isLoading, isLoggedIn, hasCompletedProfile } = useAuth();
+  const { isLoading, hasCompletedProfile } = useAuth();
 
   // Log para debugging
   useEffect(() => {
     console.log('AppNavigator - Estado de autenticación:', { 
       isLoading, 
-      isLoggedIn, 
       hasCompletedProfile,
-      user: isLoggedIn ? 'exists' : 'null'  // No loggeamos el objeto completo por seguridad
     });
-  }, [isLoading, isLoggedIn, hasCompletedProfile]);
+  }, [isLoading, hasCompletedProfile]);
 
   // Mostrar pantalla de carga mientras se determina el estado
   if (isLoading) {
     return <LoadingScreen />;
   }
 
-  // Renderizado condicional basado en el estado de autenticación
-  if (!isLoggedIn) {
-    // Usuario no autenticado - mostrar welcome
+  if (!hasCompletedProfile) {
+    // Usuario sin perfil completado - mostrar welcome y create profile
     return (
       <Stack.Navigator
         key="welcome-stack"
@@ -110,7 +107,6 @@ export const AppNavigator = () => {
               borderBottomWidth: 0,
               height: 100,
             },
-            
             cardStyleInterpolator: CardStyleInterpolators.forHorizontalIOS,
           })}
         />
@@ -118,49 +114,7 @@ export const AppNavigator = () => {
     );
   }
 
-  if (!hasCompletedProfile) {
-    // Usuario autenticado pero sin perfil completado
-    return (
-      <Stack.Navigator
-        key="create-profile-stack"
-        initialRouteName="CreateProfile"
-        screenOptions={{
-          headerShown: false,
-          gestureEnabled: true,
-          gestureDirection: 'horizontal',
-          cardStyleInterpolator: CardStyleInterpolators.forRevealFromBottomAndroid,
-        }}
-      >
-        <Stack.Screen 
-          name="CreateProfile" 
-          component={CreateProfileScreen}
-          options={({ navigation }) => ({
-            headerShown: false,
-            headerTitleAlign: 'center',
-            headerStyle: {
-              backgroundColor: Colors.background,
-              elevation: 0,
-              shadowOpacity: 0,
-              borderBottomWidth: 0,
-              height: 100,
-            },
-            headerTitleStyle: {
-              fontSize: 32,
-              fontWeight: '300',
-              fontFamily: 'MerriweatherSans-Light',
-              letterSpacing: -0.5,
-              color: Colors.white,
-              textAlign: 'left',
-              lineHeight: 40,
-            },
-            cardStyleInterpolator: CardStyleInterpolators.forHorizontalIOS,
-          })}
-        />
-      </Stack.Navigator>
-    );
-  }
-
-  // Usuario autenticado y con perfil completado - mostrar app principal
+  // Usuario con perfil completado - mostrar app principal
   return (
     <Stack.Navigator
       key="main-app-stack"
@@ -176,7 +130,7 @@ export const AppNavigator = () => {
         name="MainApp" 
         component={BottomNavigationBar}
         options={{
-          gestureEnabled: false, // No permitir volver atrás con gestos
+          gestureEnabled: false,
           cardStyleInterpolator: CardStyleInterpolators.forFadeFromBottomAndroid,
         }}
       />

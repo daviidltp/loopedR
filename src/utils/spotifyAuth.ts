@@ -36,33 +36,18 @@ export interface SpotifyUserProfile {
 // Obtener perfil del usuario
 export const getUserProfile = async (accessToken: string): Promise<SpotifyUserProfile> => {
   try {
-    console.log('Obteniendo perfil de usuario con token:', accessToken?.substring(0, 10) + '...');
-    
     const response = await fetch('https://api.spotify.com/v1/me', {
       headers: {
         'Authorization': `Bearer ${accessToken}`,
       },
     });
 
-    console.log('Respuesta de API getUserProfile:', {
-      status: response.status,
-      statusText: response.statusText,
-      ok: response.ok
-    });
-
     if (!response.ok) {
       const errorText = await response.text();
-      console.error('Error en getUserProfile - Detalles:', {
-        status: response.status,
-        statusText: response.statusText,
-        errorBody: errorText
-      });
       throw new Error(`HTTP error! status: ${response.status}, message: ${response.statusText}, body: ${errorText}`);
     }
 
-    const userProfile: SpotifyUserProfile = await response.json();
-    console.log('Perfil obtenido exitosamente:', userProfile.display_name);
-    return userProfile;
+    return await response.json();
   } catch (error) {
     console.error('Error obteniendo perfil de usuario:', error);
     throw error;
@@ -71,10 +56,7 @@ export const getUserProfile = async (accessToken: string): Promise<SpotifyUserPr
 
 // Intercambiar código de autorización por tokens de acceso
 export const exchangeCodeForTokens = async (authorizationCode: string, redirectUri: string): Promise<SpotifyTokenResponse> => {
-  
   const tokenUrl = 'https://accounts.spotify.com/api/token';
-  
-  console.log('Intercambiando código de autorización:', authorizationCode?.substring(0, 10) + '...');
   
   const body = new URLSearchParams({
     grant_type: 'authorization_code',
@@ -82,14 +64,8 @@ export const exchangeCodeForTokens = async (authorizationCode: string, redirectU
     redirect_uri: redirectUri,
   });
 
-  // Crear header de autorización Basic
   const authString = `${SPOTIFY_CONFIG.CLIENT_ID}:${SPOTIFY_CONFIG.CLIENT_SECRET}`;
-  const encodedAuth = btoa(authString); // Nota: En React Native podrías necesitar una librería para base64
-
-  console.log('Datos de intercambio:', {
-    redirect_uri: redirectUri,
-    grant_type: 'authorization_code'
-  });
+  const encodedAuth = btoa(authString);
 
   try {
     const response = await fetch(tokenUrl, {
@@ -101,25 +77,12 @@ export const exchangeCodeForTokens = async (authorizationCode: string, redirectU
       body: body.toString(),
     });
 
-    console.log('Respuesta de API exchangeCodeForTokens:', {
-      status: response.status,
-      statusText: response.statusText,
-      ok: response.ok
-    });
-
     if (!response.ok) {
       const errorText = await response.text();
-      console.error('Error en exchangeCodeForTokens - Detalles:', {
-        status: response.status,
-        statusText: response.statusText,
-        errorBody: errorText
-      });
       throw new Error(`HTTP error! status: ${response.status}, message: ${response.statusText}, body: ${errorText}`);
     }
 
-    const tokenData: SpotifyTokenResponse = await response.json();
-    console.log('Tokens obtenidos exitosamente, expires_in:', tokenData.expires_in);
-    return tokenData;
+    return await response.json();
   } catch (error) {
     console.error('Error intercambiando código por tokens:', error);
     throw error;
@@ -183,10 +146,8 @@ export const buildSpotifyAuthUrl = (): string => {
 // Función para cerrar sesión/limpiar navegador
 export const clearSpotifySession = async (): Promise<void> => {
   try {
-    // Cerrar cualquier sesión del navegador web
     await WebBrowser.dismissBrowser();
-    console.log('Sesión de navegador cerrada');
   } catch (error) {
-    console.log('No hay sesión de navegador activa o error al cerrar:', error);
+    // Ignorar errores al cerrar el navegador
   }
 }; 

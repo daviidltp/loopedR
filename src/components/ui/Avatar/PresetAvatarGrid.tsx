@@ -1,44 +1,91 @@
 import React from 'react';
 import { Image, Pressable, StyleSheet, View } from 'react-native';
 import Animated, {
+  Easing,
   interpolate,
   useAnimatedStyle,
   useSharedValue,
+  withRepeat,
   withTiming,
 } from 'react-native-reanimated';
 import { Colors } from '../../../constants/Colors';
 
 interface PresetAvatarGridProps {
-  onSelectAvatar: (avatarPath: string) => void;
-  selectedAvatar?: string;
+  onSelectAvatar: (avatar: any) => void;
+  selectedAvatar?: any;
 }
 
 const PRESET_AVATARS = [
-  require('../../../../assets/images/profilePics/carita_sonrojada.png'),
-  require('../../../../assets/images/profilePics/carita_sonrojada.png'),
-  require('../../../../assets/images/profilePics/carita_sonrojada.png'),
-  require('../../../../assets/images/profilePics/carita_sonrojada.png'),
-  require('../../../../assets/images/profilePics/carita_sonrojada.png'),
-  require('../../../../assets/images/profilePics/carita_sonrojada.png'),
+  require('../../../../assets/images/profilePics/profilepic1.jpg'),
+  require('../../../../assets/images/profilePics/profilepic2.jpg'),
+  require('../../../../assets/images/profilePics/profilepic3.jpg'),
+  require('../../../../assets/images/profilePics/profilepic4.jpg'),
+  require('../../../../assets/images/profilePics/profilepic5.jpg'),
+  require('../../../../assets/images/profilePics/profilepic6.jpg'),
 ];
 
-const DURATION = 100;
-const SCALE = 0.9;
+// Colores dominantes extraídos de cada imagen de perfil
+const AVATAR_COLORS = [
+  '#3881a3', // profilepic1 - tonos cálidos de piel
+  '#8d8b28', // profilepic2 - tonos dorados
+  '#888888', // profilepic3 - tonos marrones
+  '#dde23d', // profilepic4 - tonos arena
+  '#037669', // profilepic5 - tonos beige
+  '#873534', // profilepic6 - tonos amarillo claro
+];
+
+const DURATION = 150;
+const PRESS_SCALE = 0.95;
+const SELECTED_SCALE = 0.9; // Zoom out para seleccionados
 
 const PresetAvatar: React.FC<{
   avatar: any;
   isSelected: boolean;
   onPress: () => void;
-}> = ({ avatar, isSelected, onPress }) => {
-  const transition = useSharedValue(0);
-  const isActive = useSharedValue(false);
+  avatarIndex: number;
+}> = ({ avatar, isSelected, onPress, avatarIndex }) => {
+  const pressTransition = useSharedValue(0);
+  const selectionScale = useSharedValue(isSelected ? SELECTED_SCALE : 1);
+  const selectionOpacity = useSharedValue(isSelected ? 1 : 0);
+  const rotation = useSharedValue(0);
+
+  // Iniciar animación constante y lineal al montar el componente
+  React.useEffect(() => {
+    rotation.value = withRepeat(
+      withTiming(360, { 
+        duration: 3000,
+        easing: Easing.linear // Animación lineal sin pausas
+      }),
+      -1,
+      false
+    );
+  }, []);
+
+  React.useEffect(() => {
+    selectionScale.value = withTiming(isSelected ? SELECTED_SCALE : 1, {
+      duration: 300,
+    });
+    selectionOpacity.value = withTiming(isSelected ? 1 : 0, {
+      duration: 300,
+    });
+  }, [isSelected]);
 
   const animatedStyle = useAnimatedStyle(() => ({
     transform: [
       {
-        scale: interpolate(transition.value, [0, 1], [1, SCALE]),
+        scale: interpolate(pressTransition.value, [0, 1], [selectionScale.value, selectionScale.value * PRESS_SCALE]),
       },
     ],
+  }));
+
+  const overlayStyle = useAnimatedStyle(() => ({
+    opacity: selectionOpacity.value * 0.2, // Aplicar la opacidad baja aquí
+  }));
+
+  const borderStyle = useAnimatedStyle(() => ({
+    opacity: selectionOpacity.value,
+    transform: [{ rotate: `${rotation.value}deg` }],
+    borderColor: AVATAR_COLORS[avatarIndex], // Color específico para cada avatar
   }));
 
   return (
@@ -46,35 +93,27 @@ const PresetAvatar: React.FC<{
       <Pressable
         onPress={onPress}
         onPressIn={() => {
-          isActive.value = true;
-          transition.value = withTiming(1, { duration: DURATION }, () => {
-            if (!isActive.value) {
-              transition.value = withTiming(0, {
-                duration: DURATION,
-              });
-            }
-          });
+          pressTransition.value = withTiming(1, { duration: DURATION });
         }}
         onPressOut={() => {
-          if (transition.value === 1) {
-            transition.value = withTiming(0, { duration: DURATION });
-          }
-          isActive.value = false;
+          pressTransition.value = withTiming(0, { duration: DURATION });
         }}
       >
-        <Animated.View
-          style={[
-            styles.avatarContainer,
-            isSelected && styles.selectedAvatar,
-            animatedStyle,
-          ]}
-        >
-          <Image
-            source={avatar}
-            style={styles.avatar}
-            resizeMode="cover"
-          />
-        </Animated.View>
+        <View style={styles.avatarContainer}>
+          {/* Rotating dashed border */}
+          <Animated.View style={[styles.rotatingBorder, borderStyle]} />
+          
+          <Animated.View style={[styles.imageContainer, animatedStyle]}>
+            <Image
+              source={avatar}
+              style={styles.avatar}
+              resizeMode="cover"
+            />
+            
+            {/* Very soft white overlay */}
+            <Animated.View style={[styles.selectionOverlay, overlayStyle]} />
+          </Animated.View>
+        </View>
       </Pressable>
     </View>
   );
@@ -90,6 +129,7 @@ export const PresetAvatarGrid: React.FC<PresetAvatarGridProps> = ({
         <PresetAvatar
           key={index}
           avatar={avatar}
+          avatarIndex={index}
           isSelected={selectedAvatar === avatar}
           onPress={() => onSelectAvatar(avatar)}
         />
@@ -111,16 +151,35 @@ const styles = StyleSheet.create({
   avatarContainer: {
     width: '100%',
     aspectRatio: 1,
+    position: 'relative',
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  rotatingBorder: {
+    position: 'absolute',
+    width: '100%',
+    height: '100%',
+    borderRadius: 1000,
+    borderWidth: 2,
+    borderStyle: 'dashed',
+  },
+  imageContainer: {
+    width: '100%',
+    height: '100%',
     borderRadius: 1000,
     overflow: 'hidden',
-    borderWidth: 2,
-    borderColor: 'transparent',
-  },
-  selectedAvatar: {
-    backgroundColor: Colors.backgroundUltraSoft,
+    position: 'relative',
   },
   avatar: {
     width: '100%',
     height: '100%',
+  },
+  selectionOverlay: {
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0,
+    backgroundColor: Colors.white,
   },
 }); 

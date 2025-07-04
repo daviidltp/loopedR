@@ -1,4 +1,6 @@
 import { StackNavigationProp } from '@react-navigation/stack';
+import * as AuthSession from 'expo-auth-session';
+import Constants from 'expo-constants';
 import * as Haptics from 'expo-haptics';
 import React, { useCallback, useState } from 'react';
 import { StyleSheet, View } from 'react-native';
@@ -23,6 +25,11 @@ export const WelcomeScreen: React.FC<WelcomeScreenProps> = ({ navigation }) => {
   const [showSkipAlert, setShowSkipAlert] = useState(false);
   const [isAuthenticating, setIsAuthenticating] = useState(false);
   
+  // Obtener el URI de redirección para mostrarlo
+  const redirectUri = Constants.appOwnership === 'expo' 
+    ? AuthSession.makeRedirectUri() 
+    : 'loopedr://callback';
+
   // Textos que se van alternando
   const texts = [
     {
@@ -72,8 +79,10 @@ export const WelcomeScreen: React.FC<WelcomeScreenProps> = ({ navigation }) => {
       setIsAuthenticating(false);
       // Guardar usuario en el contexto
       setUser(userProfile);
-      // Navegar a la pantalla de creación de perfil
-      navigation.navigate('CreateProfile');
+      navigation.reset({
+        index: 0,
+        routes: [{ name: 'CreateProfile' }],
+      });
     },
     onError: (error) => {
       console.error('Error en autenticación:', error);
@@ -84,8 +93,6 @@ export const WelcomeScreen: React.FC<WelcomeScreenProps> = ({ navigation }) => {
       setIsAuthenticating(false);
     },
   });
-
-
 
   const handleConnectSpotify = useCallback(async () => {
     // Marcar que estamos autenticando
@@ -105,19 +112,27 @@ export const WelcomeScreen: React.FC<WelcomeScreenProps> = ({ navigation }) => {
   const handleContinueWithoutConnection = useCallback(() => {
     setShowSkipAlert(false);
     // Aquí puedes agregar la lógica para continuar sin conexión
-    navigation.navigate('CreateProfile');
+    navigation.reset({
+      index: 0,
+      routes: [{ name: 'CreateProfile' }],
+    });
   }, [navigation]);
 
   const handleCancelSkipAlert = useCallback(() => {
     setShowSkipAlert(false);
   }, []);
 
-
-
   return (
     <>
       <Layout>
         <View style={styles.container}>
+          {/* URI de redirección temporal */}
+          <View style={styles.debugContainer}>
+            <AppText variant="body" color={Colors.white}>
+              URI de redirección: {redirectUri}
+            </AppText>
+          </View>
+
           {/* Contenido principal */}
           <View style={styles.mainContent}>
             {/* Contenido principal vacío o puedes agregar descripción aquí */}
@@ -131,7 +146,8 @@ export const WelcomeScreen: React.FC<WelcomeScreenProps> = ({ navigation }) => {
           {/* Botón fijo abajo */}
           <View style={styles.bottomSection}>
             <ResizingButton
-              onPress={handleConnectSpotify}
+              //onPress={handleConnectSpotify}
+              onPress={handleContinueWithoutConnection}
               title="Conectar con Spotify"
               backgroundColor={Colors.white}
               textColor={Colors.background}
@@ -160,6 +176,13 @@ export const WelcomeScreen: React.FC<WelcomeScreenProps> = ({ navigation }) => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
+  },
+  debugContainer: {
+    padding: 10,
+    backgroundColor: Colors.background,
+    alignItems: 'center',
+    borderBottomWidth: 1,
+    borderBottomColor: Colors.white + '40',
   },
   mainContent: {
     flex: 1,

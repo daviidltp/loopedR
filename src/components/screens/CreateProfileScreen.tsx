@@ -68,7 +68,7 @@ export const CreateProfileScreen: React.FC<CreateProfileScreenProps> = ({ naviga
   const [username, setUsername] = useState('');
   const [usernameError, setUsernameError] = useState('');
   const [nameError, setNameError] = useState('');
-  const [selectedAvatar, setSelectedAvatar] = useState<string>();
+  const [selectedAvatar, setSelectedAvatar] = useState<any>();
   const [isLoading, setIsLoading] = useState(false);
   const [keyboardHeight, setKeyboardHeight] = useState(0);
   const [isKeyboardVisible, setIsKeyboardVisible] = useState(false);
@@ -226,7 +226,7 @@ export const CreateProfileScreen: React.FC<CreateProfileScreenProps> = ({ naviga
     ? name.trim().length >= 2 && !nameError
     : currentStep === 'username'
     ? username.trim().length >= 3 && !usernameError
-    : selectedAvatar !== undefined;
+    : true; // Avatar selection is now optional
 
   // ===========================
   // ANIMATION FUNCTIONS
@@ -346,12 +346,11 @@ export const CreateProfileScreen: React.FC<CreateProfileScreenProps> = ({ naviga
   // ===========================
 
   const handleUploadAvatar = useCallback(() => {
-    // TODO: Implementar lógica de subida de imagen
-    Alert.alert('Próximamente', 'La funcionalidad de subir imagen estará disponible pronto');
+    // Función vacía para mantener la estética pero sin funcionalidad
   }, []);
 
-  const handleSelectPresetAvatar = useCallback((avatarPath: string) => {
-    setSelectedAvatar(avatarPath);
+  const handleSelectPresetAvatar = useCallback((avatar: any) => {
+    setSelectedAvatar(avatar);
   }, []);
 
   // ===========================
@@ -378,8 +377,8 @@ export const CreateProfileScreen: React.FC<CreateProfileScreenProps> = ({ naviga
         // Save profile data to context
         await setUserProfileData(username, name);
         
-        // Navigate to main app
-        navigation.navigate('MainApp');
+        // La navegación será manejada automáticamente por AppNavigator
+        // basándose en el estado de hasCompletedProfile
         
       } catch (error) {
         Alert.alert('Error', 'No se pudo crear el perfil. Inténtalo de nuevo.');
@@ -387,7 +386,7 @@ export const CreateProfileScreen: React.FC<CreateProfileScreenProps> = ({ naviga
         setIsLoading(false);
       }
     }
-  }, [isButtonEnabled, currentStep, name, username, selectedAvatar, setUserProfileData, navigation, animateStepTransition, animateToAvatarStep]);
+  }, [isButtonEnabled, currentStep, name, username, selectedAvatar, setUserProfileData, animateStepTransition, animateToAvatarStep]);
 
   // ===========================
   // ANIMATED STYLES
@@ -470,6 +469,7 @@ export const CreateProfileScreen: React.FC<CreateProfileScreenProps> = ({ naviga
                     maxLength={50}
                     autoCapitalize="words"
                     autoCorrect={false}
+                    autoFocus={true}
                     error={nameError}
                     helperText="Este nombre será visible en tu perfil, pero no es tu nombre de usuario"
                   />
@@ -497,6 +497,7 @@ export const CreateProfileScreen: React.FC<CreateProfileScreenProps> = ({ naviga
                   maxLength={20}
                   autoCapitalize="none"
                   autoCorrect={false}
+                  autoFocus={true}
                   error={usernameError}
                   isValid={username.length >= 3 && !usernameError}
                   showFixedAtSymbol={true}
@@ -517,19 +518,30 @@ export const CreateProfileScreen: React.FC<CreateProfileScreenProps> = ({ naviga
               </AppText>
               
               <View style={styles.formContainer}>
-                <View style={styles.avatarSection}>
+                                  <View style={styles.avatarSection}>
                   <View style={styles.defaultAvatarContainer}>
                     <DefaultAvatar 
                       name={name} 
                       size={200}
                       borderStyle='dashed'
+                      selectedImage={selectedAvatar}
                     />
                     <View style={styles.uploadButtonContainer}>
                       <UploadButton 
-                        onPress={handleUploadAvatar}
                         size={40}
                       />
                     </View>
+                  </View>
+
+                  <View style={styles.separatorContainer}>
+                    <AppText 
+                      variant="body"
+                      fontFamily="raleway"
+                      fontWeight="light"
+                      style={styles.separatorText}
+                    >
+                      o utiliza una imagen de looped
+                    </AppText>
                   </View>
 
                   <View style={styles.presetAvatarsContainer}>
@@ -608,7 +620,6 @@ const styles = StyleSheet.create({
   },
   defaultAvatarContainer: {
     position: 'relative',
-    marginBottom: 80,
   },
   uploadButtonContainer: {
     position: 'absolute',
@@ -622,5 +633,14 @@ const styles = StyleSheet.create({
   presetAvatarsContainer: {
     width: '100%',
     paddingHorizontal: 10,
+  },
+  separatorContainer: {
+    alignItems: 'center',
+    marginVertical: 40,
+  },
+  separatorText: {
+    color: Colors.gray[400],
+    fontSize: 16,
+    textAlign: 'center',
   },
 }); 
