@@ -1,7 +1,7 @@
 import { Ionicons } from '@expo/vector-icons';
 import { CardStyleInterpolators, createStackNavigator } from '@react-navigation/stack';
 import React, { useEffect } from 'react';
-import { ActivityIndicator, Platform, TouchableNativeFeedback, TouchableOpacity, View } from 'react-native';
+import { ActivityIndicator, Easing, Platform, TouchableNativeFeedback, TouchableOpacity, View } from 'react-native';
 import { CreateProfileScreen, WelcomeScreen } from '../components';
 import { SettingsScreen } from '../components/screens/SettingsScreen';
 import { BottomNavigationBar } from '../components/ui/navigation/BottomNavigationBar';
@@ -17,8 +17,8 @@ export type RootStackParamList = {
 
 const Stack = createStackNavigator<RootStackParamList>();
 
-// Componente del botón de header
-const HeaderBackButton: React.FC<{ onPress: () => void }> = ({ onPress }) => {
+// Componente del botón de header optimizado
+const HeaderBackButton: React.FC<{ onPress: () => void }> = React.memo(({ onPress }) => {
   const button = (
     <View style={{
       width: 48,
@@ -48,7 +48,7 @@ const HeaderBackButton: React.FC<{ onPress: () => void }> = ({ onPress }) => {
       {button}
     </TouchableOpacity>
   );
-};
+});
 
 // Pantalla de carga mientras se determina el estado de autenticación
 const LoadingScreen = () => (
@@ -88,7 +88,28 @@ export const AppNavigator = () => {
           headerShown: false,
           gestureEnabled: true,
           gestureDirection: 'horizontal',
-          cardStyleInterpolator: CardStyleInterpolators.forRevealFromBottomAndroid,
+          cardStyleInterpolator: CardStyleInterpolators.forHorizontalIOS,
+          // Optimizaciones para react-native-screens
+          detachPreviousScreen: true,
+          freezeOnBlur: true,
+          presentation: 'card',
+          // Optimizaciones adicionales de transición
+          transitionSpec: {
+            open: {
+              animation: 'timing',
+              config: {
+                duration: 300,
+                easing: Easing.out(Easing.cubic),
+              },
+            },
+            close: {
+              animation: 'timing',
+              config: {
+                duration: 300,
+                easing: Easing.out(Easing.cubic),
+              },
+            },
+          },
         }}
       >
         <Stack.Screen 
@@ -123,7 +144,10 @@ export const AppNavigator = () => {
         headerShown: false,
         gestureEnabled: true,
         gestureDirection: 'horizontal',
-        cardStyleInterpolator: CardStyleInterpolators.forRevealFromBottomAndroid,
+        cardStyleInterpolator: CardStyleInterpolators.forHorizontalIOS,
+        // Optimizaciones para react-native-screens
+        detachPreviousScreen: false,
+        freezeOnBlur: true,
       }}
     >
       <Stack.Screen 

@@ -5,10 +5,14 @@ import 'react-native-gesture-handler';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import { NotifierWrapper } from 'react-native-notifier';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
+import { enableScreens } from 'react-native-screens';
 import Toast from 'react-native-toast-message';
 import { AuthProvider } from './src/contexts/AuthContext';
 import { useFonts } from './src/hooks/useFonts';
 import { AppNavigator } from './src/navigation/AppNavigator';
+
+// Habilitar react-native-screens para mejor rendimiento
+enableScreens();
 
 // Prevenir que la splash screen se oculte automáticamente
 SplashScreen.preventAutoHideAsync();

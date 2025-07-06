@@ -1,8 +1,10 @@
 import { StackNavigationProp } from '@react-navigation/stack';
-import React, { useCallback, useEffect, useRef, useState } from 'react';
+import React, { Suspense, lazy, useCallback, useEffect, useRef, useState } from 'react';
 import {
+  ActivityIndicator,
   Alert,
   BackHandler,
+  InteractionManager,
   Keyboard,
   Platform,
   TextInput as RNTextInput,
@@ -20,12 +22,37 @@ import { Colors } from '../../constants/Colors';
 import { useAuth } from '../../contexts/AuthContext';
 import { RootStackParamList } from '../../navigation/AppNavigator';
 import { DefaultAvatar } from '../ui/Avatar/DefaultAvatar';
-import { PresetAvatarGrid } from '../ui/Avatar/PresetAvatarGrid';
 import { UploadButton } from '../ui/Avatar/UploadButton';
 import { ResizingButton } from '../ui/buttons/ResizingButton';
 import { TextInput } from '../ui/forms/TextInput';
 import { Layout } from '../ui/layout/Layout';
 import { AppText } from '../ui/Text/AppText';
+
+// Cargar PresetAvatarGrid de manera diferida
+const PresetAvatarGrid = lazy(() => 
+  import('../ui/Avatar/PresetAvatarGrid').then(module => ({
+    default: module.PresetAvatarGrid
+  }))
+);
+
+// Importamos los arrays necesarios para calcular el índice del avatar
+const PRESET_AVATARS = [
+  require('../../../assets/images/profilePics/profileicon1.png'),
+  require('../../../assets/images/profilePics/profileicon2.png'),
+  require('../../../assets/images/profilePics/profileicon3.png'),
+  require('../../../assets/images/profilePics/profileicon4.png'),
+  require('../../../assets/images/profilePics/profileicon5.png'),
+  require('../../../assets/images/profilePics/profileicon6.png'),
+];
+
+const SELECTABLE_COLORS = [
+  '#c9e4de',
+  '#8e8d55',
+  '#2d2d2d',
+  '#dde23d',
+  '#06332e',
+  '#903837',
+];
 
 // ===========================
 // TYPES & INTERFACES
@@ -69,11 +96,18 @@ export const CreateProfileScreen: React.FC<CreateProfileScreenProps> = ({ naviga
   const [usernameError, setUsernameError] = useState('');
   const [nameError, setNameError] = useState('');
   const [selectedAvatar, setSelectedAvatar] = useState<any>();
+  const [avatarBackgrounds, setAvatarBackgrounds] = useState<string[]>([
+    '#f1bc97', '#a7ddc9', '#2d2d2d', '#f2c6de', '#06332e', '#e2f0cd'
+  ]);
+  const [selectedColorIndex, setSelectedColorIndex] = useState<number>();
   const [isLoading, setIsLoading] = useState(false);
   const [keyboardHeight, setKeyboardHeight] = useState(0);
   const [isKeyboardVisible, setIsKeyboardVisible] = useState(false);
   const [currentStep, setCurrentStep] = useState<ProfileStep>('name');
   const [shouldFocusNameInput, setShouldFocusNameInput] = useState(true);
+
+  // Nuevo estado para controlar la carga diferida de componentes pesados
+  const [shouldLoadAvatarGrid, setShouldLoadAvatarGrid] = useState(false);
 
   // ===========================
   // CONTEXT & HOOKS
@@ -93,29 +127,22 @@ export const CreateProfileScreen: React.FC<CreateProfileScreenProps> = ({ naviga
   const avatarStepOpacityAnim = useSharedValue(0);
   const buttonBottom = useSharedValue(20);
 
-  // ===========================
-  // NAVIGATION EFFECTS
-  // ===========================
-  
+  // Cargar el grid después de la transición de navegación
   useEffect(() => {
-    const backHandler = BackHandler.addEventListener('hardwareBackPress', () => {
-      if (currentStep === 'username') {
-        handleBackToName();
-        return true; // Prevent default behavior
-      } else if (currentStep === 'avatar') {
-        handleBackToUsername();
-        return true;
-      }
-      return false; // Allow app exit
+    const task = InteractionManager.runAfterInteractions(() => {
+      setShouldLoadAvatarGrid(true);
+      
+      // Iniciar animación inicial
+      nameStepSlideAnim.value = withTiming(0, {
+        duration: ANIMATION_DURATION,
+        easing: ANIMATION_EASING,
+      });
     });
 
-    return () => backHandler.remove();
-  }, [currentStep]);
+    return () => task.cancel();
+  }, []);
 
-  // ===========================
-  // KEYBOARD EFFECTS
-  // ===========================
-  
+  // Efectos del teclado
   useEffect(() => {
     const keyboardWillShowListener = Keyboard.addListener(
       Platform.OS === 'ios' ? 'keyboardWillShow' : 'keyboardDidShow',
@@ -145,7 +172,23 @@ export const CreateProfileScreen: React.FC<CreateProfileScreenProps> = ({ naviga
       keyboardWillShowListener?.remove();
       keyboardWillHideListener?.remove();
     };
-  }, []);
+      }, []);
+
+  // Navegación hacia atrás
+  useEffect(() => {
+    const backHandler = BackHandler.addEventListener('hardwareBackPress', () => {
+      if (currentStep === 'username') {
+        handleBackToName();
+        return true;
+      } else if (currentStep === 'avatar') {
+        handleBackToUsername();
+        return true;
+      }
+      return false;
+    });
+
+    return () => backHandler.remove();
+  }, [currentStep]);
 
   // ===========================
   // UTILITY FUNCTIONS
@@ -172,7 +215,7 @@ export const CreateProfileScreen: React.FC<CreateProfileScreenProps> = ({ naviga
 
     const validChars = /^[a-zA-ZáéíóúüñÁÉÍÓÚÜÑ\s.-]*$/;
     if (!validChars.test(value)) {
-      setNameError('El nombre no puede contener esos caracteres');
+      setNameError('El nombre no puede contener caracteres especiales');
       return;
     }
 
@@ -192,7 +235,7 @@ export const CreateProfileScreen: React.FC<CreateProfileScreenProps> = ({ naviga
 
     const validChars = /^[a-zA-Z0-9._]*$/;
     if (!validChars.test(value)) {
-      setUsernameError('El nombre de usuario no puede contener esos caracteres');
+      setUsernameError('El nombre de usuario no puede contener caracteres especiales');
       return;
     }
 
@@ -353,6 +396,18 @@ export const CreateProfileScreen: React.FC<CreateProfileScreenProps> = ({ naviga
     setSelectedAvatar(avatar);
   }, []);
 
+  const handleBackgroundChange = useCallback((avatarIndex: number, color: string) => {
+    setAvatarBackgrounds(prev => {
+      const newBackgrounds = [...prev];
+      newBackgrounds[avatarIndex] = color;
+      return newBackgrounds;
+    });
+  }, []);
+
+  const handleColorSelect = useCallback((colorIndex: number) => {
+    setSelectedColorIndex(colorIndex);
+  }, []);
+
   // ===========================
   // MAIN ACTION HANDLERS
   // ===========================
@@ -372,7 +427,7 @@ export const CreateProfileScreen: React.FC<CreateProfileScreenProps> = ({ naviga
 
       try {
         // Simulate API call
-        await new Promise(resolve => setTimeout(resolve, 1500));
+        await new Promise(resolve => setTimeout(resolve, 0));
 
         // Save profile data to context
         await setUserProfileData(username, name);
@@ -436,6 +491,26 @@ export const CreateProfileScreen: React.FC<CreateProfileScreenProps> = ({ naviga
       usernameInputRef.current?.focus();
     }
   }, [currentStep]);
+
+  // Renderizado del grid de avatares
+  const renderAvatarGrid = () => (
+    shouldLoadAvatarGrid ? (
+      <Suspense fallback={
+        <View style={styles.loadingContainer}>
+          <ActivityIndicator size="large" color={Colors.white} />
+        </View>
+      }>
+        <PresetAvatarGrid
+          onSelectAvatar={handleSelectPresetAvatar}
+          selectedAvatar={selectedAvatar}
+          avatarBackgrounds={avatarBackgrounds}
+          onBackgroundChange={handleBackgroundChange}
+          selectedColorIndex={selectedColorIndex}
+          onColorSelect={handleColorSelect}
+        />
+      </Suspense>
+    ) : null
+  );
 
   // ===========================
   // RENDER
@@ -518,13 +593,20 @@ export const CreateProfileScreen: React.FC<CreateProfileScreenProps> = ({ naviga
               </AppText>
               
               <View style={styles.formContainer}>
-                                  <View style={styles.avatarSection}>
+                <View style={styles.avatarSection}>
                   <View style={styles.defaultAvatarContainer}>
                     <DefaultAvatar 
                       name={name} 
                       size={200}
                       borderStyle='dashed'
                       selectedImage={selectedAvatar}
+                      backgroundColor={
+                        selectedAvatar 
+                          ? avatarBackgrounds[PRESET_AVATARS.findIndex((avatar: any) => avatar === selectedAvatar)]
+                          : selectedColorIndex !== undefined 
+                            ? SELECTABLE_COLORS[selectedColorIndex] 
+                            : undefined
+                      }
                     />
                     <View style={styles.uploadButtonContainer}>
                       <UploadButton 
@@ -545,10 +627,7 @@ export const CreateProfileScreen: React.FC<CreateProfileScreenProps> = ({ naviga
                   </View>
 
                   <View style={styles.presetAvatarsContainer}>
-                    <PresetAvatarGrid
-                      onSelectAvatar={handleSelectPresetAvatar}
-                      selectedAvatar={selectedAvatar}
-                    />
+                    {renderAvatarGrid()}
                   </View>
                 </View>
               </View>
@@ -582,6 +661,7 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: Colors.background,
+    justifyContent: 'center',
   },
   content: {
     flex: 1,
@@ -633,6 +713,7 @@ const styles = StyleSheet.create({
   presetAvatarsContainer: {
     width: '100%',
     paddingHorizontal: 10,
+    alignItems: 'center',
   },
   separatorContainer: {
     alignItems: 'center',
@@ -642,5 +723,10 @@ const styles = StyleSheet.create({
     color: Colors.gray[400],
     fontSize: 16,
     textAlign: 'center',
+  },
+  loadingContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
   },
 }); 

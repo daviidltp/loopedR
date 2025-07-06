@@ -2,8 +2,8 @@ import { StackNavigationProp } from '@react-navigation/stack';
 import * as AuthSession from 'expo-auth-session';
 import Constants from 'expo-constants';
 import * as Haptics from 'expo-haptics';
-import React, { useCallback, useState } from 'react';
-import { StyleSheet, View } from 'react-native';
+import React, { useCallback, useRef, useState } from 'react';
+import { InteractionManager, StyleSheet, View } from 'react-native';
 import { Colors } from '../../constants/Colors';
 import { useAuth } from '../../contexts/AuthContext';
 import { useSpotifyAuth } from '../../hooks/useSpotifyAuth';
@@ -24,6 +24,7 @@ interface WelcomeScreenProps {
 export const WelcomeScreen: React.FC<WelcomeScreenProps> = ({ navigation }) => {
   const [showSkipAlert, setShowSkipAlert] = useState(false);
   const [isAuthenticating, setIsAuthenticating] = useState(false);
+  const isNavigating = useRef(false);
   
   // Obtener el URI de redirección para mostrarlo
   const redirectUri = Constants.appOwnership === 'expo' 
@@ -68,7 +69,11 @@ export const WelcomeScreen: React.FC<WelcomeScreenProps> = ({ navigation }) => {
   ];
   
   // Hook para las animaciones del texto
-  const { renderAnimatedText } = useWelcomeAnimations({ texts });
+  const { renderAnimatedText } = useWelcomeAnimations({ 
+    texts,
+    intervalDuration: 4000,
+    animationDuration: 500
+  });
   
   // Usar contexto de autenticación
   const { setUser } = useAuth();
@@ -110,11 +115,17 @@ export const WelcomeScreen: React.FC<WelcomeScreenProps> = ({ navigation }) => {
   }, []);
 
   const handleContinueWithoutConnection = useCallback(() => {
+    if (isNavigating.current) return;
+    
+    isNavigating.current = true;
     setShowSkipAlert(false);
-    // Aquí puedes agregar la lógica para continuar sin conexión
-    navigation.reset({
-      index: 0,
-      routes: [{ name: 'CreateProfile' }],
+
+    // Esperar a que termine cualquier interacción antes de navegar
+    InteractionManager.runAfterInteractions(() => {
+      navigation.reset({
+        index: 0,
+        routes: [{ name: 'CreateProfile' }],
+      });
     });
   }, [navigation]);
 

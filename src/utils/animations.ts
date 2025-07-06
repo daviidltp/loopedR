@@ -14,15 +14,20 @@ export const AnimationConfig = {
     },
   },
   
-  // Configuración para transiciones de pantalla
+  // Configuración para transiciones de pantalla (optimizada)
   screen: {
     push: {
-      duration: 300,
+      duration: 250, // Reducido para mejor rendimiento
       easing: Easing.bezier(0.25, 0.46, 0.45, 0.94),
     },
     stack: {
-      duration: 250,
+      duration: 200, // Reducido para mejor rendimiento
       easing: Easing.out(Easing.quad),
+    },
+    // Nueva configuración para navegación rápida
+    fast: {
+      duration: 150,
+      easing: Easing.bezier(0.4, 0.0, 0.2, 1.0),
     },
   },
   
@@ -51,6 +56,15 @@ export const createSpringAnimation = (
 export const createTimingAnimation = (
   value: number,
   config = AnimationConfig.screen.push
+) => {
+  'worklet';
+  return withTiming(value, config);
+};
+
+// Nueva función para animaciones de navegación optimizadas
+export const createFastNavAnimation = (
+  value: number,
+  config = AnimationConfig.screen.fast
 ) => {
   'worklet';
   return withTiming(value, config);

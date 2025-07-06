@@ -1,5 +1,4 @@
 import { BottomTabBarButtonProps, createBottomTabNavigator } from '@react-navigation/bottom-tabs';
-import { BlurView } from 'expo-blur';
 import { LinearGradient } from 'expo-linear-gradient';
 import React, { useEffect, useRef } from 'react';
 import { BackHandler, Dimensions, Pressable, StyleSheet, View } from 'react-native';
@@ -128,19 +127,14 @@ export const BottomNavigationBar = ({ onUploadPress }: { onUploadPress?: () => v
           tabBarActiveTintColor: Colors.white,
           tabBarInactiveTintColor: Colors.white,
           tabBarBackground: () => (
-            <BlurView
-              intensity={40}
-              tint="systemUltraThinMaterialDark"
-              style={styles.blurContainer}
-              experimentalBlurMethod="dimezisBlurView"
-            >
+            <View style={styles.blurContainer}>
               <LinearGradient
-                colors={['rgba(0, 0, 0, 0.4)', 'rgba(0, 0, 0, 1.0)']}
+                colors={['rgba(0, 0, 0, 0.6)', 'rgba(0, 0, 0, 0.95)']}
                 style={styles.gradientOverlay}
                 start={{ x: 0, y: 0 }}
                 end={{ x: 0, y: 1 }}
               />
-            </BlurView>
+            </View>
           ),
           tabBarIcon: ({ focused }) => {
             let IconComponent;
