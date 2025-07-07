@@ -71,8 +71,8 @@ export const WelcomeScreen: React.FC<WelcomeScreenProps> = ({ navigation }) => {
   // Hook para las animaciones del texto
   const { renderAnimatedText } = useWelcomeAnimations({ 
     texts,
-    intervalDuration: 4000,
-    animationDuration: 500
+    intervalDuration: 5000,
+    animationDuration: 200
   });
   
   // Usar contexto de autenticación
@@ -137,12 +137,6 @@ export const WelcomeScreen: React.FC<WelcomeScreenProps> = ({ navigation }) => {
     <>
       <Layout>
         <View style={styles.container}>
-          {/* URI de redirección temporal */}
-          <View style={styles.debugContainer}>
-            <AppText variant="body" color={Colors.white}>
-              URI de redirección: {redirectUri}
-            </AppText>
-          </View>
 
           {/* Contenido principal */}
           <View style={styles.mainContent}>

@@ -22,6 +22,7 @@ import { Colors } from '../../constants/Colors';
 import { useAuth } from '../../contexts/AuthContext';
 import { RootStackParamList } from '../../navigation/AppNavigator';
 import { DefaultAvatar } from '../ui/Avatar/DefaultAvatar';
+import { DEFAULT_AVATAR_ID, DEFAULT_BACKGROUNDS, SELECTABLE_COLORS } from '../ui/Avatar/PresetAvatarGrid';
 import { UploadButton } from '../ui/Avatar/UploadButton';
 import { ResizingButton } from '../ui/buttons/ResizingButton';
 import { TextInput } from '../ui/forms/TextInput';
@@ -35,23 +36,13 @@ const PresetAvatarGrid = lazy(() =>
   }))
 );
 
-// Importamos los arrays necesarios para calcular el índice del avatar
+// Array actualizado con el nuevo orden (sin profileicon3, profileicon6 movido a posición 3)
 const PRESET_AVATARS = [
   require('../../../assets/images/profilePics/profileicon1.png'),
   require('../../../assets/images/profilePics/profileicon2.png'),
-  require('../../../assets/images/profilePics/profileicon3.png'),
+  require('../../../assets/images/profilePics/profileicon6.png'), // Movido de posición 6 a 3
   require('../../../assets/images/profilePics/profileicon4.png'),
   require('../../../assets/images/profilePics/profileicon5.png'),
-  require('../../../assets/images/profilePics/profileicon6.png'),
-];
-
-const SELECTABLE_COLORS = [
-  '#c9e4de',
-  '#8e8d55',
-  '#2d2d2d',
-  '#dde23d',
-  '#06332e',
-  '#903837',
 ];
 
 // ===========================
@@ -95,10 +86,8 @@ export const CreateProfileScreen: React.FC<CreateProfileScreenProps> = ({ naviga
   const [username, setUsername] = useState('');
   const [usernameError, setUsernameError] = useState('');
   const [nameError, setNameError] = useState('');
-  const [selectedAvatar, setSelectedAvatar] = useState<any>();
-  const [avatarBackgrounds, setAvatarBackgrounds] = useState<string[]>([
-    '#f1bc97', '#a7ddc9', '#2d2d2d', '#f2c6de', '#06332e', '#e2f0cd'
-  ]);
+  const [selectedAvatar, setSelectedAvatar] = useState<any>(DEFAULT_AVATAR_ID);
+  const [avatarBackgrounds, setAvatarBackgrounds] = useState<string[]>(DEFAULT_BACKGROUNDS);
   const [selectedColorIndex, setSelectedColorIndex] = useState<number>();
   const [isLoading, setIsLoading] = useState(false);
   const [keyboardHeight, setKeyboardHeight] = useState(0);
@@ -430,7 +419,7 @@ export const CreateProfileScreen: React.FC<CreateProfileScreenProps> = ({ naviga
         await new Promise(resolve => setTimeout(resolve, 0));
 
         // Save profile data to context
-        await setUserProfileData(username, name);
+        await setUserProfileData(username, name, selectedAvatar, avatarBackgrounds);
         
         // La navegación será manejada automáticamente por AppNavigator
         // basándose en el estado de hasCompletedProfile
@@ -507,6 +496,7 @@ export const CreateProfileScreen: React.FC<CreateProfileScreenProps> = ({ naviga
           onBackgroundChange={handleBackgroundChange}
           selectedColorIndex={selectedColorIndex}
           onColorSelect={handleColorSelect}
+          userName={name}
         />
       </Suspense>
     ) : null
@@ -577,6 +567,8 @@ export const CreateProfileScreen: React.FC<CreateProfileScreenProps> = ({ naviga
                   isValid={username.length >= 3 && !usernameError}
                   showFixedAtSymbol={true}
                   helperText="No te preocupes, podrás cambiarlo más adelante"
+                  keyboardType={Platform.OS === 'ios' ? 'default' : 'visible-password'}
+                  textTransform="lowercase"
                 />
               </View>
             </Animated.View>
@@ -599,13 +591,15 @@ export const CreateProfileScreen: React.FC<CreateProfileScreenProps> = ({ naviga
                       name={name} 
                       size={200}
                       borderStyle='dashed'
-                      selectedImage={selectedAvatar}
+                      selectedImage={selectedAvatar === DEFAULT_AVATAR_ID ? undefined : selectedAvatar}
                       backgroundColor={
                         selectedAvatar 
-                          ? avatarBackgrounds[PRESET_AVATARS.findIndex((avatar: any) => avatar === selectedAvatar)]
+                          ? selectedAvatar === DEFAULT_AVATAR_ID
+                            ? avatarBackgrounds[5] // DefaultAvatar siempre en posición 5
+                            : avatarBackgrounds[PRESET_AVATARS.findIndex((avatar: any) => avatar === selectedAvatar)]
                           : selectedColorIndex !== undefined 
                             ? SELECTABLE_COLORS[selectedColorIndex] 
-                            : undefined
+                            : avatarBackgrounds[5] // Por defecto usar el color del DefaultAvatar
                       }
                     />
                     <View style={styles.uploadButtonContainer}>
@@ -632,6 +626,7 @@ export const CreateProfileScreen: React.FC<CreateProfileScreenProps> = ({ naviga
                 </View>
               </View>
             </Animated.View>
+            
             
           </View>
 
@@ -717,7 +712,7 @@ const styles = StyleSheet.create({
   },
   separatorContainer: {
     alignItems: 'center',
-    marginVertical: 40,
+    marginVertical: 50,
   },
   separatorText: {
     color: Colors.gray[400],

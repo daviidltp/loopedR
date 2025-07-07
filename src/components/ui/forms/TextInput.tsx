@@ -12,6 +12,7 @@ interface CustomTextInputProps extends TextInputProps {
   showUserPrefix?: boolean;
   showFixedAtSymbol?: boolean;
   helperText?: string;
+  textTransform?: 'none' | 'capitalize' | 'uppercase' | 'lowercase';
 }
 
 export const TextInput = forwardRef<RNTextInput, CustomTextInputProps>(({
@@ -21,6 +22,7 @@ export const TextInput = forwardRef<RNTextInput, CustomTextInputProps>(({
   showUserPrefix = false,
   showFixedAtSymbol = false,
   helperText,
+  textTransform,
   onFocus,
   onBlur,
   value,
@@ -58,11 +60,7 @@ export const TextInput = forwardRef<RNTextInput, CustomTextInputProps>(({
     onBlur?.(e);
   };
 
-  // Función para manejar cambios en el texto (permitir todos los caracteres)
-  const handleTextChange = (text: string) => {
-    // Siempre permitir escribir cualquier caracter, la validación se hace después
-    onChangeText?.(text);
-  };
+
 
   const prefixFontSize = animatedValue.interpolate({
     inputRange: [0, 1],
@@ -94,17 +92,20 @@ export const TextInput = forwardRef<RNTextInput, CustomTextInputProps>(({
             {...props}
             ref={ref}
             value={value}
-            onChangeText={handleTextChange}
+            onChangeText={onChangeText}
             style={[
               styles.input,
               showUserPrefix && { paddingLeft: shouldShowPrefixUp ? 18 : 35 },
               showFixedAtSymbol && { paddingLeft: 35 },
-              (error || isValid) && { paddingRight: 45 } // Espacio para el icono
+              (error || isValid) && { paddingRight: 45 }, // Espacio para el icono
+              textTransform && { textTransform }
             ]}
             placeholderTextColor={Colors.gray[400]}
             onFocus={handleFocus}
             onBlur={handleBlur}
             selectionColor={Colors.gray[300]}
+            //autoCapitalize={'characters'}
+            
           />
           
           {/* Icono de validación */}

@@ -10,6 +10,8 @@ interface UserProfile {
   country?: string;
   username: string;
   name: string;
+  avatar?: any; // Avatar seleccionado (puede ser una imagen o DEFAULT_AVATAR_ID)
+  avatarBackgrounds?: string[]; // Colores de fondo personalizados para los avatares
 }
 
 interface AuthContextType {
@@ -18,7 +20,7 @@ interface AuthContextType {
   isLoggedIn: boolean;
   hasCompletedProfile: boolean;
   setUser: (user: UserProfile | null) => void;
-  setUserProfileData: (username: string, name: string) => void;
+  setUserProfileData: (username: string, name: string, avatar?: any, avatarBackgrounds?: string[]) => void;
   logout: () => void;
 }
 
@@ -84,10 +86,12 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     }
   };
 
-  const setUserProfileData = async (username: string, name: string) => {
+  const setUserProfileData = async (username: string, name: string, avatar?: any, avatarBackgrounds?: string[]) => {
     const userData = {
       username,
       name,
+      avatar,
+      avatarBackgrounds,
       // Si hay un usuario previo, mantener sus datos de Spotify
       ...(user || {}),
     };

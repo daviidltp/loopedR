@@ -1,14 +1,7 @@
 import React, { memo } from 'react';
-import { Image, Pressable, StyleSheet, View } from 'react-native';
-import Animated, {
-  cancelAnimation,
-  Easing,
-  useAnimatedStyle,
-  useSharedValue,
-  withRepeat,
-  withTiming
-} from 'react-native-reanimated';
+import { Pressable, StyleSheet, View } from 'react-native';
 import { Colors } from '../../../constants/Colors';
+import { PresetAvatar } from './PresetAvatar';
 
 interface PresetAvatarGridProps {
   onSelectAvatar: (avatar: any) => void;
@@ -17,116 +10,39 @@ interface PresetAvatarGridProps {
   onBackgroundChange: (avatarIndex: number, color: string) => void;
   selectedColorIndex?: number;
   onColorSelect: (colorIndex: number) => void;
+  userName?: string; // Nueva prop para el nombre del usuario
 }
 
 const PRESET_AVATARS = [
   require('../../../../assets/images/profilePics/profileicon1.png'),
   require('../../../../assets/images/profilePics/profileicon2.png'),
-  require('../../../../assets/images/profilePics/profileicon3.png'),
+  require('../../../../assets/images/profilePics/profileicon6.png'), // Movido de posición 6 a 3
   require('../../../../assets/images/profilePics/profileicon4.png'),
   require('../../../../assets/images/profilePics/profileicon5.png'),
-  require('../../../../assets/images/profilePics/profileicon6.png'),
 ];
 
-// Colores de fondo por defecto para cada imagen
+// Identificador especial para el DefaultAvatar
+const DEFAULT_AVATAR_ID = 'default_avatar';
+
+// Colores de fondo por defecto para cada imagen (5 preestablecidos + 1 para DefaultAvatar)
 const DEFAULT_BACKGROUNDS = [
-  '#ffffff', // profileicon1
-  '#8e8d55', // profileicon2
-  '#2d2d2d', // profileicon3
-  '#dde23d', // profileicon4
+  '#f1bc97', // profileicon1
+  '#6571ff', // profileicon2
+  '#e2f0cd', // profileicon6 (ahora en posición 3)
+  '#f2c6de', // profileicon4
   '#06332e', // profileicon5
-  '#903837', // profileicon6
+  '#222222', // DefaultAvatar
 ];
 
 // Colores seleccionables
 const SELECTABLE_COLORS = [
-  '#3baee4',
+  '#ffffff',
   '#8e8d55',
   '#2d2d2d',
   '#dde23d',
   '#06332e',
   '#903837',
 ];
-
-const DURATION = 150;
-const PRESS_SCALE = 0.95;
-const SELECTED_SCALE = 0.9; // Zoom out para seleccionados
-
-const PresetAvatar: React.FC<{
-  avatar: any;
-  isSelected: boolean;
-  onPress: () => void;
-  avatarIndex: number;
-  backgroundColor: string;
-}> = memo(({ avatar, isSelected, onPress, avatarIndex, backgroundColor }) => {
-  const selectionScale = useSharedValue(1);
-  const selectionOpacity = useSharedValue(0);
-  const rotation = useSharedValue(0);
-
-  // Optimizar animaciones iniciales
-  React.useEffect(() => {
-    if (isSelected) {
-      selectionScale.value = withTiming(SELECTED_SCALE, { duration: 300 });
-      selectionOpacity.value = withTiming(1, { duration: 300 });
-      rotation.value = withRepeat(
-        withTiming(360, { 
-          duration: 15000,
-          easing: Easing.linear
-        }),
-        -1,
-        false
-      );
-    } else {
-      selectionScale.value = withTiming(1, { duration: 300 });
-      selectionOpacity.value = withTiming(0, { duration: 300 });
-      rotation.value = withTiming(0, { duration: 300 });
-    }
-
-    return () => {
-      cancelAnimation(selectionScale);
-      cancelAnimation(selectionOpacity);
-      cancelAnimation(rotation);
-    };
-  }, [isSelected]);
-
-  const animatedStyle = useAnimatedStyle(() => ({
-    transform: [
-      {
-        scale: selectionScale.value,
-      },
-    ],
-  }));
-
-  const overlayStyle = useAnimatedStyle(() => ({
-    opacity: selectionOpacity.value * 0.1,
-  }));
-
-  const borderStyle = useAnimatedStyle(() => ({
-    opacity: selectionOpacity.value,
-    transform: [{ rotate: `${rotation.value}deg` }],
-    borderColor: backgroundColor,
-  }));
-
-  return (
-    <View style={styles.avatarWrapper}>
-      <Pressable onPress={onPress}>
-        <View style={styles.avatarContainer}>
-          <Animated.View style={[styles.rotatingBorder, borderStyle]} />
-          
-          <Animated.View style={[styles.imageContainer, animatedStyle, { backgroundColor }]}>
-            <Image
-              source={avatar}
-              style={styles.avatar}
-              resizeMode="contain"
-            />
-            
-            <Animated.View style={[styles.selectionOverlay, overlayStyle]} />
-          </Animated.View>
-        </View>
-      </Pressable>
-    </View>
-  );
-});
 
 const ColorSelector: React.FC<{
   colors: string[];
@@ -156,20 +72,30 @@ export const PresetAvatarGrid: React.FC<PresetAvatarGridProps> = memo(({
   avatarBackgrounds,
   onBackgroundChange,
   selectedColorIndex,
-  onColorSelect
+  onColorSelect,
+  userName
 }) => {
   const handleColorSelect = React.useCallback((colorIndex: number) => {
     onColorSelect(colorIndex);
-    const selectedAvatarIndex = PRESET_AVATARS.findIndex(avatar => avatar === selectedAvatar);
+    let selectedAvatarIndex = PRESET_AVATARS.findIndex(avatar => avatar === selectedAvatar);
+    
+    // Si es el DefaultAvatar, su índice es 5 (posición 6)
+    if (selectedAvatar === DEFAULT_AVATAR_ID) {
+      selectedAvatarIndex = 5;
+    }
+    
     if (selectedAvatarIndex !== -1) {
       onBackgroundChange(selectedAvatarIndex, SELECTABLE_COLORS[colorIndex]);
     }
   }, [onColorSelect, selectedAvatar, onBackgroundChange]);
 
+  // Crear array con los 5 avatares preestablecidos + el DefaultAvatar
+  const allAvatars = [...PRESET_AVATARS, DEFAULT_AVATAR_ID];
+
   return (
     <View style={styles.container}>
       <View style={styles.avatarsContainer}>
-        {PRESET_AVATARS.map((avatar, index) => (
+        {allAvatars.map((avatar, index) => (
           <PresetAvatar
             key={index}
             avatar={avatar}
@@ -177,6 +103,8 @@ export const PresetAvatarGrid: React.FC<PresetAvatarGridProps> = memo(({
             backgroundColor={avatarBackgrounds[index]}
             isSelected={selectedAvatar === avatar}
             onPress={() => onSelectAvatar(avatar)}
+            userName={userName}
+            isDefaultAvatar={avatar === DEFAULT_AVATAR_ID}
           />
         ))}
       </View>
@@ -202,45 +130,6 @@ const styles = StyleSheet.create({
     gap: 15,
     marginBottom: 35,
   },
-  avatarWrapper: {
-    width: '25%',
-  },
-  avatarContainer: {
-    width: '100%',
-    aspectRatio: 1,
-    position: 'relative',
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  rotatingBorder: {
-    position: 'absolute',
-    width: '100%',
-    height: '100%',
-    borderRadius: 1000,
-    borderWidth: 2,
-    borderStyle: 'dashed',
-  },
-  imageContainer: {
-    width: '100%',
-    height: '100%',
-    borderRadius: 1000,
-    overflow: 'hidden',
-    position: 'relative',
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  avatar: {
-    width: '50%', // Reducido al 50%
-    height: '50%', // Reducido al 50%
-  },
-  selectionOverlay: {
-    position: 'absolute',
-    top: 0,
-    left: 0,
-    right: 0,
-    bottom: 0,
-    backgroundColor: Colors.white,
-  },
   colorSelectorContainer: {
     flexDirection: 'row',
     justifyContent: 'space-between',
@@ -257,4 +146,5 @@ const styles = StyleSheet.create({
   },
 }); 
 
-export { DEFAULT_BACKGROUNDS, SELECTABLE_COLORS };
+export { DEFAULT_AVATAR_ID, DEFAULT_BACKGROUNDS, SELECTABLE_COLORS };
+

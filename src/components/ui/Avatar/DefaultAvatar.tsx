@@ -65,7 +65,7 @@ export const DefaultAvatar: React.FC<DefaultAvatarProps> = ({
         <AppText 
           variant="h2" 
           fontFamily="raleway" 
-          fontWeight="light"
+          fontWeight="bold"
           letterSpacing={0}
           style={[
             styles.text,
