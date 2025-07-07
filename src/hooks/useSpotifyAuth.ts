@@ -33,7 +33,7 @@ export const useSpotifyAuth = ({ onSuccess, onError, onCancel }: UseSpotifyAuthP
       },
     },
     {
-      authorizationEndpoint: 'https://accounts.spotify.com/authorize',
+      authorizationEndpoint: 'https://accounts.spotify.com/authorize', // Esto hay que sustituirlo por lo de supabase
     }
   );
 

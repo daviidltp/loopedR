@@ -14,6 +14,8 @@ import { ResizingButton } from '../ui/buttons/ResizingButton';
 import { Layout } from '../ui/layout/Layout';
 import { ConfirmationDialog } from '../ui/modals/ConfirmationDialog';
 import { AppText } from '../ui/Text/AppText';
+import { useInteropClassName } from 'expo-router/build/link/useLinkHooks';
+
 
 type WelcomeScreenNavigationProp = StackNavigationProp<RootStackParamList, 'Welcome'>;
 
@@ -26,6 +28,10 @@ export const WelcomeScreen: React.FC<WelcomeScreenProps> = ({ navigation }) => {
   const [isAuthenticating, setIsAuthenticating] = useState(false);
   const isNavigating = useRef(false);
   
+  // Mantener los dos contextos separados
+  const { setUser } = useAuth(); // Para autenticación con Spotify
+  const { setUserProfileData } = useAuth(); // Para crear perfil sin Spotify
+
   // Obtener el URI de redirección para mostrarlo
   const redirectUri = Constants.appOwnership === 'expo' 
     ? AuthSession.makeRedirectUri() 
@@ -76,8 +82,6 @@ export const WelcomeScreen: React.FC<WelcomeScreenProps> = ({ navigation }) => {
   });
   
   // Usar contexto de autenticación
-  const { setUser } = useAuth();
-  
   const { connectSpotify } = useSpotifyAuth({
     onSuccess: (userProfile) => {
       console.log('Usuario autenticado:', userProfile);
@@ -104,7 +108,7 @@ export const WelcomeScreen: React.FC<WelcomeScreenProps> = ({ navigation }) => {
     setIsAuthenticating(true);
     
     // Añadir vibración suave
-    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
+    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Heavy);
     
     // Conectar con Spotify directamente
     await connectSpotify();
@@ -114,20 +118,34 @@ export const WelcomeScreen: React.FC<WelcomeScreenProps> = ({ navigation }) => {
     setShowSkipAlert(true);
   }, []);
 
-  const handleContinueWithoutConnection = useCallback(() => {
+  const handleContinueWithoutConnection = useCallback(async () => {
     if (isNavigating.current) return;
     
     isNavigating.current = true;
     setShowSkipAlert(false);
+  
+    try {
+      // Pequeño delay para asegurar que el diálogo se cierre
+      await new Promise(resolve => setTimeout(resolve, 0));
 
-    // Esperar a que termine cualquier interacción antes de navegar
-    InteractionManager.runAfterInteractions(() => {
-      navigation.reset({
-        index: 0,
-        routes: [{ name: 'CreateProfile' }],
-      });
-    });
-  }, [navigation]);
+      // Primero crear un usuario base
+      const baseUser = {
+        username: 'usuario_' + Math.random().toString(36).substr(2, 9),
+        name: 'Usuario sin conexión'
+      };
+      
+      // Establecer el usuario base
+      setUser(baseUser);
+
+      await setUserProfileData(baseUser.username, baseUser.name);
+    
+      
+    } catch (error) {
+      console.error('Error al continuar sin conexión:', error);
+    } finally {
+      isNavigating.current = false;
+    }
+  }, [setUser, navigation]);
 
   const handleCancelSkipAlert = useCallback(() => {
     setShowSkipAlert(false);
@@ -150,6 +168,17 @@ export const WelcomeScreen: React.FC<WelcomeScreenProps> = ({ navigation }) => {
 
           {/* Botón fijo abajo */}
           <View style={styles.bottomSection}>
+            <ResizingButton
+              onPress={handleShowSkipAlert}
+              //onPress={handleContinueWithoutConnection}
+              title="Skip process"
+              backgroundColor={Colors.background}
+              textColor={Colors.white}
+              borderColor={Colors.white}
+              isLoading={true}
+              isDisabled={isAuthenticating}
+            />
+            <View style={{paddingBottom: 10}}></View>
             <ResizingButton
               onPress={handleConnectSpotify}
               //onPress={handleContinueWithoutConnection}

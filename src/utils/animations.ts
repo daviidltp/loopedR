@@ -1,3 +1,5 @@
+{/* Este archivo sobra por completo, no está siendo usado en ningún sitio */}
+
 import { Easing, withSpring, withTiming } from 'react-native-reanimated';
 
 // Configuraciones de animación predefinidas
