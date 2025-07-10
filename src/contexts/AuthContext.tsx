@@ -11,7 +11,7 @@ interface UserProfile {
   username: string;
   name: string;
   avatar?: any; // Avatar seleccionado (puede ser una imagen o DEFAULT_AVATAR_ID)
-  avatarBackgrounds?: string[]; // Colores de fondo personalizados para los avatares
+  avatarBackgroundColor?: string; // Color de fondo específico del avatar seleccionado
 }
 
 interface AuthContextType {
@@ -87,11 +87,43 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   };
 
   const setUserProfileData = async (username: string, name: string, avatar?: any, avatarBackgrounds?: string[]) => {
+    // Array de avatares preestablecidos (mismo orden que en PresetAvatarGrid)
+    const PRESET_AVATARS = [
+      require('../../assets/images/profilePics/profileicon1.png'),
+      require('../../assets/images/profilePics/profileicon2.png'),
+      require('../../assets/images/profilePics/profileicon6.png'),
+      require('../../assets/images/profilePics/profileicon4.png'),
+      require('../../assets/images/profilePics/profileicon5.png'),
+    ];
+
+    const DEFAULT_AVATAR_ID = 'default_avatar';
+
+    // Determinar el color de fondo correcto basándose en el avatar seleccionado
+    let avatarBackgroundColor = '#222222'; // Color por defecto
+    if (avatarBackgrounds) {
+      if (avatar === DEFAULT_AVATAR_ID) {
+        // DefaultAvatar está en el índice 5
+        avatarBackgroundColor = avatarBackgrounds[5] || '#222222';
+      } else {
+        // Buscar el índice del avatar preestablecido
+        const avatarIndex = PRESET_AVATARS.findIndex(presetAvatar => presetAvatar === avatar);
+        if (avatarIndex !== -1) {
+          avatarBackgroundColor = avatarBackgrounds[avatarIndex] || '#222222';
+        }
+      }
+    }
+
+    console.log('🎭 Guardando perfil:', {
+      avatar: avatar === DEFAULT_AVATAR_ID ? 'DEFAULT_AVATAR' : 'PRESET_AVATAR',
+      avatarBackgroundColor,
+      avatarBackgrounds
+    });
+
     const userData = {
       username,
       name,
       avatar,
-      avatarBackgrounds,
+      avatarBackgroundColor, // Guardar solo el color específico
       // Si hay un usuario previo, mantener sus datos de Spotify
       ...(user || {}),
     };

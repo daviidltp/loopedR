@@ -1,5 +1,5 @@
 import React, { forwardRef, useRef, useState } from 'react';
-import { Animated, TextInput as RNTextInput, StyleSheet, Text, TextInputProps, View } from 'react-native';
+import { Animated, TextInput as RNTextInput, StyleSheet, TextInputProps, View } from 'react-native';
 import { Colors } from '../../../constants/Colors';
 import { CheckIcon } from '../../icons/CheckIcon';
 import { CrossIcon } from '../../icons/CrossIcon';
@@ -85,7 +85,7 @@ export const TextInput = forwardRef<RNTextInput, CustomTextInputProps>(({
           ]}
         >
           {showFixedAtSymbol && (
-            <Text style={styles.fixedAtSymbol}>@</Text>
+            <AppText variant='body' fontFamily='inter' fontWeight='regular' style={styles.fixedAtSymbol}>@</AppText>
           )}
 
           <RNTextInput
@@ -144,7 +144,7 @@ const styles = StyleSheet.create({
     position: 'relative',
   },
   inputContainer: {
-    height: 62,
+    height: 52,
     borderRadius: 16,
     position: 'relative',
     justifyContent: 'center',
@@ -155,7 +155,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: 18,
     fontSize: 18,
     color: Colors.white,
-    fontFamily: 'Raleway-Regular',
+    fontFamily: 'Inter-Regular',
     includeFontPadding: false,
     textAlignVertical: 'center',
   },
@@ -163,7 +163,7 @@ const styles = StyleSheet.create({
     position: 'absolute',
     left: 18,
     fontSize: 16,
-    paddingBottom: 5,
+    paddingBottom: 0,
     fontWeight: '500',
     color: Colors.gray[300],
     zIndex: 1,

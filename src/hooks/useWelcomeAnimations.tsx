@@ -85,7 +85,7 @@ export const useWelcomeAnimations = ({
           },
         ]}
       >
-        <AppText variant="h1" fontWeight="bold" fontFamily='raleway' color={Colors.white} textAlign="left">
+        <AppText variant="h1" fontWeight="bold" fontFamily='inter' color={Colors.white} textAlign="left" lineHeight={36}>
           {currentText.content}
         </AppText>
       </Animated.View>

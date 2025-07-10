@@ -1,12 +1,17 @@
 import { BottomTabBarButtonProps, createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import { LinearGradient } from 'expo-linear-gradient';
 import React, { useEffect, useRef } from 'react';
-import { BackHandler, Dimensions, Pressable, StyleSheet, View } from 'react-native';
+import { BackHandler, Dimensions, Image, Pressable, StyleSheet, View } from 'react-native';
 import Animated, { interpolate, useAnimatedStyle, useSharedValue, withTiming } from 'react-native-reanimated';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Colors } from '../../../constants/Colors';
+import { useAuth } from '../../../contexts/AuthContext';
 import { HomeScreen } from '../../screens/HomeScreen';
 import { ProfileScreen } from '../../screens/ProfileScreen';
+import { SearchScreen } from '../../screens/SearchScreen';
+import { UploadScreen } from '../../screens/UploadScreen';
+import { DEFAULT_AVATAR_ID } from '../Avatar/PresetAvatarGrid';
+import { AppText } from '../Text/AppText';
 
 // Importar los iconos SVG directamente
 import AddFilledIcon from '../../../../assets/icons/add_filled.svg';
@@ -19,7 +24,7 @@ import SearchFilledIcon from '../../../../assets/icons/search_filled.svg';
 
 export type BottomNavigationParamList = {
   Home: undefined;
-  Search: undefined;
+  Search: { fromSearchAnimation?: boolean } | undefined;
   Upload: undefined;
   Inbox: undefined;
   Profile: undefined;
@@ -30,15 +35,57 @@ const Tab = createBottomTabNavigator<BottomNavigationParamList>();
 // Obtener el ancho de la pantalla
 const { width: screenWidth } = Dimensions.get('window');
 
-// Componente CircleAvatar para el perfil
-const CircleAvatar = ({ focused }: { focused: boolean }) => (
-  <View style={[
-    styles.avatarContainer,
-    { opacity: focused ? 1 : 0.6 }
-  ]}>
-    <View style={styles.avatarInner} />
-  </View>
-);
+// Componente CircleAvatar para el perfil actualizado
+const CircleAvatar = ({ focused }: { focused: boolean }) => {
+  const { user } = useAuth();
+  
+  const getInitials = (name: string): string => {
+    const words = name.trim().split(/\s+/);
+    if (words.length >= 2) {
+      return (words[0][0] + words[1][0]).toUpperCase();
+    }
+    return (words[0][0] + (words[0][1] || '')).toUpperCase();
+  };
+
+  const opacity = focused ? 1 : 0.6;
+  const avatarBackgroundColor = user?.avatarBackgroundColor || '#222222';
+
+  return (
+    <View style={[
+      styles.avatarContainer,
+      { 
+        opacity,
+        backgroundColor: avatarBackgroundColor
+      }
+    ]}>
+      {user?.avatar && user.avatar !== DEFAULT_AVATAR_ID ? (
+        // Avatar preestablecido
+        <Image 
+          source={user.avatar}
+          style={styles.avatarImage}
+          resizeMode="contain"
+        />
+      ) : (
+        // Avatar por defecto con iniciales o avatar inner cuando no hay nombre
+        user?.name ? (
+          <AppText 
+            variant="body" 
+            fontFamily="raleway" 
+            fontWeight="bold"
+            style={[
+              styles.avatarText,
+              { color: Colors.white }
+            ]}
+          >
+            {getInitials(user.name)}
+          </AppText>
+        ) : (
+          <View style={styles.avatarInner} />
+        )
+      )}
+    </View>
+  );
+};
 
 const DURATION = 100;
 
@@ -89,8 +136,6 @@ const CustomTabButton = (props: BottomTabBarButtonProps) => {
 };
 
 // Pantallas vacías para los nuevos tabs
-const SearchScreen = () => <View style={{ flex: 1, backgroundColor: Colors.backgroundSoft }} />;
-const UploadScreen = () => <View style={{ flex: 1, backgroundColor: Colors.backgroundSoft }} />;
 const InboxScreen = () => <View style={{ flex: 1, backgroundColor: Colors.backgroundSoft }} />;
 
 export const BottomNavigationBar = ({ onUploadPress }: { onUploadPress?: () => void }) => {
@@ -138,7 +183,7 @@ export const BottomNavigationBar = ({ onUploadPress }: { onUploadPress?: () => v
           ),
           tabBarIcon: ({ focused }) => {
             let IconComponent;
-            let iconSize = 22;
+            let iconSize = 24;
             let isSpecial = false;
             const opacity = focused ? 1 : 0.6;
 
@@ -261,6 +306,16 @@ const styles = StyleSheet.create({
     backgroundColor: Colors.white,
     justifyContent: 'center',
     alignItems: 'center',
+    overflow: 'hidden',
+  },
+  avatarImage: {
+    width: 20,
+    height: 20,
+  },
+  avatarText: {
+    fontSize: 12,
+    includeFontPadding: false,
+    textAlignVertical: 'center',
   },
   avatarInner: {
     width: 28,

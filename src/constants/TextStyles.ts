@@ -9,7 +9,7 @@ export type TextStyleName = keyof typeof textStyles;
 export const textStyles = StyleSheet.create({
   // Títulos principales
   h1: {
-    fontFamily: FONT_FAMILIES.ralewayBold,
+    fontFamily: FONT_FAMILIES.interBold,
     fontSize: 32,
     lineHeight: 40,
     letterSpacing: -0.5,
@@ -17,7 +17,7 @@ export const textStyles = StyleSheet.create({
   } as TextStyle,
 
   h2: {
-    fontFamily: FONT_FAMILIES.semiBold,
+    fontFamily: FONT_FAMILIES.interSemiBold,
     fontSize: 28,
     lineHeight: 36,
     letterSpacing: -0.3,
@@ -25,7 +25,7 @@ export const textStyles = StyleSheet.create({
   } as TextStyle,
 
   h3: {
-    fontFamily: FONT_FAMILIES.semiBold,
+    fontFamily: FONT_FAMILIES.interSemiBold,
     fontSize: 24,
     lineHeight: 32,
     letterSpacing: -0.2,

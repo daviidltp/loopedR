@@ -1,5 +1,17 @@
 // Configuración de fuentes de la aplicación
 
+// Inter (Moderna y legible)
+export const INTER_FAMILIES = {
+  extraLight: 'Inter-ExtraLight',
+  light: 'Inter-Light',
+  regular: 'Inter-Regular',
+  medium: 'Inter-Medium',
+  semiBold: 'Inter-SemiBold',
+  bold: 'Inter-Bold',
+  extraBold: 'Inter-ExtraBold',
+  black: 'Inter-Black',
+} as const;
+
 // Roboto (Principal)
 export const ROBOTO_FAMILIES = {
   light: 'Roboto-Light',
@@ -59,6 +71,16 @@ export const FONT_FAMILIES = {
   bold: ROBOTO_FAMILIES.bold,
   extraBold: ROBOTO_FAMILIES.extraBold,
   
+  // Inter
+  interExtraLight: INTER_FAMILIES.extraLight,
+  interLight: INTER_FAMILIES.light,
+  interRegular: INTER_FAMILIES.regular,
+  interMedium: INTER_FAMILIES.medium,
+  interSemiBold: INTER_FAMILIES.semiBold,
+  interBold: INTER_FAMILIES.bold,
+  interExtraBold: INTER_FAMILIES.extraBold,
+  interBlack: INTER_FAMILIES.black,
+  
   // Raleway
   ralewayLight: RALEWAY_FAMILIES.light,
   ralewayRegular: RALEWAY_FAMILIES.regular,
@@ -101,6 +123,16 @@ export const FONT_ASSETS = {
   'Roboto-Bold': require('../../assets/fonts/Roboto/Roboto-Bold.ttf'),
   'Roboto-ExtraBold': require('../../assets/fonts/Roboto/Roboto-ExtraBold.ttf'),
   
+  // Inter
+  'Inter-ExtraLight': require('../../assets/fonts/Inter/static/Inter-ExtraLight.ttf'),
+  'Inter-Light': require('../../assets/fonts/Inter/static/Inter-Light.ttf'),
+  'Inter-Regular': require('../../assets/fonts/Inter/static/Inter-Regular.ttf'),
+  'Inter-Medium': require('../../assets/fonts/Inter/static/Inter-Medium.ttf'),
+  'Inter-SemiBold': require('../../assets/fonts/Inter/static/Inter-SemiBold.ttf'),
+  'Inter-Bold': require('../../assets/fonts/Inter/static/Inter-Bold.ttf'),
+  'Inter-ExtraBold': require('../../assets/fonts/Inter/static/Inter-ExtraBold.ttf'),
+  'Inter-Black': require('../../assets/fonts/Inter/static/Inter-Black.ttf'),
+  
   // Raleway
   'Raleway-Light': require('../../assets/fonts/Raleway/static/Raleway-Light.ttf'),
   'Raleway-Regular': require('../../assets/fonts/Raleway/static/Raleway-Regular.ttf'),
@@ -134,6 +166,7 @@ export const FONT_ASSETS = {
 
 // Tipos para TypeScript
 export type FontFamily = keyof typeof FONT_FAMILIES;
+export type InterFamily = keyof typeof INTER_FAMILIES;
 export type RobotoFamily = keyof typeof ROBOTO_FAMILIES;
 export type RalewayFamily = keyof typeof RALEWAY_FAMILIES;
 export type PoppinsFamily = keyof typeof POPPINS_FAMILIES;

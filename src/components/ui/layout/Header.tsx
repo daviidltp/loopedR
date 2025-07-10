@@ -1,0 +1,68 @@
+import React from 'react';
+import { Pressable, StyleSheet, View } from 'react-native';
+import { Colors } from '../../../constants/Colors';
+import { AppText } from '../Text/AppText';
+import { AnimatedVerifiedIcon } from './AnimatedVerifiedIcon';
+
+export const Header: React.FC = () => {
+  const handlePremiumPress = () => {
+    console.log('Premium button pressed');
+    // TODO: Implementar funcionalidad premium
+  };
+
+  return (
+    <View style={styles.header}>
+      <AppText variant='h2' fontFamily='raleway' fontWeight='bold' color="#fff">looped</AppText>
+      
+      {/* Botón premium unificado */}
+      <View style={styles.premiumButtonContainer}>
+        <Pressable
+          onPress={handlePremiumPress}
+          style={styles.premiumButton}
+          android_ripple={{
+            color: 'rgba(255, 255, 255, 0.2)',
+            borderless: false
+          }}
+        >
+          <AnimatedVerifiedIcon size={28} />
+          <AppText fontSize={16} fontFamily='inter' fontWeight='bold' color={Colors.gold}>Obtener Plus</AppText>
+        </Pressable>
+      </View>
+    </View>
+  );
+};
+
+const styles = StyleSheet.create({
+  header: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    paddingHorizontal: 24,
+    paddingTop: 24,
+    paddingBottom: 16,
+  },
+  // premiumButtonContainer: {
+  //   borderRadius: 0,
+  //   overflow: 'hidden',
+  // },
+  // premiumButton: {
+  //   flexDirection: 'row',
+  //   alignItems: 'center',
+  //   gap: 8,
+  //   paddingHorizontal: 6,
+  //   paddingVertical: 4,
+  //   backgroundColor: '#5134A755',
+  // },
+  premiumButtonContainer: {
+    borderRadius: 25,
+    overflow: 'hidden',
+  },
+  premiumButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+    paddingHorizontal: 10,
+    paddingVertical: 6,
+    backgroundColor: "#D4AF3722",
+  },
+}); 

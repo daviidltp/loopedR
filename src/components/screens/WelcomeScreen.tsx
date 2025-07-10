@@ -3,7 +3,7 @@ import * as AuthSession from 'expo-auth-session';
 import Constants from 'expo-constants';
 import * as Haptics from 'expo-haptics';
 import React, { useCallback, useRef, useState } from 'react';
-import { InteractionManager, StyleSheet, View } from 'react-native';
+import { StyleSheet, View } from 'react-native';
 import { Colors } from '../../constants/Colors';
 import { useAuth } from '../../contexts/AuthContext';
 import { useSpotifyAuth } from '../../hooks/useSpotifyAuth';
@@ -14,7 +14,6 @@ import { ResizingButton } from '../ui/buttons/ResizingButton';
 import { Layout } from '../ui/layout/Layout';
 import { ConfirmationDialog } from '../ui/modals/ConfirmationDialog';
 import { AppText } from '../ui/Text/AppText';
-import { useInteropClassName } from 'expo-router/build/link/useLinkHooks';
 
 
 type WelcomeScreenNavigationProp = StackNavigationProp<RootStackParamList, 'Welcome'>;
@@ -52,7 +51,7 @@ export const WelcomeScreen: React.FC<WelcomeScreenProps> = ({ navigation }) => {
     {
       content: (
         <>
-          Cada <AppText variant="h1" fontWeight="bold" color={Colors.secondaryGreen}>domingo</AppText> a las <AppText variant="h1" fontWeight="bold" color={Colors.secondaryGreen}>21:00</AppText>
+          Cada <AppText variant="h1" fontWeight="bold" fontFamily='inter' color={Colors.secondaryGreen}>domingo</AppText> a las <AppText variant="h1" fontWeight="bold" color={Colors.secondaryGreen}>21:00</AppText>
         </>
       )
     },
@@ -168,17 +167,17 @@ export const WelcomeScreen: React.FC<WelcomeScreenProps> = ({ navigation }) => {
 
           {/* Botón fijo abajo */}
           <View style={styles.bottomSection}>
-            <ResizingButton
+            {/* <ResizingButton
               onPress={handleShowSkipAlert}
               //onPress={handleContinueWithoutConnection}
               title="Skip process"
               backgroundColor={Colors.background}
               textColor={Colors.white}
               borderColor={Colors.white}
-              isLoading={true}
+              isLoading={false}
               isDisabled={isAuthenticating}
-            />
-            <View style={{paddingBottom: 10}}></View>
+            /> */}
+            <View style={{paddingBottom: 0}}></View>
             <ResizingButton
               onPress={handleConnectSpotify}
               //onPress={handleContinueWithoutConnection}

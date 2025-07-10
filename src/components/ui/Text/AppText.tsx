@@ -2,7 +2,7 @@ import React from 'react';
 import { Text, TextProps, TextStyle } from 'react-native';
 import { TextStyleName, getTextStyle, textStyles } from '../../../constants/TextStyles';
 
-type FontFamilyType = 'raleway' | 'poppins' | 'merriweatherSans' | 'libreCaslonText' | 'roboto';
+type FontFamilyType = 'inter' | 'raleway' | 'poppins' | 'merriweatherSans' | 'libreCaslonText' | 'roboto';
 type FontWeightType = 100 | 200 | 300 | 400 | 500 | 600 | 700 | 800 | 900 | 
                      'thin' | 'extraLight' | 'light' | 'regular' | 'medium' | 'semiBold' | 'bold' | 'extraBold' | 'black';
 
@@ -45,6 +45,7 @@ const getFontFamily = (family: FontFamilyType = 'roboto', weight: FontWeightType
   };
 
   const familyMap: Record<FontFamilyType, string> = {
+    inter: 'Inter',
     raleway: 'Raleway',
     poppins: 'Poppins',
     merriweatherSans: 'MerriweatherSans',

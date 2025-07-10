@@ -20,6 +20,7 @@ export interface ResizingButtonProps {
     backgroundColor?: string;
     textColor?: string;
     borderColor?: string;
+    height?: number;
 }
 
 const DURATION = 100;
@@ -32,7 +33,7 @@ const styles = StyleSheet.create({
         height: 52,
         justifyContent: "center",
         paddingHorizontal: 16,
-        paddingVertical: 10,
+        paddingVertical: 0,
         shadowColor: "#000",
         shadowOffset: { width: 0, height: 2 },
         shadowOpacity: 0.15,
@@ -72,6 +73,7 @@ export const ResizingButton = ({
     backgroundColor = "#14F195",
     textColor = "#000",
     borderColor = "transparent",
+    height = 52,
 }: ResizingButtonProps) => {
     const transition = useSharedValue(0);
     const isActive = useSharedValue(false);
@@ -122,6 +124,7 @@ export const ResizingButton = ({
                         backgroundColor,
                         borderColor,
                         opacity: isDisabled ? 0.5 : 1,
+                        height,
                     },
                 ]}
             >

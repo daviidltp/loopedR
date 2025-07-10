@@ -517,8 +517,8 @@ export const CreateProfileScreen: React.FC<CreateProfileScreenProps> = ({ naviga
             <Animated.View style={[styles.stepContainer, nameStepAnimatedStyle]}>
               <AppText 
                 variant="h1"
-                fontWeight="bold"
-                fontFamily='raleway'
+                fontWeight="semiBold"
+                fontFamily='inter'
                 style={styles.title}
               >
                 ¿Cómo quieres que te llamemos?
@@ -546,8 +546,8 @@ export const CreateProfileScreen: React.FC<CreateProfileScreenProps> = ({ naviga
             <Animated.View style={[styles.stepContainer, usernameStepAnimatedStyle]}>
               <AppText 
                 variant="h1"
-                fontWeight="bold"
-                fontFamily='raleway'
+                fontWeight="semiBold"
+                fontFamily='inter'
                 style={styles.title}
               >
                 Elige tu nombre de usuario
@@ -577,8 +577,8 @@ export const CreateProfileScreen: React.FC<CreateProfileScreenProps> = ({ naviga
             <Animated.View style={[styles.stepContainer, avatarStepAnimatedStyle]}>
               <AppText 
                 variant="h1"
-                fontWeight="bold"
-                fontFamily='raleway'
+                fontWeight="semiBold"
+                fontFamily='inter'
                 style={styles.title}
               >
                 Elige tu imagen de perfil
@@ -612,7 +612,7 @@ export const CreateProfileScreen: React.FC<CreateProfileScreenProps> = ({ naviga
                   <View style={styles.separatorContainer}>
                     <AppText 
                       variant="body"
-                      fontFamily="raleway"
+                      fontFamily="inter"
                       fontWeight="light"
                       style={styles.separatorText}
                     >
