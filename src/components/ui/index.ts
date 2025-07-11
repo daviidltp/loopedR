@@ -4,6 +4,9 @@ export * from './layout';
 // Button components
 export * from './buttons';
 
+// Header components
+export * from './headers';
+
 // Form components
 export * from './forms';
 
@@ -27,3 +30,4 @@ export * from './sections';
 
 // List components
 export * from './list';
+

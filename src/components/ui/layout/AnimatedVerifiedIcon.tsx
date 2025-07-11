@@ -1,5 +1,6 @@
 import React, { useEffect, useRef } from 'react';
 import { Animated, Easing, Image, StyleSheet, View } from 'react-native';
+import { Colors } from '../../../constants/Colors';
 
 interface AnimatedVerifiedIconProps {
   size?: number;
@@ -56,12 +57,12 @@ export const AnimatedVerifiedIcon: React.FC<AnimatedVerifiedIconProps> = ({ size
       
       {/* Foreground estático centrado */}
       <Image
-        source={require('../../../../assets/icons/music-note.png')}
+        source={require('../../../../assets/icons/quaver.png')}
         style={[
           styles.foreground,
           {
-            width: 14,
-            height: 14,
+            width: size/2 + 1,
+            height: size/2 + 1,
           },
         ]}
       />
@@ -76,6 +77,7 @@ const styles = StyleSheet.create({
   },
   background: {
     position: 'absolute',
+    tintColor: Colors.secondaryGreen,
   },
   foreground: {
     position: 'absolute',

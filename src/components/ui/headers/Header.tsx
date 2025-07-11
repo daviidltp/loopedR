@@ -2,7 +2,7 @@ import React from 'react';
 import { Pressable, StyleSheet, View } from 'react-native';
 import { Colors } from '../../../constants/Colors';
 import { AppText } from '../Text/AppText';
-import { AnimatedVerifiedIcon } from './AnimatedVerifiedIcon';
+import { AnimatedVerifiedIcon } from '../layout/AnimatedVerifiedIcon';
 
 export const Header: React.FC = () => {
   const handlePremiumPress = () => {
@@ -24,8 +24,8 @@ export const Header: React.FC = () => {
             borderless: false
           }}
         >
-          <AnimatedVerifiedIcon size={28} />
-          <AppText fontSize={16} fontFamily='inter' fontWeight='bold' color={Colors.gold}>Obtener Plus</AppText>
+          <AnimatedVerifiedIcon size={24} />
+          <AppText fontSize={16} fontFamily='inter' fontWeight='bold' color={Colors.secondaryGreen}>Obtener Plus</AppText>
         </Pressable>
       </View>
     </View>
@@ -63,6 +63,6 @@ const styles = StyleSheet.create({
     gap: 8,
     paddingHorizontal: 10,
     paddingVertical: 6,
-    backgroundColor: "#D4AF3722",
+    backgroundColor: "#00B2901A",
   },
 }); 

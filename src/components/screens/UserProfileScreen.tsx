@@ -1,15 +1,17 @@
-import { useNavigation } from '@react-navigation/native';
-import { StackNavigationProp } from '@react-navigation/stack';
+import { useFocusEffect, useNavigation, useRoute } from '@react-navigation/native';
+import { StackNavigationProp, StackScreenProps } from '@react-navigation/stack';
 import React from 'react';
-import { Image, ScrollView, StyleSheet, View } from 'react-native';
+import { BackHandler, Image, ScrollView, StyleSheet, View } from 'react-native';
+import { Icon } from 'react-native-paper';
 import { Colors } from '../../constants/Colors';
 import { RootStackParamList } from '../../navigation/AppNavigator';
-import { currentUser, getUserFollowers, getUserFollowing } from '../../utils/mockData';
+import { currentUser, getUserFollowers, getUserFollowing, isUserFollowing, mockUsers } from '../../utils/mockData';
 import { ResizingButton } from '../ui/buttons/ResizingButton';
 import { ProfileHeader } from '../ui/headers/ProfileHeader';
 import { AppText } from '../ui/Text/AppText';
 
-type ProfileScreenNavigationProp = StackNavigationProp<RootStackParamList>;
+type UserProfileScreenProps = StackScreenProps<RootStackParamList, 'UserProfile'>;
+type UserProfileScreenNavigationProp = StackNavigationProp<RootStackParamList>;
 
 // Función para formatear números de seguidores
 const formatFollowersCount = (count: number): string => {
@@ -21,7 +23,6 @@ const formatFollowersCount = (count: number): string => {
       return `${Math.floor(thousands)}k`;
     } else {
       const formatted = thousands.toFixed(1);
-      // Eliminar .0 si existe
       return formatted.endsWith('.0') ? `${Math.floor(thousands)}k` : `${formatted}k`;
     }
   } else if (count < 1000000) {
@@ -32,25 +33,55 @@ const formatFollowersCount = (count: number): string => {
       return `${Math.floor(millions)}M`;
     } else {
       const formatted = millions.toFixed(1);
-      // Eliminar .0 si existe
       return formatted.endsWith('.0') ? `${Math.floor(millions)}M` : `${formatted}M`;
     }
   }
 };
 
-export const ProfileScreen: React.FC = () => {
-  const navigation = useNavigation<ProfileScreenNavigationProp>();
+export const UserProfileScreen: React.FC = () => {
+  const navigation = useNavigation<UserProfileScreenNavigationProp>();
+  const route = useRoute<UserProfileScreenProps['route']>();
   
-  // Usar siempre el usuario actual para esta pantalla (mi perfil)
-  const userData = currentUser;
+  // Obtener userId de los parámetros de navegación (obligatorio para esta pantalla)
+  const { userId } = route.params as { userId: string };
+  
+  // Buscar el usuario en mockData
+  const userData = mockUsers.find(user => user.id === userId);
+  
+  // Si no se encuentra el usuario, mostrar error o navegar atrás
+  if (!userData) {
+    React.useEffect(() => {
+      navigation.goBack();
+    }, [navigation]);
+    return null;
+  }
 
-  const openSettings = () => {
-    navigation.navigate('Settings');
+  // Manejar botón físico de Android para volver atrás
+  useFocusEffect(
+    React.useCallback(() => {
+      const onBackPress = () => {
+        navigation.goBack();
+        return true; // Indica que hemos manejado el evento
+      };
+
+      const backHandler = BackHandler.addEventListener('hardwareBackPress', onBackPress);
+
+      return () => backHandler.remove();
+    }, [navigation])
+  );
+
+  const handleBackPress = () => {
+    navigation.goBack();
   };
 
-  const handleEditProfile = () => {
-    console.log('Edit profile pressed');
-    // TODO: Navegar a editar perfil
+  const handleMorePress = () => {
+    console.log('More options pressed for user:', userId);
+    // TODO: Mostrar menú de opciones para otros usuarios
+  };
+
+  const handleFollowPress = () => {
+    console.log('Follow button pressed for user:', userId);
+    // TODO: Implementar funcionalidad de seguir
   };
   
   // Obtener datos de seguidores/seguidos desde mockData
@@ -58,16 +89,20 @@ export const ProfileScreen: React.FC = () => {
   const following = getUserFollowing(userData.id);
   const followersCount = followers.length;
   const followingCount = following.length;
+  
+  // Verificar si ya seguimos a este usuario
+  const isFollowing = isUserFollowing(currentUser.id, userData.id);
 
   return (
     <View style={styles.container}>
-      {/* Header */}
+      {/* Header personalizado con botón de atrás */}
       <ProfileHeader 
         username={userData.username}
-        onMenuPress={openSettings}
+        onBackPress={handleBackPress}
+        onMorePress={handleMorePress}
         isVerified={userData.isVerified}
-        isPublicProfile={userData.isPublic}
-        showPrivacyIndicator={true} // Solo mostrar en mi perfil
+        showBackButton={true}
+        showPrivacyIndicator={false} // No mostrar en perfiles de otros usuarios
       />
 
       {/* Content */}
@@ -75,6 +110,9 @@ export const ProfileScreen: React.FC = () => {
         style={styles.scrollView}
         contentContainerStyle={styles.scrollContent}
         showsVerticalScrollIndicator={false}
+        // Permitir que el gesto de retroceso funcione incluso con ScrollView
+        scrollEnabled={true}
+        bounces={false}
       >
         {/* Profile Info Row */}
         <View style={styles.profileRow}>
@@ -147,7 +185,7 @@ export const ProfileScreen: React.FC = () => {
           </View>
         )}
 
-        {/* Botón de editar perfil */}
+        {/* Botón de seguir */}
         <View style={[
           styles.buttonSection,
           // Condicionar el padding top basado en si hay bio
@@ -155,15 +193,71 @@ export const ProfileScreen: React.FC = () => {
             ? styles.buttonSectionWithBio 
             : styles.buttonSectionNoBio
         ]}>
-          <ResizingButton
-            title="Editar perfil"
-            onPress={handleEditProfile}
-            backgroundColor={Colors.background}
-            textColor={Colors.white}
-            borderColor={Colors.white}
-            height={42}
-          />
+          {isFollowing ? (
+            <ResizingButton
+              title="Siguiendo"
+              onPress={handleFollowPress}
+              backgroundColor={Colors.background}
+              textColor={Colors.white}
+              borderColor={Colors.white}
+              height={42}
+            />
+          ) : (
+            <ResizingButton
+              title="Seguir"
+              onPress={handleFollowPress}
+              backgroundColor={Colors.white}
+              textColor={Colors.background}
+              borderColor="transparent"
+              height={42}
+            />
+          )}
         </View>
+
+        {/* Contenido condicional según privacidad */}
+        {!userData.isPublic && !isFollowing ? (
+          // Cuenta privada y no la seguimos
+          <View style={styles.privateContentSection}>
+            <View style={styles.privateIconContainer}>
+              <Icon
+                source="lock"
+                size={64}
+                color={Colors.white}
+              />
+            </View>
+            <AppText
+              variant="h4"
+              fontFamily="inter"
+              fontWeight="medium"
+              color={Colors.white}
+              style={styles.privateTitle}
+            >
+              Esta cuenta es privada
+            </AppText>
+            <AppText
+              variant="body"
+              fontFamily="inter"
+              fontSize={14}
+              color={Colors.gray[400]}
+              style={styles.privateDescription}
+            >
+              Sigue a esta cuenta para ver sus publicaciones
+            </AppText>
+          </View>
+        ) : (
+          // Cuenta pública o la seguimos
+          <View style={styles.postsSection}>
+            <AppText
+              variant="h4"
+              fontFamily="inter"
+              fontWeight="medium"
+              color={Colors.white}
+              style={styles.postsPlaceholder}
+            >
+              Aquí van las publicaciones
+            </AppText>
+          </View>
+        )}
       </ScrollView>
     </View>
   );
@@ -178,7 +272,7 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   scrollContent: {
-    paddingBottom: 100, // Espacio para el bottom navigation
+    paddingBottom: 100,
   },
   profileRow: {
     flexDirection: 'row',
@@ -230,5 +324,28 @@ const styles = StyleSheet.create({
   },
   buttonSectionNoBio: {
     paddingTop: 32, // Un poco más de espacio cuando no hay bio
+  },
+  privateContentSection: {
+    paddingHorizontal: 16,
+    paddingTop: 80,
+    alignItems: 'center',
+  },
+  privateIconContainer: {
+    marginBottom: 10,
+  },
+  privateTitle: {
+    marginBottom: 8,
+  },
+  privateDescription: {
+    textAlign: 'center',
+    width: '60%',
+  },
+  postsSection: {
+    paddingHorizontal: 16,
+    paddingTop: 24,
+    alignItems: 'center',
+  },
+  postsPlaceholder: {
+    textAlign: 'center',
   },
 }); 

@@ -1,13 +1,20 @@
 import React from 'react';
 import { Image, Platform, StyleSheet, TouchableNativeFeedback, TouchableOpacity, View } from 'react-native';
 import { Colors } from '../../../constants/Colors';
-import { User } from '../../../utils/mockData';
+import { User, currentUser, mockUserRelations } from '../../../utils/mockData';
 import { AppText } from '../Text/AppText';
 
 interface UserListItemProps {
   user: User;
   onPress?: (userId: string) => void;
 }
+
+// Función para saber si el usuario actual sigue al usuario mostrado
+const isFollowing = (userId: string): boolean => {
+  return mockUserRelations.some(
+    (rel) => rel.followerId === currentUser.id && rel.followingId === userId
+  );
+};
 
 export const UserListItem: React.FC<UserListItemProps> = ({
   user,
@@ -23,6 +30,8 @@ export const UserListItem: React.FC<UserListItemProps> = ({
 
   const handlePress = () => onPress?.(user.id);
 
+  const siguiendo = isFollowing(user.id);
+
   const content = (
     <View style={styles.container}>
       {/* Avatar circular */}
@@ -33,7 +42,7 @@ export const UserListItem: React.FC<UserListItemProps> = ({
           <View style={styles.defaultAvatar}>
             <AppText 
               fontSize={16} 
-              fontFamily="inter" 
+              fontFamily="roboto" 
               fontWeight="semiBold" 
               color={Colors.white}
             >
@@ -45,24 +54,35 @@ export const UserListItem: React.FC<UserListItemProps> = ({
 
       {/* Información del usuario */}
       <View style={styles.userInfo}>
-        {/* Username con ícono verificado */}
+        {/* Username con ícono verificado y texto "· Siguiendo" si corresponde */}
         <View style={styles.usernameRow}>
           <AppText 
             fontSize={16} 
-            fontFamily="inter" 
+            fontFamily="roboto" 
             fontWeight="semiBold" 
             color={Colors.white}
             style={styles.username}
             numberOfLines={1}
-            lineHeight={18}
           >
             {user.username}
           </AppText>
           {user.isVerified && (
             <Image 
-              source={require('../../../../assets/icons/verified.png')} 
+              source={require('../../../../assets/icons/verified_blue.png')} 
               style={styles.verifiedIcon}
             />
+          )}
+          {siguiendo && (
+            <AppText
+              fontSize={16}
+              fontFamily="roboto"
+              fontWeight="regular"
+              color={Colors.gray[500]}
+              style={styles.siguiendoText}
+              numberOfLines={1}
+            >
+              {'󠁯•󠁏 Siguiendo'}
+            </AppText>
           )}
         </View>
         
@@ -73,6 +93,7 @@ export const UserListItem: React.FC<UserListItemProps> = ({
           color={Colors.gray[400]}
           style={styles.displayName}
           numberOfLines={1}
+          lineHeight={18}
         >
           {user.displayName}
         </AppText>
@@ -143,8 +164,11 @@ const styles = StyleSheet.create({
     // Sin margin adicional
   },
   verifiedIcon: {
-    width: 20,
-    height: 20,
+    width: 18,
+    height: 18,
     marginLeft: 4,
+  },
+  siguiendoText: {
+    marginLeft: 6,
   },
 }); 

@@ -28,7 +28,6 @@ const DURATION = 100;
 const styles = StyleSheet.create({
     container: {
         alignItems: "center",
-        borderRadius: 16,
         flexDirection: "row",
         height: 52,
         justifyContent: "center",
@@ -41,6 +40,7 @@ const styles = StyleSheet.create({
         elevation: 0,
         borderWidth: 1,
         position: "relative",
+        // El borderRadius se aplicará dinámicamente en el componente
     },
     iconContainer: {
         position: "absolute",
@@ -86,6 +86,14 @@ export const ResizingButton = ({
         ],
     }));
 
+    // Calcula el borderRadius dinámicamente según la altura
+    const dynamicContainerStyle = {
+        backgroundColor,
+        borderColor,
+        opacity: isDisabled ? 0.5 : 1,
+        height,
+        borderRadius: height / 4,
+    };
 
     return (
         <Pressable
@@ -120,12 +128,7 @@ export const ResizingButton = ({
                 style={[
                     styles.container,
                     animatedStyle,
-                    {
-                        backgroundColor,
-                        borderColor,
-                        opacity: isDisabled ? 0.5 : 1,
-                        height,
-                    },
+                    dynamicContainerStyle,
                 ]}
             >
                 {isLoading ? (

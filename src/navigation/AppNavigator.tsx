@@ -4,6 +4,7 @@ import React, { useEffect } from 'react';
 import { ActivityIndicator, Easing, Platform, TouchableNativeFeedback, TouchableOpacity, View } from 'react-native';
 import { CreateProfileScreen, WelcomeScreen } from '../components';
 import { SettingsScreen } from '../components/screens/SettingsScreen';
+import { UserProfileScreen } from '../components/screens/UserProfileScreen';
 import { BottomNavigationBar } from '../components/ui/navigation/BottomNavigationBar';
 import { Colors } from '../constants/Colors';
 import { useAuth } from '../contexts/AuthContext';
@@ -13,6 +14,7 @@ export type RootStackParamList = {
   CreateProfile: undefined;
   MainApp: undefined;
   Settings: undefined;
+  UserProfile: { userId: string };
 };
 
 const Stack = createStackNavigator<RootStackParamList>();
@@ -89,6 +91,8 @@ export const AppNavigator = () => {
           gestureEnabled: true,
           gestureDirection: 'horizontal',
           cardStyleInterpolator: CardStyleInterpolators.forHorizontalIOS,
+          // Prevenir flash blanco
+          cardStyle: { backgroundColor: Colors.background },
           // Optimizaciones para react-native-screens
           detachPreviousScreen: true,
           freezeOnBlur: true,
@@ -145,19 +149,24 @@ export const AppNavigator = () => {
         gestureEnabled: true,
         gestureDirection: 'horizontal',
         cardStyleInterpolator: CardStyleInterpolators.forHorizontalIOS,
+        // Prevenir flash blanco
+        cardStyle: { backgroundColor: Colors.background },
         // Optimizaciones para react-native-screens
         detachPreviousScreen: false,
         freezeOnBlur: true,
       }}
     >
       <Stack.Screen 
-        name="MainApp" 
-        component={BottomNavigationBar}
-        options={{
-          gestureEnabled: false,
-          cardStyleInterpolator: CardStyleInterpolators.forFadeFromBottomAndroid,
-        }}
-      />
+          name="MainApp" 
+          component={BottomNavigationBar}
+          options={{
+            gestureEnabled: false,
+            cardStyleInterpolator: CardStyleInterpolators.forFadeFromBottomAndroid,
+            animationTypeForReplace: 'push',
+            // Optimización adicional para evitar flash
+            cardStyle: { backgroundColor: Colors.background },
+          }}
+        />
       <Stack.Screen 
         name="Settings" 
         component={SettingsScreen}
@@ -177,6 +186,7 @@ export const AppNavigator = () => {
             shadowOpacity: 0,
             borderBottomWidth: 0,
           },
+          cardStyle: { backgroundColor: Colors.background },
           headerTitleStyle: {
             fontSize: 18,
             fontWeight: '600',
@@ -185,6 +195,19 @@ export const AppNavigator = () => {
           cardStyleInterpolator: CardStyleInterpolators.forHorizontalIOS,
           gestureEnabled: true,
           gestureDirection: 'horizontal',
+        })}
+      />
+      <Stack.Screen 
+        name="UserProfile" 
+        component={UserProfileScreen}
+        options={({ navigation }) => ({
+          headerShown: false,
+          cardStyle: { backgroundColor: Colors.background },
+          cardStyleInterpolator: CardStyleInterpolators.forHorizontalIOS,
+          gestureEnabled: true,
+          gestureDirection: 'horizontal',
+          // Optimización para área de gesto
+          gestureResponseDistance: 50, // Área sensible al gesto desde el borde
         })}
       />
     </Stack.Navigator>

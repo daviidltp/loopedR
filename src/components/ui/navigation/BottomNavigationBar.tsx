@@ -7,6 +7,7 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Colors } from '../../../constants/Colors';
 import { useAuth } from '../../../contexts/AuthContext';
 import { HomeScreen } from '../../screens/HomeScreen';
+import { InboxScreen } from '../../screens/InboxScreen';
 import { ProfileScreen } from '../../screens/ProfileScreen';
 import { SearchScreen } from '../../screens/SearchScreen';
 import { UploadScreen } from '../../screens/UploadScreen';
@@ -135,8 +136,6 @@ const CustomTabButton = (props: BottomTabBarButtonProps) => {
   );
 };
 
-// Pantallas vacías para los nuevos tabs
-const InboxScreen = () => <View style={{ flex: 1, backgroundColor: Colors.backgroundSoft }} />;
 
 export const BottomNavigationBar = ({ onUploadPress }: { onUploadPress?: () => void }) => {
   const insets = useSafeAreaInsets();
@@ -171,6 +170,9 @@ export const BottomNavigationBar = ({ onUploadPress }: { onUploadPress?: () => v
           tabBarShowLabel: false,
           tabBarActiveTintColor: Colors.white,
           tabBarInactiveTintColor: Colors.white,
+          // Forzar background negro para evitar flash blanco
+          cardStyle: { backgroundColor: Colors.background },
+          sceneStyle: { backgroundColor: Colors.background },
           tabBarBackground: () => (
             <View style={styles.blurContainer}>
               <LinearGradient

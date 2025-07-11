@@ -2,8 +2,10 @@ export interface User {
   id: string;
   username: string;
   displayName: string;
+  bio: string;
   avatarUrl: string;
   isVerified: boolean;
+  isPublic: boolean; // true = público, false = privado
 }
 
 export interface UserRelation {
@@ -14,44 +16,57 @@ export interface UserRelation {
 // Usuarios simulados
 export const mockUsers: User[] = [
   {
-    id: '1',
+    id: 'q888kbwstnr1b5p7j1lv32vr4',
     username: 'david',
-    displayName: 'David',
-    avatarUrl: 'https://i.pravatar.cc/150?img=1',
-    isVerified: false,
+    displayName: 'David Lopez',
+    bio: 'CEO de looped, programador, diseñador, artista, etc.',
+    avatarUrl: 'https://pbs.twimg.com/profile_images/1578802191678177281/BlJ-NtBl_400x400.jpg',
+    isVerified: true,
+    isPublic: false, // Perfil privado para mostrar el candado
   },
   {
     id: '2',
     username: 'pedrodquevedo',
     displayName: 'Quevedo',
+    bio: 'Escucha mi último disco "Buenas noches" ya disponible en todas las plataformas.',
     avatarUrl: 'https://pbs.twimg.com/profile_images/1851626170543972353/lmBVAsTV_400x400.jpg',
     isVerified: true,
+    isPublic: true,
   },
   {
     id: '3',
     username: 'alex',
     displayName: 'Alex Barranco',
+    bio: 'CEO de looped, programador, diseñador, artista, etc.',
     avatarUrl: 'https://unavatar.io/x/abepe1010',
-    isVerified: false,
+    isVerified: true,
+    isPublic: false,
   },
   {
     id: '4',
     username: 'dj_beats',
     displayName: 'DJ Beats',
+    bio: '',
     avatarUrl: 'https://i.pravatar.cc/150?img=4',
-    isVerified: true,
+    isVerified: false,
+    isPublic: false,
   },
   {
     id: '5',
     username: 'indie_vibes',
     displayName: 'Indie Vibes',
+    bio: '',
     avatarUrl: 'https://i.pravatar.cc/150?img=5',
-    isVerified: true,
+    isVerified: false,
+    isPublic: true,
   },
 ];
 
 // Relaciones de seguimiento simuladas
 export const mockUserRelations: UserRelation[] = [
+  { followerId: '1', followingId: '2' }, // q888kbwstnr1b5p7j1lv32vr4
+  { followerId: '2', followingId: '3' },
+  
   // musiclover23 sigue a rockstar_girl y dj_beats
   { followerId: '2', followingId: '3' },
   { followerId: '2', followingId: '4' },

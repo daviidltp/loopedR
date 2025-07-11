@@ -10,6 +10,7 @@ interface UserProfile {
   country?: string;
   username: string;
   name: string;
+  bio?: string;
   avatar?: any; // Avatar seleccionado (puede ser una imagen o DEFAULT_AVATAR_ID)
   avatarBackgroundColor?: string; // Color de fondo específico del avatar seleccionado
 }

@@ -1,20 +1,24 @@
 import type { BottomTabNavigationProp, BottomTabScreenProps } from '@react-navigation/bottom-tabs';
 import { useFocusEffect, useNavigation, useRoute } from '@react-navigation/native';
+import { StackNavigationProp } from '@react-navigation/stack';
 import React, { useRef, useState } from 'react';
 import { Animated, StyleSheet, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Colors } from '../../constants/Colors';
+import { RootStackParamList } from '../../navigation/AppNavigator';
 import { currentUser, mockUsers } from '../../utils/mockData';
 import { Layout, SearchBar, UserList } from '../ui';
 import type { BottomNavigationParamList } from '../ui/navigation/BottomNavigationBar';
 
 type SearchScreenProps = BottomTabScreenProps<BottomNavigationParamList, 'Search'>;
 type SearchScreenNavigationProp = BottomTabNavigationProp<BottomNavigationParamList, 'Search'>;
+type MainStackNavigationProp = StackNavigationProp<RootStackParamList>;
 
 export const SearchScreen: React.FC = () => {
   const insets = useSafeAreaInsets();
   const route = useRoute<SearchScreenProps['route']>();
   const navigation = useNavigation<SearchScreenNavigationProp>();
+  const stackNavigation = useNavigation<MainStackNavigationProp>();
   const [searchText, setSearchText] = useState('');
   const searchBarRef = useRef<any>(null);
   const fadeOpacity = useRef(new Animated.Value(1)).current; // Inicia en 1 por defecto
@@ -29,8 +33,8 @@ export const SearchScreen: React.FC = () => {
   const filteredUsers = searchText.trim() === '' 
     ? allUsers 
     : allUsers.filter(user => 
-        user.displayName.toLowerCase().includes(searchText.toLowerCase()) ||
-        user.username.toLowerCase().includes(searchText.toLowerCase())
+        user.displayName.toLowerCase().startsWith(searchText.toLowerCase()) ||
+        user.username.toLowerCase().startsWith(searchText.toLowerCase())
       );
 
   // Solo hacer autofocus y fadein si viene de la animación
@@ -73,7 +77,9 @@ export const SearchScreen: React.FC = () => {
   );
 
   const handleUserPress = (userId: string) => {
-    console.log('Ver perfil de usuario:', userId);
+    console.log('Navegando al perfil de usuario:', userId);
+    // Navegar al UserProfileScreen con el userId del usuario seleccionado
+    stackNavigation.navigate('UserProfile', { userId });
   };
 
   const handleSearch = (text: string) => {

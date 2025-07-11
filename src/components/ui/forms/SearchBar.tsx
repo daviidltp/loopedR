@@ -1,5 +1,6 @@
 import React, { forwardRef, useImperativeHandle, useRef, useState } from 'react';
 import { StyleSheet, TextInput, TouchableOpacity, View } from 'react-native';
+import { IconButton } from 'react-native-paper';
 import SearchIcon from '../../../../assets/icons/search.svg';
 import { Colors } from '../../../constants/Colors';
 
@@ -54,12 +55,18 @@ export const SearchBar = forwardRef<any, SearchBarProps>(({
     }
   };
 
+  const handleClearText = () => {
+    if (onChangeText) {
+      onChangeText('');
+    }
+  };
+
   // Determinar el color de fondo
   const backgroundColor = disableFocusBackgroundChange 
-    ? 'rgba(255, 255, 255, 0.05)' // Color fijo
+    ? 'rgba(255, 255, 255, 0.07)' // Color fijo
     : isFocused 
-      ? 'rgba(255, 255, 255, 0.1)' 
-      : 'rgba(255, 255, 255, 0.05)';
+      ? 'rgba(255, 255, 255, 0.12)' 
+      : 'rgba(255, 255, 255, 0.07)';
 
   const searchBarContent = (
     <View 
@@ -68,6 +75,9 @@ export const SearchBar = forwardRef<any, SearchBarProps>(({
         { backgroundColor }
       ]}
     >
+      {/* Icono de búsqueda a la izquierda */}
+      <SearchIcon width={18} height={18} fill={Colors.gray[400]} style={styles.searchIcon} />
+
       <TextInput
         ref={inputRef}
         style={styles.input}
@@ -84,10 +94,10 @@ export const SearchBar = forwardRef<any, SearchBarProps>(({
         autoFocus={autoFocus}
       />
       
-      {/* Icono de búsqueda */}
-      <TouchableOpacity style={styles.searchIcon} onPress={onSearchPress}>
-        <SearchIcon width={20} height={20} fill={Colors.gray[400]} />
-      </TouchableOpacity>
+      {/* Icono de cruz a la derecha (solo si hay texto) */}
+      {value && value.length > 0 && (
+        <IconButton icon='close' size={20} onPress={handleClearText} iconColor={Colors.gray[400]}/>
+      )}
     </View>
   );
 
@@ -124,23 +134,25 @@ const styles = StyleSheet.create({
     height: 52,
     borderRadius: 16,
     position: 'relative',
-    justifyContent: 'center',
-    paddingLeft: 5,
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingLeft: 18,
+    paddingRight: 12,
+  },
+  searchIcon: {
+    padding: 4,
+    marginRight: 8, // Padding de 4 entre lupa y texto
   },
   input: {
     flex: 1,
-    paddingHorizontal: 18,
-    paddingRight: 55, // Espacio para el icono de búsqueda
-    fontSize: 18,
+    fontSize: 16,
     color: Colors.white,
     fontFamily: 'Inter-Regular',
     includeFontPadding: false,
     textAlignVertical: 'center',
   },
-  searchIcon: {
-    position: 'absolute',
-    right: 18,
-    zIndex: 1,
-    padding: 4, // Para mejor área de toque
+  clearIcon: {
+    padding: 4,
+    marginLeft: 4,
   },
 }); 

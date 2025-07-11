@@ -53,10 +53,38 @@ export default function App() {
   }
 
   return (
-    <GestureHandlerRootView style={{ flex: 1 }} onLayout={onLayoutRootView}>
+    <GestureHandlerRootView style={{ flex: 1, backgroundColor: '#000000' }} onLayout={onLayoutRootView}>
       <SafeAreaProvider>
         <AuthProvider>
-          <NavigationContainer>
+          <NavigationContainer theme={{
+            dark: true,
+            colors: {
+              primary: '#ffffff',
+              background: '#000000',
+              card: '#000000',
+              text: '#ffffff',
+              border: '#000000',
+              notification: '#ff453a',
+            },
+            fonts: {
+              regular: {
+                fontFamily: 'System',
+                fontWeight: 'normal' as const,
+              },
+              medium: {
+                fontFamily: 'System',
+                fontWeight: '500' as const,
+              },
+              bold: {
+                fontFamily: 'System',
+                fontWeight: 'bold' as const,
+              },
+              heavy: {
+                fontFamily: 'System',
+                fontWeight: '900' as const,
+              },
+            },
+          }}>
             <NotifierWrapper>
               <AppNavigator />
             </NotifierWrapper>

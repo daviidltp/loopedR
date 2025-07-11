@@ -80,7 +80,7 @@ export const TextInput = forwardRef<RNTextInput, CustomTextInputProps>(({
           style={[
             styles.inputContainer, 
             { 
-              backgroundColor: isFocused ? 'rgba(255, 255, 255, 0.1)' : 'rgba(255, 255, 255, 0.05)',
+              backgroundColor: isFocused ? 'rgba(255, 255, 255, 0.12)' : 'rgba(255, 255, 255, 0.07)',
             }
           ]}
         >
