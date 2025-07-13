@@ -7,6 +7,7 @@ import { RootStackParamList } from '../../navigation/AppNavigator';
 import { currentUser, getUserFollowers, getUserFollowing } from '../../utils/mockData';
 import { ResizingButton } from '../ui/buttons/ResizingButton';
 import { ProfileHeader } from '../ui/headers/ProfileHeader';
+import { Layout } from '../ui/layout/Layout';
 import { AppText } from '../ui/Text/AppText';
 
 type ProfileScreenNavigationProp = StackNavigationProp<RootStackParamList>;
@@ -60,6 +61,7 @@ export const ProfileScreen: React.FC = () => {
   const followingCount = following.length;
 
   return (
+    <Layout>
     <View style={styles.container}>
       {/* Header */}
       <ProfileHeader 
@@ -97,11 +99,11 @@ export const ProfileScreen: React.FC = () => {
             </AppText>
             
             <View style={styles.followStatsContainer}>
-              <AppText 
-                variant="body" 
+            <AppText 
+                variant="h5" 
                 fontFamily="inter" 
+                fontWeight='bold'
                 color={Colors.white}
-                style={styles.followNumber}
               >
                 {formatFollowersCount(followersCount)}
               </AppText>
@@ -109,15 +111,14 @@ export const ProfileScreen: React.FC = () => {
                 variant="body" 
                 fontFamily="inter" 
                 color={Colors.gray[400]}
-                style={styles.followText}
               >
                 {followersCount == 1 ? ' seguidor · ' : ' seguidores · '}
               </AppText>
               <AppText 
-                variant="body" 
+                variant="h5" 
                 fontFamily="inter" 
+                fontWeight='bold'
                 color={Colors.white}
-                style={styles.followNumber}
               >
                 {formatFollowersCount(followingCount)}
               </AppText>
@@ -125,7 +126,6 @@ export const ProfileScreen: React.FC = () => {
                 variant="body" 
                 fontFamily="inter" 
                 color={Colors.gray[400]}
-                style={styles.followText}
               >
                 {followingCount == 1 ? ' seguido' : ' seguidos'}
               </AppText>
@@ -166,6 +166,7 @@ export const ProfileScreen: React.FC = () => {
         </View>
       </ScrollView>
     </View>
+    </Layout>
   );
 };
 
@@ -200,6 +201,7 @@ const styles = StyleSheet.create({
   profileInfo: {
     flex: 1,
     justifyContent: 'center',
+    gap: 6
   },
   displayName: {
     marginBottom: 4,
@@ -208,12 +210,6 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     flexWrap: 'wrap',
-  },
-  followNumber: {
-    lineHeight: 20,
-  },
-  followText: {
-    lineHeight: 20,
   },
   bioSection: {
     paddingHorizontal: 16,

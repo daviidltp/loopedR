@@ -103,6 +103,7 @@ const styles = StyleSheet.create({
   },
   mainScrollView: {
     flex: 1,
+    paddingTop: 24,
   },
   emptyStateContainer: {
     paddingHorizontal: 24,

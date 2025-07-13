@@ -1,25 +1,26 @@
 import React from 'react';
-import { Image, Platform, StyleSheet, TouchableNativeFeedback, TouchableOpacity, View } from 'react-native';
+import { Image, StyleSheet, View } from 'react-native';
+import { IconButton } from 'react-native-paper';
 import { Colors } from '../../../constants/Colors';
-import { User, currentUser, mockUserRelations } from '../../../utils/mockData';
+import { FollowRequest, getUserById } from '../../../utils/mockData';
 import { AppText } from '../Text/AppText';
+import { ResizingButton } from '../buttons/ResizingButton';
 
-interface UserListItemProps {
-  user: User;
-  onPress?: (userId: string) => void;
+interface FollowRequestCardProps {
+  request: FollowRequest;
+  onAccept: (requestId: string) => void;
+  onReject: (requestId: string) => void;
 }
 
-// Función para saber si el usuario actual sigue al usuario mostrado
-const isFollowing = (userId: string): boolean => {
-  return mockUserRelations.some(
-    (rel) => rel.followerId === currentUser.id && rel.followingId === userId
-  );
-};
-
-export const UserListItem: React.FC<UserListItemProps> = ({
-  user,
-  onPress,
+export const FollowRequestCard: React.FC<FollowRequestCardProps> = ({
+  request,
+  onAccept,
+  onReject,
 }) => {
+  const user = getUserById(request.fromUserId);
+
+  if (!user) return null;
+
   const getInitials = (name: string): string => {
     const words = name.trim().split(/\s+/);
     if (words.length >= 2) {
@@ -27,10 +28,6 @@ export const UserListItem: React.FC<UserListItemProps> = ({
     }
     return (words[0][0] + (words[0][1] || '')).toUpperCase();
   };
-
-  const handlePress = () => onPress?.(user.id);
-
-  const siguiendo = isFollowing(user.id);
 
   const content = (
     <View style={styles.container}>
@@ -45,7 +42,6 @@ export const UserListItem: React.FC<UserListItemProps> = ({
               fontFamily="roboto" 
               fontWeight="semiBold" 
               color={Colors.white}
-              numberOfLines={1}
             >
               {getInitials(user.displayName)}
             </AppText>
@@ -55,14 +51,12 @@ export const UserListItem: React.FC<UserListItemProps> = ({
 
       {/* Información del usuario */}
       <View style={styles.userInfo}>
-        {/* Username con ícono verificado y texto "· Siguiendo" si corresponde */}
         <View style={styles.usernameRow}>
           <AppText 
             fontSize={16} 
             fontFamily="roboto" 
             fontWeight="semiBold" 
             color={Colors.white}
-            style={styles.username}
             numberOfLines={1}
           >
             {user.username}
@@ -73,18 +67,6 @@ export const UserListItem: React.FC<UserListItemProps> = ({
               style={styles.verifiedIcon}
             />
           )}
-          {siguiendo && (
-            <AppText
-              fontSize={16}
-              fontFamily="roboto"
-              fontWeight="regular"
-              color={Colors.gray[500]}
-              style={styles.siguiendoText}
-              numberOfLines={1}
-            >
-              {'󠁯•󠁏 Siguiendo'}
-            </AppText>
-          )}
         </View>
         
         <AppText 
@@ -92,45 +74,51 @@ export const UserListItem: React.FC<UserListItemProps> = ({
           fontFamily="inter" 
           fontWeight="regular" 
           color={Colors.gray[400]}
-          style={styles.displayName}
           numberOfLines={1}
           lineHeight={18}
         >
           {user.displayName}
         </AppText>
       </View>
+
+      {/* Botones de acción */}
+      <View style={styles.buttonsContainer}>
+        <View style={styles.buttonWrapper}>
+          <ResizingButton
+            title="Aceptar"
+            onPress={() => onAccept(request.id)}
+            textColor={Colors.white}
+            backgroundColor={Colors.secondaryGreen}
+            height={32}
+            width={100} // Ancho fijo para el botón de aceptar
+          />
+        </View>
+        <View style={styles.buttonWrapper}>
+          <IconButton
+            icon="close"
+            size={22}
+            onPress={() => onReject(request.id)}
+            iconColor={Colors.white}
+            style={{ backgroundColor: Colors.background, borderRadius: 20 }}
+            accessibilityLabel="Rechazar solicitud"
+          />
+        </View>
+      </View>
     </View>
   );
 
-  // Usar TouchableNativeFeedback en Android para ripple effect
-  if (Platform.OS === 'android') {
-    return (
-      <TouchableNativeFeedback
-        onPress={handlePress}
-        background={TouchableNativeFeedback.Ripple(Colors.gray[700], false)}
-      >
-        {content}
-      </TouchableNativeFeedback>
-    );
-  }
-
-  // Fallback para iOS
-  return (
-    <TouchableOpacity 
-      onPress={handlePress}
-      activeOpacity={0.7}
-    >
-      {content}
-    </TouchableOpacity>
-  );
+  return content;
 };
 
 const styles = StyleSheet.create({
   container: {
     flexDirection: 'row',
     alignItems: 'center',
-    paddingVertical: 12,
-    paddingHorizontal: 24,
+    paddingVertical: 16,
+    paddingHorizontal: 16, // Reducido de 24 a 16 para acercar los botones al borde
+    backgroundColor: Colors.background,
+    minHeight: 80, // Altura mínima para dar más espacio
+    justifyContent: 'space-between',
   },
   avatarContainer: {
     marginRight: 12,
@@ -138,12 +126,12 @@ const styles = StyleSheet.create({
   avatar: {
     width: 52,
     height: 52,
-    borderRadius: 24,
+    borderRadius: 26,
   },
   defaultAvatar: {
     width: 52,
     height: 52,
-    borderRadius: 24,
+    borderRadius: 26,
     backgroundColor: Colors.gray[700],
     justifyContent: 'center',
     alignItems: 'center',
@@ -151,25 +139,27 @@ const styles = StyleSheet.create({
   userInfo: {
     flex: 1,
     justifyContent: 'center',
+    marginRight: 0, // Padding adicional para evitar que el texto se pegue a los botones
   },
   usernameRow: {
     flexDirection: 'row',
     alignItems: 'center',
-    marginBottom: 0,
-  },
-  username: {
-    marginBottom: 0,
-    marginRight: 2,
-  },
-  displayName: {
-    // Sin margin adicional
+    marginBottom: 2,
+    marginRight: 32, // Padding adicional para evitar que el texto se pegue a los botones
   },
   verifiedIcon: {
     width: 18,
     height: 18,
     marginLeft: 4,
   },
-  siguiendoText: {
-    marginLeft: 6,
+  buttonsContainer: {
+    flexDirection: 'row',
+    gap: 4,
+    alignItems: 'center',
+    justifyContent: 'flex-end',
+    marginLeft: 'auto',
+  },
+  buttonWrapper: {
+    // Sin ancho fijo para que los botones se ajusten a su contenido
   },
 }); 

@@ -8,6 +8,7 @@ import { RootStackParamList } from '../../navigation/AppNavigator';
 import { currentUser, getUserFollowers, getUserFollowing, isUserFollowing, mockUsers } from '../../utils/mockData';
 import { ResizingButton } from '../ui/buttons/ResizingButton';
 import { ProfileHeader } from '../ui/headers/ProfileHeader';
+import { Layout } from '../ui/layout/Layout';
 import { AppText } from '../ui/Text/AppText';
 
 type UserProfileScreenProps = StackScreenProps<RootStackParamList, 'UserProfile'>;
@@ -94,6 +95,7 @@ export const UserProfileScreen: React.FC = () => {
   const isFollowing = isUserFollowing(currentUser.id, userData.id);
 
   return (
+    <Layout>
     <View style={styles.container}>
       {/* Header personalizado con botón de atrás */}
       <ProfileHeader 
@@ -136,10 +138,10 @@ export const UserProfileScreen: React.FC = () => {
             
             <View style={styles.followStatsContainer}>
               <AppText 
-                variant="body" 
+                variant="h5" 
                 fontFamily="inter" 
+                fontWeight='bold'
                 color={Colors.white}
-                style={styles.followNumber}
               >
                 {formatFollowersCount(followersCount)}
               </AppText>
@@ -147,15 +149,14 @@ export const UserProfileScreen: React.FC = () => {
                 variant="body" 
                 fontFamily="inter" 
                 color={Colors.gray[400]}
-                style={styles.followText}
               >
                 {followersCount == 1 ? ' seguidor · ' : ' seguidores · '}
               </AppText>
               <AppText 
-                variant="body" 
+                variant="h5" 
                 fontFamily="inter" 
+                fontWeight='bold'
                 color={Colors.white}
-                style={styles.followNumber}
               >
                 {formatFollowersCount(followingCount)}
               </AppText>
@@ -163,7 +164,6 @@ export const UserProfileScreen: React.FC = () => {
                 variant="body" 
                 fontFamily="inter" 
                 color={Colors.gray[400]}
-                style={styles.followText}
               >
                 {followingCount == 1 ? ' seguido' : ' seguidos'}
               </AppText>
@@ -178,7 +178,7 @@ export const UserProfileScreen: React.FC = () => {
               variant="body" 
               fontFamily="inter" 
               color={Colors.gray[300]}
-              style={styles.bioText}
+              lineHeight={22}
             >
               {userData.bio}
             </AppText>
@@ -260,6 +260,7 @@ export const UserProfileScreen: React.FC = () => {
         )}
       </ScrollView>
     </View>
+    </Layout>
   );
 };
 
@@ -294,6 +295,7 @@ const styles = StyleSheet.create({
   profileInfo: {
     flex: 1,
     justifyContent: 'center',
+    gap: 6
   },
   displayName: {
     marginBottom: 4,
@@ -303,18 +305,9 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     flexWrap: 'wrap',
   },
-  followNumber: {
-    lineHeight: 20,
-  },
-  followText: {
-    lineHeight: 20,
-  },
   bioSection: {
     paddingHorizontal: 16,
     paddingTop: 24,
-  },
-  bioText: {
-    lineHeight: 22,
   },
   buttonSection: {
     paddingHorizontal: 16,

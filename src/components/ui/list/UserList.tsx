@@ -28,6 +28,8 @@ export const UserList: React.FC<UserListProps> = ({
       showsVerticalScrollIndicator={false}
       style={styles.list}
       contentContainerStyle={styles.listContent}
+      keyboardShouldPersistTaps="handled"
+      keyboardDismissMode="on-drag"
     />
   );
 };

@@ -64,7 +64,7 @@ export const textStyles = StyleSheet.create({
 
   body: {
     fontFamily: FONT_FAMILIES.medium,
-    fontSize: 16,
+    fontSize: 15,
     lineHeight: 24,
     color: Colors.white,
   } as TextStyle,

@@ -21,6 +21,7 @@ export interface ResizingButtonProps {
     textColor?: string;
     borderColor?: string;
     height?: number;
+    width?: number;
 }
 
 const DURATION = 100;
@@ -74,6 +75,7 @@ export const ResizingButton = ({
     textColor = "#000",
     borderColor = "transparent",
     height = 52,
+    width,
 }: ResizingButtonProps) => {
     const transition = useSharedValue(0);
     const isActive = useSharedValue(false);
@@ -92,6 +94,7 @@ export const ResizingButton = ({
         borderColor,
         opacity: isDisabled ? 0.5 : 1,
         height,
+        width,
         borderRadius: height / 4,
     };
 
@@ -141,7 +144,12 @@ export const ResizingButton = ({
                             </Animated.View>
                         )}
                         <Animated.View style={styles.textContainer}>
-                            <AppText variant="bodyLarge" fontWeight="semiBold" numberOfLines={1} color={textColor}>
+                            {/* 
+                              Usamos una función sublineal para que el tamaño del texto crezca más lento que linealmente.
+                              Por ejemplo, usando la raíz cuadrada: fontSize = 6 + Math.sqrt(height) * 3.5
+                              Así, para valores pequeños de height, el texto no se hace demasiado pequeño.
+                            */}
+                            <AppText fontSize={6 + Math.sqrt(height) * 1.5} fontWeight="semiBold" numberOfLines={1} color={textColor}>
                                 {title}
                             </AppText>
                         </Animated.View>
