@@ -4,8 +4,11 @@ export const Colors = {
   backgroundUltraSoft: '#252525',
   spotifyGreen: '#1DB954',
   secondaryGreen: '#00B290',
+  secondaryGreenDark: '#004135',
   appleRed: '#fa233b',
   white: '#FFFFFF',
+  lessMutedWhite: '#FFFFFFCC',
+  mutedWhite: '#FFFFFF99',
   gold: '#D4AF37',
   gray: {
     100: '#F5F5F5',

@@ -1,3 +1,4 @@
+import { textStyles } from '@/src/constants';
 import React, { forwardRef, useRef, useState } from 'react';
 import { Animated, TextInput as RNTextInput, StyleSheet, TextInputProps, View } from 'react-native';
 import { Colors } from '../../../constants/Colors';
@@ -60,21 +61,9 @@ export const TextInput = forwardRef<RNTextInput, CustomTextInputProps>(({
     onBlur?.(e);
   };
 
-
-
-  const prefixFontSize = animatedValue.interpolate({
-    inputRange: [0, 1],
-    outputRange: [16, 12],
-  });
-
-  const prefixColor = animatedValue.interpolate({
-    inputRange: [0, 1],
-    outputRange: [Colors.gray[400], Colors.gray[300]],
-  });
-
   return (
     <View style={styles.container}>
-      {label && <AppText variant='body' fontFamily='poppins' color={Colors.white} style={styles.label}>{label}</AppText>}
+      {label && <AppText variant='body' fontFamily='inter' color={Colors.white} style={styles.label}>{label}</AppText>}
       <View style={styles.inputWrapper}>
         <Animated.View 
           style={[
@@ -85,7 +74,7 @@ export const TextInput = forwardRef<RNTextInput, CustomTextInputProps>(({
           ]}
         >
           {showFixedAtSymbol && (
-            <AppText variant='body' fontFamily='inter' fontWeight='regular' style={styles.fixedAtSymbol}>@</AppText>
+            <AppText variant='body' fontFamily='inter' fontWeight='regular' style={styles.fixedAtSymbol} color={Colors.mutedWhite}>@</AppText>
           )}
 
           <RNTextInput
@@ -120,7 +109,7 @@ export const TextInput = forwardRef<RNTextInput, CustomTextInputProps>(({
           )}
         </Animated.View>
         <AppText 
-          variant='body' 
+          variant='bodySmall' 
           style={[
             styles.helperText,
             error && styles.errorText
@@ -153,7 +142,7 @@ const styles = StyleSheet.create({
   input: {
     flex: 1,
     paddingHorizontal: 18,
-    fontSize: 18,
+    fontSize: textStyles.bodyLarge.fontSize, // bodyLarge, no queda de otra que poner esto porque no es un AppText propio
     color: Colors.white,
     fontFamily: 'Inter-Regular',
     includeFontPadding: false,
@@ -162,11 +151,9 @@ const styles = StyleSheet.create({
   fixedAtSymbol: {
     position: 'absolute',
     left: 18,
-    fontSize: 16,
-    paddingBottom: 0,
-    fontWeight: '500',
-    color: Colors.gray[300],
+    paddingBottom: 1,
     zIndex: 1,
+    textAlignVertical: 'center',
   },
   validationIcon: {
     position: 'absolute',
@@ -175,10 +162,7 @@ const styles = StyleSheet.create({
   },
   helperText: {
     paddingTop: 20,
-    fontSize: 14,
-    color: Colors.white,
-    opacity: 0.6,
-    lineHeight: 20,
+    color: Colors.mutedWhite,
   },
   errorText: {
     color: Colors.appleRed,

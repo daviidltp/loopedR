@@ -28,12 +28,11 @@ export const UserCard: React.FC<UserCardProps> = ({
       <View style={styles.userInfo}>
         <View style={styles.nameContainer}>
           <AppText 
-            fontSize={16} 
+            variant='body'
             fontFamily="inter" 
             fontWeight="semiBold" 
             color={Colors.white}
             style={styles.displayName}
-            lineHeight={16}
           >
             {user.displayName}
           </AppText>
@@ -46,12 +45,11 @@ export const UserCard: React.FC<UserCardProps> = ({
         </View>
         
         <AppText 
-          fontSize={14} 
+          variant='bodySmall'
           fontFamily="inter" 
           fontWeight="regular" 
-          color={Colors.gray[400]}
+          color={Colors.mutedWhite}
           style={styles.username}
-          lineHeight={16}
         >
           @{user.username}
         </AppText>

@@ -38,8 +38,8 @@ export const FollowRequestSection: React.FC<FollowRequestSectionProps> = ({
         ) : (
           <View style={styles.defaultAvatar}>
             <AppText 
-              fontSize={16} 
-              fontFamily="roboto" 
+              variant='body'
+              fontFamily="inter" 
               fontWeight="semiBold" 
               color={Colors.white}
             >
@@ -52,8 +52,8 @@ export const FollowRequestSection: React.FC<FollowRequestSectionProps> = ({
       {/* Información de la sección */}
       <View style={styles.sectionInfo}>
         <AppText 
-          fontSize={16} 
-          fontFamily="roboto" 
+          variant='body'
+          fontFamily="inter" 
           fontWeight="semiBold" 
           color={Colors.white}
           style={styles.sectionTitle}
@@ -62,10 +62,10 @@ export const FollowRequestSection: React.FC<FollowRequestSectionProps> = ({
         </AppText>
         
         <AppText 
-          fontSize={14} 
+          variant='bodySmall'
           fontFamily="inter" 
           fontWeight="regular" 
-          color={Colors.gray[400]}
+          color={Colors.mutedWhite}
           style={styles.sectionSubtitle}
         >
           {requests.length} solicitud{requests.length > 1 ? 'es' : ''}
@@ -75,10 +75,10 @@ export const FollowRequestSection: React.FC<FollowRequestSectionProps> = ({
       {/* Indicador de flecha */}
       <View style={styles.arrowContainer}>
         <AppText 
-          fontSize={18} 
-          fontFamily="roboto" 
+          variant='bodyLarge'
+          fontFamily="inter" 
           fontWeight="regular" 
-          color={Colors.gray[400]}
+          color={Colors.mutedWhite}
         >
           ›
         </AppText>

@@ -94,7 +94,7 @@ const DURATION = 100;
 const CustomTabButton = (props: BottomTabBarButtonProps) => {
   const transition = useSharedValue(0);
   const isActive = useSharedValue(false);
-  const scale = 0.9;
+  const scale = 1; //0.9;
 
   const animatedStyle = useAnimatedStyle(() => ({
     transform: [

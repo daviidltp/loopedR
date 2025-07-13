@@ -41,8 +41,8 @@ export const UserListItem: React.FC<UserListItemProps> = ({
         ) : (
           <View style={styles.defaultAvatar}>
             <AppText 
-              fontSize={16} 
-              fontFamily="roboto" 
+              variant='body'
+              fontFamily="inter" 
               fontWeight="semiBold" 
               color={Colors.white}
               numberOfLines={1}
@@ -58,8 +58,8 @@ export const UserListItem: React.FC<UserListItemProps> = ({
         {/* Username con ícono verificado y texto "· Siguiendo" si corresponde */}
         <View style={styles.usernameRow}>
           <AppText 
-            fontSize={16} 
-            fontFamily="roboto" 
+            variant='body'
+            fontFamily="inter" 
             fontWeight="semiBold" 
             color={Colors.white}
             style={styles.username}
@@ -75,26 +75,25 @@ export const UserListItem: React.FC<UserListItemProps> = ({
           )}
           {siguiendo && (
             <AppText
-              fontSize={16}
-              fontFamily="roboto"
+              variant='bodySmall'
+              fontFamily="inter"
               fontWeight="regular"
-              color={Colors.gray[500]}
+              color={Colors.mutedWhite}
               style={styles.siguiendoText}
               numberOfLines={1}
             >
-              {'󠁯•󠁏 Siguiendo'}
+              {'󠁯· Siguiendo'}
             </AppText>
           )}
         </View>
         
         <AppText 
-          fontSize={14} 
+          variant='bodySmall'
           fontFamily="inter" 
           fontWeight="regular" 
-          color={Colors.gray[400]}
+          color={Colors.mutedWhite}
           style={styles.displayName}
           numberOfLines={1}
-          lineHeight={18}
         >
           {user.displayName}
         </AppText>

@@ -1,30 +1,29 @@
 import React from 'react';
 import { StyleSheet, View } from 'react-native';
-import { Icon } from 'react-native-paper';
+import { IconButton } from 'react-native-paper';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Colors } from '../../../constants/Colors';
 import { AppText } from '../Text/AppText';
 
-interface NotificationsHeaderProps {
+interface SettingsHeaderProps {
   onBackPress?: () => void;
 }
 
-export const NotificationsHeader: React.FC<NotificationsHeaderProps> = ({ 
+export const SettingsHeader: React.FC<SettingsHeaderProps> = ({ 
   onBackPress,
 }) => {
   const insets = useSafeAreaInsets();
 
-  
   return (
     <View style={styles.container}>
       <View style={styles.leftSection}>
-            <View style={styles.privacyIcon}>
-              <Icon
-                source="bell"
-                size={20}
-                color={Colors.gray[400]}
-              />
-            </View>
+        <IconButton
+          icon="arrow-left"
+          size={24}
+          iconColor={Colors.white}
+          onPress={onBackPress}
+          style={styles.backButton}
+        />
         
         <View style={styles.titleContainer}>
           <AppText 
@@ -32,11 +31,10 @@ export const NotificationsHeader: React.FC<NotificationsHeaderProps> = ({
             fontFamily="inter" 
             fontWeight="semiBold" 
             color={Colors.white}
-            style={styles.usernameText}
+            style={styles.titleText}
           >
-            Notificaciones
+            Ajustes
           </AppText>
-
         </View>
       </View>
     </View>
@@ -49,39 +47,27 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'space-between',
     paddingHorizontal: 20,
-    minHeight: 48, // Asegurar altura mínima consistente
+    minHeight: 48,
   },
   leftSection: {
     flexDirection: 'row',
     alignItems: 'center',
     flex: 1,
-    minHeight: 40, // Altura mínima para alineamiento
+    minHeight: 40,
   },
-
+  backButton: {
+    margin: 0,
+  },
   titleContainer: {
     flexDirection: 'row',
     alignItems: 'center',
     flex: 1,
-    minHeight: 40, // Misma altura que los botones
+    minHeight: 40,
   },
-  usernameText: {
-    lineHeight: 24, // Controlar línea específicamente
-    includeFontPadding: false, // Eliminar padding interno del font
-    textAlignVertical: 'center', // Centrar verticalmente
+  titleText: {
+    lineHeight: 24,
+    includeFontPadding: false,
+    textAlignVertical: 'center',
     marginLeft: 8,
-    marginRight: 6,
-  },
-  verifiedIcon: {
-    alignSelf: 'center', // Centrar el icono
-  },
-  privacyIcon: {
-    alignSelf: 'center', // Centrar el icono
-  },
-  rightButton: {
-    width: 40,
-    height: 40,
-    borderRadius: 20,
-    justifyContent: 'center',
-    alignItems: 'center',
   },
 }); 

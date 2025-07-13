@@ -44,20 +44,15 @@ const styles = StyleSheet.create({
         // El borderRadius se aplicará dinámicamente en el componente
     },
     iconContainer: {
-        position: "absolute",
-        left: 30,
-        zIndex: 1,
+        marginRight: 8,
     },
     textContainer: {
-        flex: 1,
         alignItems: "center",
         justifyContent: "center",
-        position: "relative",
     },
     contentGroup: {
         flexDirection: "row",
         alignItems: "center",
-        width: "100%",
         justifyContent: "center",
     },
 });
@@ -69,7 +64,7 @@ export const ResizingButton = ({
     isDisabled = false,
     isLoading = false,
     onPress,
-    scale = 0.97,
+    scale = 0.95,
     title,
     backgroundColor = "#14F195",
     textColor = "#000",
@@ -149,7 +144,7 @@ export const ResizingButton = ({
                               Por ejemplo, usando la raíz cuadrada: fontSize = 6 + Math.sqrt(height) * 3.5
                               Así, para valores pequeños de height, el texto no se hace demasiado pequeño.
                             */}
-                            <AppText fontSize={6 + Math.sqrt(height) * 1.5} fontWeight="semiBold" numberOfLines={1} color={textColor}>
+                            <AppText fontSize={6 + Math.sqrt(height) * 1.6} fontWeight="semiBold" numberOfLines={1} color={textColor}>
                                 {title}
                             </AppText>
                         </Animated.View>

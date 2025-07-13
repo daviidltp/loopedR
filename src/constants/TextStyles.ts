@@ -64,8 +64,8 @@ export const textStyles = StyleSheet.create({
 
   body: {
     fontFamily: FONT_FAMILIES.medium,
-    fontSize: 15,
-    lineHeight: 24,
+    fontSize: 16,
+    lineHeight: 20,
     color: Colors.white,
   } as TextStyle,
 
@@ -73,23 +73,6 @@ export const textStyles = StyleSheet.create({
     fontFamily: FONT_FAMILIES.regular,
     fontSize: 14,
     lineHeight: 20,
-    color: Colors.white,
-  } as TextStyle,
-
-  // Texto de interfaz
-  button: {
-    fontFamily: FONT_FAMILIES.semiBold,
-    fontSize: 16,
-    lineHeight: 20,
-    letterSpacing: 0.5,
-    color: Colors.white,
-  } as TextStyle,
-
-  buttonSmall: {
-    fontFamily: FONT_FAMILIES.medium,
-    fontSize: 14,
-    lineHeight: 18,
-    letterSpacing: 0.3,
     color: Colors.white,
   } as TextStyle,
 
@@ -181,172 +164,6 @@ export const textStyles = StyleSheet.create({
     fontSize: 16,
     lineHeight: 24,
     color: Colors.gray[500],
-  } as TextStyle,
-
-  // ===============================================
-  // ESTILOS CON RALEWAY (Elegante para títulos)
-  // ===============================================
-  
-  // Títulos con Raleway
-  displayRaleway: {
-    fontFamily: FONT_FAMILIES.ralewayBlack,
-    fontSize: 48,
-    lineHeight: 56,
-    letterSpacing: -1,
-    color: Colors.white,
-  } as TextStyle,
-
-  h1Raleway: {
-    fontFamily: FONT_FAMILIES.ralewayBold,
-    fontSize: 32,
-    lineHeight: 40,
-    letterSpacing: -0.5,
-    color: Colors.white,
-  } as TextStyle,
-
-  h2Raleway: {
-    fontFamily: FONT_FAMILIES.ralewaySemiBold,
-    fontSize: 28,
-    lineHeight: 36,
-    letterSpacing: -0.3,
-    color: Colors.white,
-  } as TextStyle,
-
-  h3Raleway: {
-    fontFamily: FONT_FAMILIES.ralewaySemiBold,
-    fontSize: 24,
-    lineHeight: 32,
-    letterSpacing: -0.2,
-    color: Colors.white,
-  } as TextStyle,
-
-  // Texto elegante con Raleway
-  bodyRaleway: {
-    fontFamily: FONT_FAMILIES.ralewayRegular,
-    fontSize: 17,
-    lineHeight: 24,
-    color: Colors.white,
-  } as TextStyle,
-
-  captionRaleway: {
-    fontFamily: FONT_FAMILIES.ralewayLight,
-    fontSize: 12,
-    lineHeight: 16,
-    color: Colors.gray[400],
-  } as TextStyle,
-
-  // ===============================================
-  // ESTILOS CON POPPINS (Moderna para UI)
-  // ===============================================
-  
-  // Títulos con Poppins
-  displayPoppins: {
-    fontFamily: FONT_FAMILIES.poppinsBlack,
-    fontSize: 48,
-    lineHeight: 56,
-    letterSpacing: -1,
-    color: Colors.white,
-  } as TextStyle,
-
-  h1Poppins: {
-    fontFamily: FONT_FAMILIES.poppinsBold,
-    fontSize: 32,
-    lineHeight: 40,
-    letterSpacing: -0.5,
-    color: Colors.white,
-  } as TextStyle,
-
-  h2Poppins: {
-    fontFamily: FONT_FAMILIES.poppinsSemiBold,
-    fontSize: 28,
-    lineHeight: 36,
-    letterSpacing: -0.3,
-    color: Colors.white,
-  } as TextStyle,
-
-  h3Poppins: {
-    fontFamily: FONT_FAMILIES.poppinsSemiBold,
-    fontSize: 24,
-    lineHeight: 32,
-    letterSpacing: -0.2,
-    color: Colors.white,
-  } as TextStyle,
-
-  // UI moderna con Poppins
-  buttonPoppins: {
-    fontFamily: FONT_FAMILIES.poppinsSemiBold,
-    fontSize: 16,
-    lineHeight: 20,
-    letterSpacing: 0.5,
-    color: Colors.white,
-  } as TextStyle,
-
-  bodyPoppins: {
-    fontFamily: FONT_FAMILIES.poppinsRegular,
-    fontSize: 17,
-    lineHeight: 24,
-    color: Colors.white,
-  } as TextStyle,
-
-  labelPoppins: {
-    fontFamily: FONT_FAMILIES.poppinsMedium,
-    fontSize: 14,
-    lineHeight: 18,
-    letterSpacing: 0.1,
-    color: Colors.white,
-  } as TextStyle,
-
-  captionPoppins: {
-    fontFamily: FONT_FAMILIES.poppinsLight,
-    fontSize: 12,
-    lineHeight: 16,
-    color: Colors.gray[400],
-  } as TextStyle,
-
-  // ===============================================
-  // ESTILOS ESPECIALES COMBINADOS
-  // ===============================================
-  
-  // Para logotipo/marca
-  logoText: {
-    fontFamily: FONT_FAMILIES.ralewayBold,
-    fontSize: 32,
-    lineHeight: 40,
-    letterSpacing: -1,
-    color: Colors.white,
-  } as TextStyle,
-
-  logoTextLarge: {
-    fontFamily: FONT_FAMILIES.ralewayBold,
-    fontSize: 48,
-    lineHeight: 56,
-    letterSpacing: -1.5,
-    color: Colors.white,
-  } as TextStyle,
-
-  // Para navegación y UI
-  navText: {
-    fontFamily: FONT_FAMILIES.poppinsMedium,
-    fontSize: 14,
-    lineHeight: 18,
-    letterSpacing: 0.2,
-    color: Colors.white,
-  } as TextStyle,
-
-  // Para cards y contenido
-  cardTitle: {
-    fontFamily: FONT_FAMILIES.poppinsSemiBold,
-    fontSize: 18,
-    lineHeight: 24,
-    letterSpacing: -0.1,
-    color: Colors.white,
-  } as TextStyle,
-
-  cardSubtitle: {
-    fontFamily: FONT_FAMILIES.poppinsRegular,
-    fontSize: 14,
-    lineHeight: 20,
-    color: Colors.gray[300],
   } as TextStyle,
 });
 

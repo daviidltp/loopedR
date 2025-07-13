@@ -171,9 +171,9 @@ export const AppNavigator = () => {
         name="Settings" 
         component={SettingsScreen}
         options={({ navigation }) => ({
-          headerShown: true,
+          headerShown: false,
           headerTitle: 'Settings',
-          headerTitleAlign: 'center',
+          headerTitleAlign: 'left',
           headerLeft: () => (
             <HeaderBackButton onPress={() => navigation.goBack()} />
           ),

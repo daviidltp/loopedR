@@ -54,12 +54,12 @@ export const HomeScreen: React.FC = () => {
           {!userHasFriends ? (
             <View style={styles.emptyStateContainer}>
               <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
-                <View style={styles.textAndSearchSection}>
+                <View>
                   <Animated.View style={fadeAnimatedStyle}>
-                    <AppText fontSize={32} fontFamily='inter' fontWeight='semiBold' color={Colors.white} lineHeight={36} style={{marginBottom: 16}}>
-                      Esto está un poco vacío...
+                    <AppText variant='h1' fontFamily='inter' fontWeight='semiBold' lineHeight={36} color={Colors.white} style={{marginBottom: 24}}>
+                      Vaya, esto está un poco vacío...
                     </AppText>
-                    <AppText fontSize={16} fontFamily='inter' fontWeight='regular' color={Colors.gray[400]} lineHeight={24}>Empieza añadiendo a un amigo</AppText>
+                    <AppText variant='body' fontFamily='inter' fontWeight='regular' color={Colors.mutedWhite}>Empieza añadiendo a un amigo</AppText>
                   </Animated.View>
                   
                   <View style={styles.searchSpaceholder} />
@@ -69,7 +69,7 @@ export const HomeScreen: React.FC = () => {
           ) : (
             <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
               <View style={styles.feedContainer}>
-                <AppText fontSize={18} color={Colors.gray[400]} fontFamily='raleway'>Feed con amigos (próximamente)</AppText>
+                <AppText variant='body' fontFamily='inter' fontWeight='regular' color={Colors.mutedWhite}>Feed con amigos (próximamente)</AppText>
               </View>
             </TouchableWithoutFeedback>
           )}
@@ -109,9 +109,6 @@ const styles = StyleSheet.create({
     paddingHorizontal: 24,
     paddingTop: 16,
     minHeight: '100%',
-  },
-  textAndSearchSection: {
-    // Sección que SÍ puede cerrar el teclado
   },
   searchSpaceholder: {
     height: 72,

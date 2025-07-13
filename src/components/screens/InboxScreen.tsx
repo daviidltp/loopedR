@@ -63,7 +63,7 @@ export const InboxScreen: React.FC = () => {
           </View>
         )}
 
-        <AppText fontSize={16} fontFamily="inter" fontWeight="bold" color={Colors.gray[300]} lineHeight={20} style={styles.otherNotificationsText}>Otras notificaciones</AppText>
+        <AppText variant='body' fontFamily="inter" fontWeight="semiBold" color={Colors.white} style={styles.otherNotificationsText}>Otras notificaciones</AppText>
 
         {/* Sección de notificaciones */}
         <View style={styles.notificationsContainer}>
@@ -78,10 +78,10 @@ export const InboxScreen: React.FC = () => {
           ) : (
             <View style={styles.emptyContainer}>
               <AppText 
-                fontSize={16} 
+                variant='body' 
                 fontFamily="inter" 
                 fontWeight="regular" 
-                color={Colors.gray[400]}
+                color={Colors.mutedWhite}
                 style={styles.emptyText}
               >
                 No tienes notificaciones

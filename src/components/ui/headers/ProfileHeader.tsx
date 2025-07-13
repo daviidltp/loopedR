@@ -1,6 +1,7 @@
 import React from 'react';
 import { Pressable, StyleSheet, View } from 'react-native';
-import { Icon } from 'react-native-paper';
+import { Notifier } from 'react-native-notifier';
+import { Icon, IconButton } from 'react-native-paper';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Colors } from '../../../constants/Colors';
 import { AppText } from '../Text/AppText';
@@ -41,6 +42,42 @@ export const ProfileHeader: React.FC<ProfileHeaderProps> = ({
     } else if (!showBackButton && onMenuPress) {
       onMenuPress();
     }
+  };
+
+  const handleBookmarkPress = () => {
+    Notifier.showNotification({
+      title: 'Próximamente en looped... 🤫',
+      description: '',
+      duration: 2000,
+      showAnimationDuration: 300,
+      hideAnimationDuration: 300,
+      onPress: () => {
+        Notifier.hideNotification();
+      },
+      swipeEnabled: true,
+      queueMode: 'next',
+      componentProps: {
+        containerStyle: {
+          backgroundColor: Colors.secondaryGreenDark,
+          marginHorizontal: 0,
+          marginTop: 0,
+          paddingVertical: 16,
+          paddingTop: 45,
+          borderRadius: 0,
+        },
+        titleStyle: {
+          color: Colors.white,
+          fontSize: 20,
+          fontWeight: '700',
+          fontFamily: 'Raleway',
+        },
+        descriptionStyle: {
+          color: Colors.mutedWhite,
+          fontSize: 14,
+          fontFamily: 'Raleway',
+        },
+      },
+    });
   };
   
   return (
@@ -93,21 +130,26 @@ export const ProfileHeader: React.FC<ProfileHeaderProps> = ({
         </View>
       </View>
       
-      <Pressable
-        style={styles.rightButton}
-        onPress={handleRightButtonPress}
-        android_ripple={{ 
-          color: 'rgba(255, 255, 255, 0.2)',
-          borderless: true,
-          radius: 20
-        }}
-      >
-        <Icon
-          source={showBackButton ? "dots-vertical" : "menu"}
+      <View style={styles.rightButtonContainer}>
+        {!showBackButton && (
+          <IconButton
+            icon="bookmark-outline"
+            size={22}
+            iconColor={Colors.white}
+            onPress={handleBookmarkPress}
+            style={styles.iconButton}
+            rippleColor="rgba(255, 255, 255, 0.2)"
+          />
+        )}
+        <IconButton
+          icon={showBackButton ? "dots-vertical" : "menu"}
           size={22}
-          color={Colors.white}
+          iconColor={Colors.white}
+          onPress={handleRightButtonPress}
+          style={styles.iconButton}
+          rippleColor="rgba(255, 255, 255, 0.2)"
         />
-      </Pressable>
+      </View>
     </View>
   );
 };
@@ -117,7 +159,7 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
-    paddingHorizontal: 16,
+    paddingHorizontal:20,
     minHeight: 48, // Asegurar altura mínima consistente
   },
   leftSection: {
@@ -153,11 +195,16 @@ const styles = StyleSheet.create({
   privacyIcon: {
     alignSelf: 'center', // Centrar el icono
   },
-  rightButton: {
+  rightButtonContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+    justifyContent: 'flex-end',
+  },
+  iconButton: {
     width: 40,
     height: 40,
     borderRadius: 20,
-    justifyContent: 'center',
-    alignItems: 'center',
+    margin: 0,
   },
 }); 

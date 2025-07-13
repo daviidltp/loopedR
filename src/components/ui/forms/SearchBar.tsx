@@ -1,3 +1,4 @@
+import { textStyles } from '@/src/constants';
 import React, { forwardRef, useImperativeHandle, useRef, useState } from 'react';
 import { StyleSheet, TextInput, TouchableOpacity, View } from 'react-native';
 import { IconButton } from 'react-native-paper';
@@ -76,18 +77,18 @@ export const SearchBar = forwardRef<any, SearchBarProps>(({
       ]}
     >
       {/* Icono de búsqueda a la izquierda */}
-      <SearchIcon width={18} height={18} fill={Colors.gray[400]} style={styles.searchIcon} />
+      <SearchIcon width={18} height={18} fill={Colors.mutedWhite} style={styles.searchIcon} />
 
       <TextInput
         ref={inputRef}
         style={styles.input}
         placeholder={placeholder}
-        placeholderTextColor={Colors.gray[400]}
+        placeholderTextColor={Colors.mutedWhite}
         value={value}
         onChangeText={onChangeText}
         onFocus={handleFocus}
         onBlur={() => setIsFocused(false)}
-        selectionColor={Colors.gray[300]}
+        selectionColor={Colors.mutedWhite}
         editable={!isReadOnly}
         pointerEvents={isReadOnly ? 'none' : 'auto'}
         showSoftInputOnFocus={showSoftInputOnFocus}
@@ -96,7 +97,7 @@ export const SearchBar = forwardRef<any, SearchBarProps>(({
       
       {/* Icono de cruz a la derecha (solo si hay texto) */}
       {value && value.length > 0 && (
-        <IconButton icon='close' size={20} onPress={handleClearText} iconColor={Colors.gray[400]}/>
+        <IconButton icon='close' size={20} onPress={handleClearText} iconColor={Colors.mutedWhite}/>
       )}
     </View>
   );
@@ -145,7 +146,7 @@ const styles = StyleSheet.create({
   },
   input: {
     flex: 1,
-    fontSize: 16,
+    fontSize: textStyles.body.fontSize,
     color: Colors.white,
     fontFamily: 'Inter-Regular',
     includeFontPadding: false,

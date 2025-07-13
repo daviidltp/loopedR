@@ -25,7 +25,7 @@ export const Header: React.FC = () => {
           }}
         >
           <AnimatedVerifiedIcon size={24} />
-          <AppText fontSize={16} fontFamily='inter' fontWeight='bold' color={Colors.secondaryGreen}>Obtener Plus</AppText>
+          <AppText variant='body' fontFamily='inter' fontWeight='bold' color={Colors.secondaryGreen}>Obtener Plus</AppText>
         </Pressable>
       </View>
     </View>
@@ -37,21 +37,9 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    paddingHorizontal: 24,
+    paddingHorizontal: 20,
     paddingTop: 12,
   },
-  // premiumButtonContainer: {
-  //   borderRadius: 0,
-  //   overflow: 'hidden',
-  // },
-  // premiumButton: {
-  //   flexDirection: 'row',
-  //   alignItems: 'center',
-  //   gap: 8,
-  //   paddingHorizontal: 6,
-  //   paddingVertical: 4,
-  //   backgroundColor: '#5134A755',
-  // },
   premiumButtonContainer: {
     borderRadius: 25,
     overflow: 'hidden',

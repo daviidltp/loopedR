@@ -51,7 +51,7 @@ export const FollowRequestsModal: React.FC<FollowRequestsModalProps> = ({
         
             <View style={styles.titleContainer}>
               <AppText 
-                fontSize={20} 
+                variant='h5'
                 fontFamily="inter" 
                 fontWeight="semiBold" 
                 color={Colors.white}
@@ -84,7 +84,7 @@ export const FollowRequestsModal: React.FC<FollowRequestsModalProps> = ({
               <DeleteUserIcon
                 width={80}
                 height={80}
-                fill={Colors.gray[400]}
+                fill={Colors.mutedWhite}
               />
             </View>
             <AppText 
@@ -96,10 +96,10 @@ export const FollowRequestsModal: React.FC<FollowRequestsModalProps> = ({
               No tienes solicitudes de seguimiento
             </AppText>
             <AppText 
-              fontSize={14}
+              variant='bodySmall'
               fontFamily="inter" 
               fontWeight="regular" 
-              color={Colors.gray[500]}
+              color={Colors.mutedWhite}
               style={styles.emptySubtext}
             >
               Te avisaremos cuando recibas una solicitud
@@ -146,7 +146,6 @@ const styles = StyleSheet.create({
     minHeight: 40,
   },
   titleText: {
-    lineHeight: 24,
     includeFontPadding: false,
     textAlignVertical: 'center',
     marginLeft: 8,
@@ -170,6 +169,5 @@ const styles = StyleSheet.create({
   },
   emptySubtext: {
     textAlign: 'center',
-    lineHeight: 20,
   },
 }); 

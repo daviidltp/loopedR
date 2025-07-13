@@ -1,6 +1,7 @@
 import React, { useEffect, useRef } from 'react';
-import { Animated, Pressable, StyleSheet, Text, View } from 'react-native';
+import { Animated, Pressable, StyleSheet, View } from 'react-native';
 import { Colors } from '../../../constants/Colors';
+import { AppText } from '../Text/AppText';
 
 interface ConfirmationDialogProps {
   visible: boolean;
@@ -45,8 +46,24 @@ export const ConfirmationDialog: React.FC<ConfirmationDialogProps> = ({
     <Animated.View style={[styles.overlay, { opacity: fadeAnim }]}>
       <Pressable style={styles.backdrop} onPress={onCancel} />
       <View style={styles.container}>
-        <Text style={styles.title}>{title}</Text>
-        <Text style={styles.description}>{description}</Text>
+        <AppText
+          variant="h5"
+          fontFamily="inter"
+          fontWeight="bold"
+          color={Colors.white}
+          style={styles.title}
+        >
+          {title}
+        </AppText>
+        <AppText
+          variant="body"
+          fontFamily="inter"
+          fontWeight="regular"
+          color={Colors.white}
+          style={styles.description}
+        >
+          {description}
+        </AppText>
         
         <View style={styles.buttonsContainer}>
           <View style={[styles.buttonWrapper, styles.cancelButtonWrapper]}>
@@ -58,7 +75,15 @@ export const ConfirmationDialog: React.FC<ConfirmationDialogProps> = ({
                 borderless: false
               }}
             >
-              <Text style={styles.buttonText}>{cancelText}</Text>
+              <AppText
+                variant="body"
+                fontFamily="inter"
+                fontWeight="semiBold"
+                color={Colors.white}
+                style={styles.buttonText}
+              >
+                {cancelText}
+              </AppText>
             </Pressable>
           </View>
           
@@ -71,7 +96,15 @@ export const ConfirmationDialog: React.FC<ConfirmationDialogProps> = ({
                 borderless: false
               }}
             >
-              <Text style={styles.buttonText}>{confirmText}</Text>
+              <AppText
+                variant="body"
+                fontFamily="inter"
+                fontWeight="semiBold"
+                color={Colors.white}
+                style={styles.buttonText}
+              >
+                {confirmText}
+              </AppText>
             </Pressable>
           </View>
         </View>
@@ -111,18 +144,12 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   title: {
-    fontSize: 20,
-    fontWeight: '700',
-    color: Colors.white,
     textAlign: 'left',
     marginBottom: 16,
     width: '100%',
     alignSelf: 'flex-start',
   },
   description: {
-    fontSize: 16,
-    lineHeight: 22,
-    color: Colors.white,
     textAlign: 'left',
     opacity: 0.9,
     marginBottom: 24,
@@ -155,8 +182,6 @@ const styles = StyleSheet.create({
   },
   buttonText: {
     fontSize: 16,
-    fontWeight: '600',
-    color: Colors.white,
   },
   cancelButtonText: {
     color: Colors.white,

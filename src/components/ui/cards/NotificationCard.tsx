@@ -59,29 +59,29 @@ export const NotificationCard: React.FC<NotificationCardProps> = ({
         <Text style={styles.combinedText} numberOfLines={3}>
           {notification.type === 'like' ? (
             <>
-              <AppText fontSize={14} fontFamily="inter" fontWeight="medium" color={Colors.gray[300]} lineHeight={20}>A </AppText>
-              <AppText fontSize={14} fontFamily="inter" fontWeight="bold" color={Colors.white} lineHeight={20}>{user.username}</AppText>
+              <AppText variant='bodySmall' fontFamily="inter" fontWeight="medium" color={Colors.lessMutedWhite}>A </AppText>
+              <AppText variant='bodySmall' fontFamily="inter" fontWeight="bold" color={Colors.white}>{user.username}</AppText>
               <View>
               {user.isVerified && <Image source={verifiedBlue} style={styles.verifiedBlueIcon} resizeMode="contain" />}
               </View>
-              <AppText fontSize={14} fontFamily="inter" fontWeight="medium" color={Colors.gray[300]} lineHeight={20}> le ha gustado tu publicación</AppText>
-              <AppText fontSize={13} fontFamily="inter" fontWeight="regular" color={Colors.gray[500]}>
+              <AppText variant='bodySmall' fontFamily="inter" fontWeight="medium" color={Colors.lessMutedWhite}> le ha gustado tu publicación</AppText>
+              <AppText variant='bodySmall' fontSize={12} fontFamily="inter" fontWeight="regular" color={Colors.mutedWhite}>
                 {`  ${timeText}`}
               </AppText>
             </>
           ) : (
             <>
-              <AppText fontSize={14} fontFamily="inter" fontWeight="bold" color={Colors.white} lineHeight={20}>{user.username}</AppText>
+              <AppText variant='bodySmall' fontFamily="inter" fontWeight="bold" color={Colors.white}>{user.username}</AppText>
               <View>
               {user.isVerified && <Image source={verifiedBlue} style={styles.verifiedBlueIcon} resizeMode="contain" />}
               </View>
-              <AppText fontSize={14} fontFamily="inter" fontWeight="medium" color={Colors.gray[300]} lineHeight={20}> ha comentado en tu publicación: </AppText>
+              <AppText variant='bodySmall' fontFamily="inter" fontWeight="medium" color={Colors.lessMutedWhite}> ha comentado en tu publicación: </AppText>
               {notification.commentId && (
-                <AppText fontSize={14} fontFamily="inter" fontWeight="medium" color={Colors.gray[300]} lineHeight={20}>
+                <AppText variant='bodySmall' fontFamily="inter" fontWeight="medium" color={Colors.lessMutedWhite}>
                   {truncateText(getCommentById(notification.commentId)?.content || 'comentario', MAX_COMMENT_LENGTH)}
                 </AppText>
               )}
-              <AppText fontSize={13} fontFamily="inter" fontWeight="regular" color={Colors.gray[500]} lineHeight={20}>
+              <AppText variant='bodySmall' fontSize={12} fontFamily="inter" fontWeight="regular" color={Colors.mutedWhite}>
                 {`  ${timeText}`}
               </AppText>
             </>

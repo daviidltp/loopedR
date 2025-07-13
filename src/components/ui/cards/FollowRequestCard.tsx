@@ -38,8 +38,8 @@ export const FollowRequestCard: React.FC<FollowRequestCardProps> = ({
         ) : (
           <View style={styles.defaultAvatar}>
             <AppText 
-              fontSize={16} 
-              fontFamily="roboto" 
+              variant='body'
+              fontFamily="inter" 
               fontWeight="semiBold" 
               color={Colors.white}
             >
@@ -53,8 +53,8 @@ export const FollowRequestCard: React.FC<FollowRequestCardProps> = ({
       <View style={styles.userInfo}>
         <View style={styles.usernameRow}>
           <AppText 
-            fontSize={16} 
-            fontFamily="roboto" 
+            variant='bodySmall'
+            fontFamily="inter" 
             fontWeight="semiBold" 
             color={Colors.white}
             numberOfLines={1}
@@ -70,12 +70,11 @@ export const FollowRequestCard: React.FC<FollowRequestCardProps> = ({
         </View>
         
         <AppText 
-          fontSize={14} 
+          variant='bodySmall'
           fontFamily="inter" 
           fontWeight="regular" 
-          color={Colors.gray[400]}
+          color={Colors.mutedWhite}
           numberOfLines={1}
-          lineHeight={18}
         >
           {user.displayName}
         </AppText>
@@ -132,7 +131,7 @@ const styles = StyleSheet.create({
     width: 52,
     height: 52,
     borderRadius: 26,
-    backgroundColor: Colors.gray[700],
+    backgroundColor: Colors.backgroundSoft,
     justifyContent: 'center',
     alignItems: 'center',
   },

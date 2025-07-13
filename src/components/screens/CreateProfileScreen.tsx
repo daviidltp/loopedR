@@ -614,7 +614,7 @@ export const CreateProfileScreen: React.FC<CreateProfileScreenProps> = ({ naviga
                       variant="body"
                       fontFamily="inter"
                       fontWeight="light"
-                      style={styles.separatorText}
+                      color={Colors.mutedWhite}
                     >
                       o utiliza una imagen de looped
                     </AppText>
@@ -671,13 +671,8 @@ const styles = StyleSheet.create({
     bottom: 0,
   },
   title: {
-    fontSize: 32,
-    fontWeight: '200',
-    color: Colors.white,
     textAlign: 'left',
     marginBottom: 30,
-    letterSpacing: -0.5,
-    lineHeight: 40,
     marginTop: 40,
   },
   formContainer: {
@@ -713,11 +708,6 @@ const styles = StyleSheet.create({
   separatorContainer: {
     alignItems: 'center',
     marginVertical: 50,
-  },
-  separatorText: {
-    color: Colors.gray[400],
-    fontSize: 16,
-    textAlign: 'center',
   },
   loadingContainer: {
     flex: 1,
