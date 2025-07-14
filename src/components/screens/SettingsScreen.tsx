@@ -3,26 +3,26 @@ import { StackNavigationProp } from '@react-navigation/stack';
 import * as WebBrowser from 'expo-web-browser';
 import React, { useEffect, useRef, useState } from 'react';
 import {
-  BackHandler,
-  Image,
-  ScrollView,
-  StyleSheet,
-  View,
+	BackHandler,
+	Image,
+	Platform,
+	ScrollView,
+	StyleSheet,
+	View
 } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Colors } from '../../constants/Colors';
 import { useAuth } from '../../contexts/AuthContext';
 import { RootStackParamList } from '../../navigation/AppNavigator';
 import { currentUser } from '../../utils/mockData';
-import { clearSpotifySession } from '../../utils/spotifyAuth';
 import { DangerButton } from '../ui/buttons/DangerButton';
 import { SettingsHeader } from '../ui/headers/SettingsHeader';
 import { Layout } from '../ui/layout/Layout';
 import { OptionsBottomSheet, OptionsBottomSheetRef } from '../ui/modals';
 import {
-  SettingsItem,
-  SettingsProfileSection,
-  SettingsSectionTitle
+	SettingsItem,
+	SettingsProfileSection,
+	SettingsSectionTitle
 } from '../ui/sections';
 
 // Importar iconos personalizados
@@ -37,21 +37,24 @@ export const SettingsScreen = () => {
   const navigation = useNavigation<SettingsScreenNavigationProp>();
   const { logout } = useAuth();
   
-  // Estados para los switches
+  // Toggle switch state management
   const [notificationsEnabled, setNotificationsEnabled] = useState(true);
   
-  // Estados para opciones seleccionadas
+  // User preference selections state
   const [selectedLanguage, setSelectedLanguage] = useState('es');
   const [selectedPrivacy, setSelectedPrivacy] = useState('public');
   
-  // Referencias a los bottom sheets
+  // Logout operation state management to prevent race conditions and provide user feedback
+  const [isLoggingOut, setIsLoggingOut] = useState(false);
+  
+  // Bottom sheet modal references for option selection
   const languageBottomSheetRef = useRef<OptionsBottomSheetRef>(null);
   const privacyBottomSheetRef = useRef<OptionsBottomSheetRef>(null);
 
-  // Usar los datos del currentUser del mockData, como hace ProfileScreen
+  // Mock user data source - TODO: Replace with actual user data from authentication context
   const userData = currentUser;
 
-  // Opciones para los bottom sheets
+  // Configuration options for bottom sheet modals
   const languageOptions = [
     { id: 'es', label: 'Español', value: 'es' },
     { id: 'en', label: 'English', value: 'en' },
@@ -62,7 +65,7 @@ export const SettingsScreen = () => {
     { id: 'private', label: 'Privado', value: 'private' },
   ];
 
-  // Funciones para obtener labels actuales
+  // Utility functions to get display labels for current selections
   const getLanguageLabel = (value: string) => {
     const option = languageOptions.find(opt => opt.value === value);
     return option ? option.label : 'Español';
@@ -73,11 +76,11 @@ export const SettingsScreen = () => {
     return option ? option.label : 'Público';
   };
 
-  // Manejar el botón físico de Android
+  // Android hardware back button handler setup
   useEffect(() => {
     const backAction = () => {
       navigation.goBack();
-      return true;
+      return true; // Prevent default behavior
     };
 
     const backHandler = BackHandler.addEventListener(
@@ -85,6 +88,7 @@ export const SettingsScreen = () => {
       backAction,
     );
 
+    // Cleanup listener on component unmount
     return () => backHandler.remove();
   }, [navigation]);
 
@@ -97,20 +101,93 @@ export const SettingsScreen = () => {
     navigation.navigate('EditProfile');
   };
 
-  const handleLogout = async () => {
+  /**
+   * Safely clears the Spotify session with platform-specific handling.
+   * 
+   * iOS: Uses Promise.race with a 2-second timeout to prevent indefinite hanging
+   * that can occur with WebBrowser.dismissBrowser() on iOS devices.
+   * 
+   * Android: Uses standard WebBrowser.dismissBrowser() with error handling.
+   * 
+   * @returns Promise<void> - Always resolves, never throws to prevent logout blocking
+   */
+  const clearSpotifySessionSafe = async (): Promise<void> => {
     try {
-      console.log('Cerrando sesión...');
-      await clearSpotifySession();
-      await logout();
-      console.log('Sesión cerrada correctamente');
+      console.log('SettingsScreen: Initiating Spotify session cleanup');
+      
+      if (Platform.OS === 'ios') {
+        // iOS-specific timeout mechanism to prevent WebBrowser.dismissBrowser() hanging
+        const timeoutPromise = new Promise<void>((resolve) => {
+          setTimeout(() => {
+            console.log('SettingsScreen: iOS timeout reached, proceeding with logout');
+            resolve();
+          }, 2000);
+        });
+        
+        const dismissPromise = WebBrowser.dismissBrowser().catch((error) => {
+          console.log('SettingsScreen: Expected iOS browser dismissal error:', error.message);
+          // Error is caught and logged but not re-thrown to prevent blocking
+        });
+        
+        // Race condition ensures logout proceeds regardless of browser dismissal success
+        await Promise.race([dismissPromise, timeoutPromise]);
+      } else {
+        // Android platform uses standard implementation with graceful error handling
+        await WebBrowser.dismissBrowser().catch((error) => {
+          console.log('SettingsScreen: Android browser dismissal error:', error.message);
+        });
+      }
+      
+      console.log('SettingsScreen: Spotify session cleanup completed');
     } catch (error) {
-      console.error('Error al cerrar sesión:', error);
+      console.log('SettingsScreen: Unexpected error during Spotify cleanup:', error);
+      // Errors are logged but not re-thrown to ensure logout process continues
+    }
+  };
+
+  /**
+   * Handles the user logout process with protection against concurrent executions.
+   * 
+   * The logout process consists of two main steps:
+   * 1. Clear Spotify authentication session (platform-specific handling)
+   * 2. Clear application authentication state and local storage
+   * 
+   * @returns Promise<void> - Completes logout process or handles errors gracefully
+   */
+  const handleLogout = async () => {
+    // Prevent concurrent logout operations to avoid race conditions
+    if (isLoggingOut) {
+      console.log('SettingsScreen: Logout already in progress, ignoring duplicate request');
+      return;
+    }
+
+    try {
+      setIsLoggingOut(true);
+      console.log('SettingsScreen: Initiating logout sequence');
+      
+      // Step 1: Clear Spotify session with platform-specific error handling
+      await clearSpotifySessionSafe();
+      
+      // Step 2: Clear application authentication state and persistent storage
+      console.log('SettingsScreen: Clearing application authentication state');
+      await logout();
+      
+      console.log('SettingsScreen: Logout sequence completed successfully');
+    } catch (error) {
+      console.error('SettingsScreen: Error during logout sequence:', error);
+    } finally {
+      // Reset loading state with delay to provide visual feedback
+      // and prevent immediate re-triggering of the logout action
+      setTimeout(() => {
+        setIsLoggingOut(false);
+      }, 1000);
     }
   };
 
   const handleDeleteAccount = () => {
-    console.log('Delete account pressed');
-    // Mostrar confirmación para eliminar cuenta
+    console.log('SettingsScreen: Delete account action triggered');
+    // TODO: Implement account deletion confirmation dialog
+    // Should include user verification and irreversible action warning
   };
 
   const handleLanguagePress = () => {
@@ -131,8 +208,14 @@ export const SettingsScreen = () => {
     console.log('Privacidad seleccionada:', privacy);
   };
 
+  /**
+   * Handles selection of various settings options including modal displays and external links.
+   * 
+   * @param option - The settings option identifier
+   * @returns Promise<void> - Completes the action or handles errors gracefully
+   */
   const handleOptionPress = async (option: string) => {
-    console.log(`Pressed: ${option}`);
+    console.log(`SettingsScreen: Option selected - ${option}`);
     
     try {
       switch (option) {
@@ -149,12 +232,12 @@ export const SettingsScreen = () => {
           await WebBrowser.openBrowserAsync('https://looped-web.pages.dev/terminos/');
           break;
         default:
-          // Navegación a diferentes pantallas según la opción
-          console.log(`Navegando a: ${option}`);
+          // Handle navigation to other screens based on option selection
+          console.log(`SettingsScreen: Navigating to - ${option}`);
           break;
       }
     } catch (error) {
-      console.error('Error al abrir el enlace:', error);
+      console.error('SettingsScreen: Error handling option selection:', error);
     }
   };
 
@@ -214,7 +297,7 @@ export const SettingsScreen = () => {
             />
             <SettingsItem
               icon="logout"
-              title="Cerrar sesión"
+              title={isLoggingOut ? "Cerrando sesión..." : "Cerrar sesión"}
               iconColor={Colors.mutedWhite}
               onPress={handleLogout}
               isLast={true}

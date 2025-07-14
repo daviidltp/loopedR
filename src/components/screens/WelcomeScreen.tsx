@@ -167,20 +167,18 @@ export const WelcomeScreen: React.FC<WelcomeScreenProps> = ({ navigation }) => {
 
           {/* Botón fijo abajo */}
           <View style={styles.bottomSection}>
-            {/* <ResizingButton
+            <ResizingButton
               onPress={handleShowSkipAlert}
-              //onPress={handleContinueWithoutConnection}
-              title="Skip process"
+              title="Continuar sin Spotify"
               backgroundColor={Colors.background}
               textColor={Colors.white}
               borderColor={Colors.white}
               isLoading={false}
               isDisabled={isAuthenticating}
-            /> */}
-            <View style={{paddingBottom: 0}}></View>
+            />
+            <View style={{paddingBottom: 8}}></View>
             <ResizingButton
               onPress={handleConnectSpotify}
-              //onPress={handleContinueWithoutConnection}
               title="Conectar con Spotify"
               backgroundColor={Colors.white}
               textColor={Colors.background}

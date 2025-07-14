@@ -5,6 +5,7 @@ import * as WebBrowser from 'expo-web-browser';
 export const SPOTIFY_CONFIG = {
   CLIENT_ID: 'd00eaa071cf24e6aabb399d1efcfb2dc',
   CLIENT_SECRET: '57fd0f14d6884a91bb9c2c0dcbb3b541',
+  // NOTE: This REDIRECT_URI is legacy - actual redirect URI is generated dynamically in useSpotifyAuth hook
   REDIRECT_URI: 'https://example.com/callback', // Deep link para la app
   SCOPES: [
     'user-read-private',
@@ -56,6 +57,9 @@ export const getUserProfile = async (accessToken: string): Promise<SpotifyUserPr
 
 // Intercambiar código de autorización por tokens de acceso
 export const exchangeCodeForTokens = async (authorizationCode: string, redirectUri: string): Promise<SpotifyTokenResponse> => {
+  console.log('spotifyAuth: Exchanging authorization code for tokens');
+  console.log('spotifyAuth: Using redirect URI:', redirectUri);
+  
   const tokenUrl = 'https://accounts.spotify.com/api/token';
   
   const body = new URLSearchParams({
@@ -68,6 +72,7 @@ export const exchangeCodeForTokens = async (authorizationCode: string, redirectU
   const encodedAuth = btoa(authString);
 
   try {
+    console.log('spotifyAuth: Making token exchange request');
     const response = await fetch(tokenUrl, {
       method: 'POST',
       headers: {
@@ -79,12 +84,18 @@ export const exchangeCodeForTokens = async (authorizationCode: string, redirectU
 
     if (!response.ok) {
       const errorText = await response.text();
+      console.error('spotifyAuth: Token exchange failed:', {
+        status: response.status,
+        statusText: response.statusText,
+        body: errorText
+      });
       throw new Error(`HTTP error! status: ${response.status}, message: ${response.statusText}, body: ${errorText}`);
     }
 
+    console.log('spotifyAuth: Token exchange successful');
     return await response.json();
   } catch (error) {
-    console.error('Error intercambiando código por tokens:', error);
+    console.error('spotifyAuth: Error exchanging code for tokens:', error);
     throw error;
   }
 };
@@ -143,11 +154,17 @@ export const buildSpotifyAuthUrl = (): string => {
   return `https://accounts.spotify.com/authorize?${params.toString()}`;
 };
 
-// Función para cerrar sesión/limpiar navegador
+/**
+ * Clears the Spotify authentication session by dismissing any open browser instances.
+ * This function is designed to handle errors gracefully as browser dismissal may fail
+ * in certain scenarios (e.g., no browser open, platform-specific issues).
+ */
 export const clearSpotifySession = async (): Promise<void> => {
   try {
     await WebBrowser.dismissBrowser();
   } catch (error) {
-    // Ignorar errores al cerrar el navegador
+    // Browser dismissal errors are expected and non-critical
+    // This can happen when no browser is open or on platform-specific edge cases
+    console.log('clearSpotifySession: Browser dismissal failed (expected behavior):', error);
   }
 }; 

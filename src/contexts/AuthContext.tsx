@@ -143,18 +143,29 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
   const logout = async () => {
     try {
-      // Pequeño delay para evitar conflictos de renderizado
+      console.log('AuthContext: Initiating logout process');
+      
+      // Small delay to prevent rendering conflicts during state transitions
       await new Promise(resolve => setTimeout(resolve, 100));
       
+      console.log('AuthContext: Clearing AsyncStorage data');
       await Promise.all([
         AsyncStorage.removeItem(STORAGE_KEYS.USER),
         AsyncStorage.removeItem(STORAGE_KEYS.AUTH_STATUS),
         AsyncStorage.removeItem(STORAGE_KEYS.PROFILE_COMPLETED),
       ]);
+      
+      console.log('AuthContext: Updating application state');
       setUser(null);
       setHasCompletedProfile(false);
+      
+      console.log('AuthContext: Logout completed successfully');
     } catch (error) {
-      console.error('Error cerrando sesión:', error);
+      console.error('AuthContext: Error during logout process:', error);
+      // Ensure state is cleared even if AsyncStorage operations fail
+      // This prevents the app from staying in an inconsistent state
+      setUser(null);
+      setHasCompletedProfile(false);
     }
   };
 

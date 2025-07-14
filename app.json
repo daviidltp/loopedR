@@ -10,7 +10,15 @@
     "newArchEnabled": true,
     "ios": {
       "supportsTablet": true,
-      "bundleIdentifier": "com.daviidltp.loopedR"
+      "bundleIdentifier": "com.daviidltp.loopedR",
+      "infoPlist": {
+        "CFBundleURLTypes": [
+          {
+            "CFBundleURLName": "com.daviidltp.loopedR",
+            "CFBundleURLSchemes": ["loopedr"]
+          }
+        ]
+      }
     },
     "android": {
       "adaptiveIcon": {
