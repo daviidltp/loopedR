@@ -6,7 +6,6 @@ import React, { useCallback, useRef, useState } from 'react';
 import { StyleSheet, View } from 'react-native';
 import { Colors } from '../../constants/Colors';
 import { useAuth } from '../../contexts/AuthContext';
-import { useSpotifyAuth } from '../../hooks/useSpotifyAuth';
 import { useWelcomeAnimations } from '../../hooks/useWelcomeAnimations';
 import { RootStackParamList } from '../../navigation/AppNavigator';
 import { SpotifyIcon } from '../icons/SpotifyIcon';
@@ -27,9 +26,8 @@ export const WelcomeScreen: React.FC<WelcomeScreenProps> = ({ navigation }) => {
   const [isAuthenticating, setIsAuthenticating] = useState(false);
   const isNavigating = useRef(false);
   
-  // Mantener los dos contextos separados
-  const { setUser } = useAuth(); // Para autenticación con Spotify
-  const { setUserProfileData } = useAuth(); // Para crear perfil sin Spotify
+  // Usar solo el contexto de autenticación
+  const { connectSpotify, setUserProfileData } = useAuth();
 
   // Obtener el URI de redirección para mostrarlo
   const redirectUri = Constants.appOwnership === 'expo' 
@@ -80,37 +78,41 @@ export const WelcomeScreen: React.FC<WelcomeScreenProps> = ({ navigation }) => {
     animationDuration: 200
   });
   
-  // Usar contexto de autenticación
-  const { connectSpotify } = useSpotifyAuth({
-    onSuccess: (userProfile) => {
-      console.log('Usuario autenticado:', userProfile);
-      setIsAuthenticating(false);
-      // Guardar usuario en el contexto
-      setUser(userProfile);
-      navigation.reset({
-        index: 0,
-        routes: [{ name: 'CreateProfile' }],
-      });
-    },
-    onError: (error) => {
-      console.error('Error en autenticación:', error);
-      setIsAuthenticating(false);
-    },
-    onCancel: () => {
-      console.log('Autenticación cancelada');
-      setIsAuthenticating(false);
-    },
-  });
-
   const handleConnectSpotify = useCallback(async () => {
-    // Marcar que estamos autenticando
-    setIsAuthenticating(true);
+    console.log('WelcomeScreen: Starting Spotify connection process with Supabase');
     
-    // Añadir vibración suave
-    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Heavy);
-    
-    // Conectar con Spotify directamente
-    await connectSpotify();
+    try {
+      // Marcar que estamos autenticando
+      setIsAuthenticating(true);
+      
+      // Añadir vibración suave
+      Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Heavy);
+      
+      // iOS timeout mechanism
+      let timeoutId: NodeJS.Timeout | undefined;
+      const isIOS = require('react-native').Platform.OS === 'ios';
+      
+      if (isIOS) {
+        console.log('WelcomeScreen: Setting iOS maximum attempt timeout (8 seconds)');
+        timeoutId = setTimeout(() => {
+          console.log('WelcomeScreen: iOS timeout reached - stopping authentication attempt');
+          setIsAuthenticating(false);
+        }, 8000);
+      }
+      
+      // Conectar con Spotify usando Supabase
+      await connectSpotify();
+      console.log('WelcomeScreen: Spotify OAuth initiated, waiting for session');
+      
+      // Clear timeout if successful
+      if (timeoutId) {
+        clearTimeout(timeoutId);
+      }
+      
+    } catch (error) {
+      console.error('WelcomeScreen: Error connecting to Spotify:', error);
+      setIsAuthenticating(false);
+    }
   }, [connectSpotify]);
 
   const handleShowSkipAlert = useCallback(() => {
@@ -134,7 +136,7 @@ export const WelcomeScreen: React.FC<WelcomeScreenProps> = ({ navigation }) => {
       };
       
       // Establecer el usuario base
-      setUser(baseUser);
+      // setUser(baseUser); // This line was removed as per the new_code
 
       await setUserProfileData(baseUser.username, baseUser.name);
     
@@ -144,7 +146,7 @@ export const WelcomeScreen: React.FC<WelcomeScreenProps> = ({ navigation }) => {
     } finally {
       isNavigating.current = false;
     }
-  }, [setUser, navigation]);
+  }, [setUserProfileData, navigation]); // Added setUserProfileData to dependencies
 
   const handleCancelSkipAlert = useCallback(() => {
     setShowSkipAlert(false);

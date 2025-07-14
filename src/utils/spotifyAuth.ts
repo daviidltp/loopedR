@@ -8,7 +8,6 @@ export const SPOTIFY_CONFIG = {
   // NOTE: This REDIRECT_URI is legacy - actual redirect URI is generated dynamically in useSpotifyAuth hook
   REDIRECT_URI: 'https://example.com/callback', // Deep link para la app
   SCOPES: [
-    'user-read-private',
     'user-read-email', 
     'user-top-read',
     'user-read-recently-played',
