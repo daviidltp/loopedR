@@ -89,7 +89,7 @@ export const WelcomeScreen: React.FC<WelcomeScreenProps> = ({ navigation }) => {
       Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Heavy);
       
       // iOS timeout mechanism
-      let timeoutId: NodeJS.Timeout | undefined;
+      let timeoutId: number | undefined;
       const isIOS = require('react-native').Platform.OS === 'ios';
       
       if (isIOS) {

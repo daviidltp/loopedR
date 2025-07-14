@@ -3,26 +3,27 @@ import { StackNavigationProp } from '@react-navigation/stack';
 import * as WebBrowser from 'expo-web-browser';
 import React, { useEffect, useRef, useState } from 'react';
 import {
-	BackHandler,
-	Image,
-	Platform,
-	ScrollView,
-	StyleSheet,
-	View
+  BackHandler,
+  Image,
+  Platform,
+  ScrollView,
+  StyleSheet,
+  View
 } from 'react-native';
+import { Icon } from 'react-native-paper';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Colors } from '../../constants/Colors';
 import { useAuth } from '../../contexts/AuthContext';
 import { RootStackParamList } from '../../navigation/AppNavigator';
 import { currentUser } from '../../utils/mockData';
-import { DangerButton } from '../ui/buttons/DangerButton';
+import { ResizingButton } from '../ui/buttons';
 import { SettingsHeader } from '../ui/headers/SettingsHeader';
 import { Layout } from '../ui/layout/Layout';
 import { OptionsBottomSheet, OptionsBottomSheetRef } from '../ui/modals';
 import {
-	SettingsItem,
-	SettingsProfileSection,
-	SettingsSectionTitle
+  SettingsItem,
+  SettingsProfileSection,
+  SettingsSectionTitle
 } from '../ui/sections';
 
 // Importar iconos personalizados
@@ -296,10 +297,9 @@ export const SettingsScreen = () => {
               onPress={() => handleOptionPress('Verificado')}
             />
             <SettingsItem
-              icon="logout"
-              title={isLoggingOut ? "Cerrando sesión..." : "Cerrar sesión"}
-              iconColor={Colors.mutedWhite}
-              onPress={handleLogout}
+              icon="account-remove"
+              title="Eliminar cuenta"
+              onPress={handleDeleteAccount}
               isLast={true}
             />
           </View>
@@ -320,12 +320,17 @@ export const SettingsScreen = () => {
             />
           </View>
 
-          {/* Botón de eliminar cuenta */}
-          <DangerButton
-            icon="account-remove"
-            title="Eliminar cuenta"
-            onPress={handleDeleteAccount}
-          />
+          {/* Botón de cerrar sesión */}
+          <View style={styles.logoutContainer}>
+            <ResizingButton
+              title={isLoggingOut ? "Cerrando sesión..." : "Cerrar sesión"}
+              onPress={handleLogout}
+              backgroundColor="#151515"
+              textColor={Colors.appleRed}
+              icon={<Icon source="logout" size={20} color={Colors.appleRed} />}
+              isLoading={isLoggingOut}
+            />
+          </View>
           
           {/* Espacio adicional para el tab bar */}
           <View style={styles.bottomSpacer} />
@@ -375,5 +380,10 @@ const styles = StyleSheet.create({
   },
   bottomSpacer: {
     height: 50,
+  },
+  logoutContainer: {
+    marginHorizontal: 20,
+    marginTop: 32,
+    marginBottom: 20,
   },
 }); 
