@@ -3,6 +3,7 @@ import { CardStyleInterpolators, createStackNavigator } from '@react-navigation/
 import React, { useEffect } from 'react';
 import { ActivityIndicator, Easing, Platform, TouchableNativeFeedback, TouchableOpacity, View } from 'react-native';
 import { CreateProfileScreen, WelcomeScreen } from '../components';
+import { EditProfileScreen } from '../components/screens/EditProfileScreen';
 import { SettingsScreen } from '../components/screens/SettingsScreen';
 import { UserProfileScreen } from '../components/screens/UserProfileScreen';
 import { BottomNavigationBar } from '../components/ui/navigation/BottomNavigationBar';
@@ -14,6 +15,7 @@ export type RootStackParamList = {
   CreateProfile: undefined;
   MainApp: undefined;
   Settings: undefined;
+  EditProfile: undefined;
   UserProfile: { userId: string };
 };
 
@@ -193,6 +195,17 @@ export const AppNavigator = () => {
             color: Colors.white,
           },
           cardStyleInterpolator: CardStyleInterpolators.forHorizontalIOS,
+          gestureEnabled: true,
+          gestureDirection: 'horizontal',
+        })}
+      />
+      <Stack.Screen 
+        name="EditProfile" 
+        component={EditProfileScreen}
+        options={({ navigation }) => ({
+          headerShown: false,
+          cardStyle: { backgroundColor: Colors.background },
+          cardStyleInterpolator: CardStyleInterpolators.forFadeFromBottomAndroid,
           gestureEnabled: true,
           gestureDirection: 'horizontal',
         })}

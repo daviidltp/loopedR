@@ -6,10 +6,12 @@ import { Colors } from '../../../constants/Colors';
 import { AppText } from '../Text/AppText';
 
 interface SettingsHeaderProps {
+  title?: string;
   onBackPress?: () => void;
 }
 
 export const SettingsHeader: React.FC<SettingsHeaderProps> = ({ 
+  title = "Ajustes",
   onBackPress,
 }) => {
   const insets = useSafeAreaInsets();
@@ -33,7 +35,7 @@ export const SettingsHeader: React.FC<SettingsHeaderProps> = ({
             color={Colors.white}
             style={styles.titleText}
           >
-            Ajustes
+            {title}
           </AppText>
         </View>
       </View>

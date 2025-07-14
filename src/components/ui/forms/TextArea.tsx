@@ -1,106 +1,112 @@
 import { textStyles } from '@/src/constants';
-import React, { forwardRef, useRef, useState } from 'react';
+import React, { forwardRef, useState } from 'react';
 import { Animated, TextInput as RNTextInput, StyleSheet, TextInputProps, View } from 'react-native';
 import { Colors } from '../../../constants/Colors';
 import { CheckIcon } from '../../icons/CheckIcon';
 import { CrossIcon } from '../../icons/CrossIcon';
 import { AppText } from '../Text/AppText';
 
-interface CustomTextInputProps extends TextInputProps {
+interface TextAreaProps extends Omit<TextInputProps, 'multiline' | 'numberOfLines'> {
   label?: string;
   description?: string;
   error?: string;
   isValid?: boolean;
-  showUserPrefix?: boolean;
-  showFixedAtSymbol?: boolean;
   helperText?: string;
-  textTransform?: 'none' | 'capitalize' | 'uppercase' | 'lowercase';
+  minHeight?: number;
+  maxHeight?: number;
+  showCharacterCount?: boolean;
 }
 
-export const TextInput = forwardRef<RNTextInput, CustomTextInputProps>(({
+export const TextArea = forwardRef<RNTextInput, TextAreaProps>(({
   label,
   description,
   error,
   isValid,
-  showUserPrefix = false,
-  showFixedAtSymbol = false,
   helperText,
-  textTransform,
+  minHeight = 100,
+  maxHeight = 200,
+  showCharacterCount = false,
   onFocus,
   onBlur,
   value,
   onChangeText,
+  maxLength,
   style: customStyle,
   ...props
 }, ref) => {
   const [isFocused, setIsFocused] = useState(false);
-  const animatedValue = useRef(new Animated.Value(0)).current;
-
-  const shouldShowPrefixUp = isFocused || (value && value.length > 0);
+  const [textHeight, setTextHeight] = useState(minHeight);
 
   const handleFocus = (e: any) => {
     setIsFocused(true);
-    if (showUserPrefix) {
-      Animated.spring(animatedValue, {
-        toValue: 1,
-        useNativeDriver: false,
-        tension: 150,
-        friction: 8,
-      }).start();
-    }
     onFocus?.(e);
   };
 
   const handleBlur = (e: any) => {
     setIsFocused(false);
-    if (showUserPrefix && (!value || value.length === 0)) {
-      Animated.spring(animatedValue, {
-        toValue: 0,
-        useNativeDriver: false,
-        tension: 150,
-        friction: 8,
-      }).start();
-    }
     onBlur?.(e);
+  };
+
+  const handleContentSizeChange = (event: any) => {
+    const { height } = event.nativeEvent.contentSize;
+    const newHeight = Math.max(minHeight, Math.min(maxHeight, height + 32)); // +32 para padding
+    setTextHeight(newHeight);
   };
 
   return (
     <View style={styles.container}>
       {label && <AppText variant='body' fontFamily='inter' color={Colors.white} style={styles.label}>{label}</AppText>}
-      {description && <AppText variant='bodySmall' fontFamily='inter' color={Colors.mutedWhite} style={styles.description}>{description}</AppText>}
+      
+      {/* Header con descripción y contador */}
+      <View style={styles.headerSection}>
+        {description && (
+          <AppText variant='bodySmall' fontFamily='inter' color={Colors.mutedWhite} style={styles.description}>
+            {description}
+          </AppText>
+        )}
+        
+        {showCharacterCount && maxLength && (
+          <AppText 
+            variant='bodySmall' 
+            style={[
+              styles.characterCount,
+              value && value.length > maxLength * 0.9 && styles.characterCountWarning
+            ]}
+          >
+            {value?.length || 0}/{maxLength}
+          </AppText>
+        )}
+      </View>
+      
       <View style={styles.inputWrapper}>
         <Animated.View 
           style={[
-            styles.inputContainer, 
+            styles.inputContainer,
             { 
               backgroundColor: isFocused ? 'rgba(255, 255, 255, 0.12)' : 'rgba(255, 255, 255, 0.07)',
-            },
-            props.multiline && { height: 'auto', minHeight: 52 } // Ajuste dinámico para multiline
+              height: textHeight,
+            }
           ]}
         >
-          {showFixedAtSymbol && (
-            <AppText variant='body' fontFamily='inter' fontWeight='regular' style={styles.fixedAtSymbol} color={Colors.mutedWhite}>@</AppText>
-          )}
-
           <RNTextInput
             {...props}
             ref={ref}
             value={value}
             onChangeText={onChangeText}
+            multiline={true}
+            scrollEnabled={textHeight >= maxHeight}
             style={[
               styles.input,
-              showUserPrefix && { paddingLeft: shouldShowPrefixUp ? 18 : 35 },
-              showFixedAtSymbol && { paddingLeft: 35 },
               (error || isValid) && { paddingRight: 45 }, // Espacio para el icono
-              textTransform && { textTransform },
-              customStyle // Aplicar estilos personalizados
+              customStyle
             ]}
             placeholderTextColor={Colors.gray[400]}
             onFocus={handleFocus}
             onBlur={handleBlur}
+            onContentSizeChange={handleContentSizeChange}
             selectionColor={Colors.gray[300]}
-            //autoCapitalize={'characters'}
-            
+            maxLength={maxLength}
+            textAlignVertical="top"
           />
           
           {/* Icono de validación */}
@@ -114,15 +120,19 @@ export const TextInput = forwardRef<RNTextInput, CustomTextInputProps>(({
             </View>
           )}
         </Animated.View>
-        <AppText 
-          variant='bodySmall' 
-          style={[
-            styles.helperText,
-            error && styles.errorText
-          ]}
-        >
-          {error || helperText}
-        </AppText>
+        
+        {/* Texto de ayuda */}
+        <View style={styles.footerSection}>
+          <AppText 
+            variant='bodySmall' 
+            style={[
+              styles.helperText,
+              error && styles.errorText
+            ]}
+          >
+            {error || helperText || ''}
+          </AppText>
+        </View>
       </View>
     </View>
   );
@@ -130,51 +140,62 @@ export const TextInput = forwardRef<RNTextInput, CustomTextInputProps>(({
 
 const styles = StyleSheet.create({
   container: {
-    marginBottom: 0,
+    marginBottom: 16,
   },
   label: {
     marginBottom: 8,
   },
   description: {
+    flex: 1,
+  },
+  headerSection: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
     marginBottom: 12,
   },
   inputWrapper: {
     position: 'relative',
   },
   inputContainer: {
-    height: 52,
     borderRadius: 16,
     position: 'relative',
-    justifyContent: 'center',
     paddingLeft: 5,
+    paddingTop: 8,
+    paddingBottom: 8,
   },
   input: {
     flex: 1,
     paddingHorizontal: 18,
-    fontSize: textStyles.bodyLarge.fontSize, // bodyLarge, no queda de otra que poner esto porque no es un AppText propio
+    paddingTop: 12,
+    paddingBottom: 12,
+    fontSize: textStyles.bodyLarge.fontSize,
     color: Colors.white,
     fontFamily: 'Inter-Regular',
     includeFontPadding: false,
-    textAlignVertical: 'center',
-  },
-  fixedAtSymbol: {
-    position: 'absolute',
-    left: 18,
-    paddingBottom: 1,
-    zIndex: 1,
-    textAlignVertical: 'center',
+    lineHeight: 22,
   },
   validationIcon: {
     position: 'absolute',
     right: 18,
+    top: 18,
     zIndex: 1,
   },
+  footerSection: {
+    paddingTop: 8,
+  },
   helperText: {
-    paddingTop: 20,
     color: Colors.mutedWhite,
   },
   errorText: {
     color: Colors.appleRed,
     opacity: 1,
+  },
+  characterCount: {
+    color: Colors.mutedWhite,
+    fontSize: 12,
+  },
+  characterCountWarning: {
+    color: Colors.gold,
   },
 }); 

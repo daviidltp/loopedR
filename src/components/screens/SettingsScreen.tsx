@@ -1,4 +1,5 @@
 import { useNavigation } from '@react-navigation/native';
+import { StackNavigationProp } from '@react-navigation/stack';
 import * as WebBrowser from 'expo-web-browser';
 import React, { useEffect, useRef, useState } from 'react';
 import {
@@ -11,6 +12,7 @@ import {
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Colors } from '../../constants/Colors';
 import { useAuth } from '../../contexts/AuthContext';
+import { RootStackParamList } from '../../navigation/AppNavigator';
 import { currentUser } from '../../utils/mockData';
 import { clearSpotifySession } from '../../utils/spotifyAuth';
 import { DangerButton } from '../ui/buttons/DangerButton';
@@ -28,9 +30,11 @@ import DocumentIcon from '../../../assets/icons/document.svg';
 import LanguageIcon from '../../../assets/icons/language.svg';
 import UserLockIcon from '../../../assets/icons/user-lock.svg';
 
+type SettingsScreenNavigationProp = StackNavigationProp<RootStackParamList, 'Settings'>;
+
 export const SettingsScreen = () => {
   const insets = useSafeAreaInsets();
-  const navigation = useNavigation();
+  const navigation = useNavigation<SettingsScreenNavigationProp>();
   const { logout } = useAuth();
   
   // Estados para los switches
@@ -90,7 +94,7 @@ export const SettingsScreen = () => {
 
   const handleEditProfile = () => {
     console.log('Edit profile pressed');
-    // Navegación a editar perfil
+    navigation.navigate('EditProfile');
   };
 
   const handleLogout = async () => {

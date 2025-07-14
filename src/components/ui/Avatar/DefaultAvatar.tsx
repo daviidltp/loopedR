@@ -35,7 +35,7 @@ export const DefaultAvatar: React.FC<DefaultAvatarProps> = ({
   return (
     <Pressable
       android_ripple={{
-        color: Colors.white[700],
+        color: Colors.gray[700],
         borderless: true,
         radius: size / 2,
       }}
@@ -58,8 +58,8 @@ export const DefaultAvatar: React.FC<DefaultAvatarProps> = ({
       {selectedImage ? (
         <Image 
           source={selectedImage}
-          style={styles.selectedImage}
-          resizeMode="contain"
+          style={[styles.selectedImage, { borderRadius: size / 2 }]}
+          resizeMode="cover"
         />
       ) : (
         <AppText 
@@ -91,7 +91,8 @@ const styles = StyleSheet.create({
     lineHeight: 60,
   },
   selectedImage: {
-    width: '50%', // Reducido al 50%
-    height: '50%', // Reducido al 50%
+    width: '100%',
+    height: '100%',
+    position: 'absolute',
   },
 }); 
