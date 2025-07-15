@@ -1,5 +1,6 @@
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { createClient } from '@supabase/supabase-js';
+import Constants from 'expo-constants';
 
 /**
  * Supabase client configuration for React Native
@@ -25,5 +26,17 @@ export const supabase = createClient(supabaseUrl, supabaseAnonKey, {
     detectSessionInUrl: true,
   },
 });
+
+/**
+ * Get the appropriate redirect URL based on the environment
+ */
+export const getRedirectUrl = (): string => {
+  const redirectUri = Constants.appOwnership === 'expo' 
+    ? 'exp://192.168.1.60:8081' 
+    : 'loopedr://callback';
+  
+  console.log('🔗 Supabase: Redirect URI configured:', redirectUri);
+  return redirectUri;
+};
 
 console.log('Supabase client initialized for React Native with AsyncStorage persistence'); 

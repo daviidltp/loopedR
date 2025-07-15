@@ -1,11 +1,10 @@
 import { StackNavigationProp } from '@react-navigation/stack';
-import * as AuthSession from 'expo-auth-session';
-import Constants from 'expo-constants';
 import * as Haptics from 'expo-haptics';
-import React, { useCallback, useRef, useState } from 'react';
+import React, { useCallback, useEffect, useRef, useState } from 'react';
 import { StyleSheet, View } from 'react-native';
 import { Colors } from '../../constants/Colors';
 import { useAuth } from '../../contexts/AuthContext';
+import { useSpotifyAuth } from '../../hooks/useSpotifyAuth';
 import { useWelcomeAnimations } from '../../hooks/useWelcomeAnimations';
 import { RootStackParamList } from '../../navigation/AppNavigator';
 import { SpotifyIcon } from '../icons/SpotifyIcon';
@@ -22,17 +21,27 @@ interface WelcomeScreenProps {
 }
 
 export const WelcomeScreen: React.FC<WelcomeScreenProps> = ({ navigation }) => {
+  console.log('🏠 WelcomeScreen: Component rendered/re-rendered');
+  
   const [showSkipAlert, setShowSkipAlert] = useState(false);
   const [isAuthenticating, setIsAuthenticating] = useState(false);
   const isNavigating = useRef(false);
+  const hasNavigated = useRef(false); // Prevenir navegación múltiple
   
-  // Usar solo el contexto de autenticación
-  const { connectSpotify, setUserProfileData } = useAuth();
-
-  // Obtener el URI de redirección para mostrarlo
-  const redirectUri = Constants.appOwnership === 'expo' 
-    ? AuthSession.makeRedirectUri() 
-    : 'loopedr://callback';
+  // Detectar mount/unmount del componente
+  useEffect(() => {
+    console.log('🔄 WelcomeScreen: Component mounted');
+    return () => {
+      console.log('🔄 WelcomeScreen: Component unmounted');
+      // Limpiar refs al desmontar
+      isNavigating.current = false;
+      hasNavigated.current = false;
+    };
+  }, []);
+  
+  // Mantener los dos contextos separados
+  const { setUser } = useAuth(); // Para autenticación con Spotify
+  const { setUserProfileData } = useAuth(); // Para crear perfil sin Spotify
 
   // Textos que se van alternando
   const texts = [
@@ -78,41 +87,68 @@ export const WelcomeScreen: React.FC<WelcomeScreenProps> = ({ navigation }) => {
     animationDuration: 200
   });
   
-  const handleConnectSpotify = useCallback(async () => {
-    console.log('WelcomeScreen: Starting Spotify connection process with Supabase');
-    
-    try {
-      // Marcar que estamos autenticando
-      setIsAuthenticating(true);
+  // Usar contexto de autenticación
+  const { connectSpotify } = useSpotifyAuth({
+    onSuccess: (userProfile) => {
+      console.log('🎉 WelcomeScreen: Usuario autenticado con Spotify via Supabase:', {
+        id: userProfile.id,
+        display_name: userProfile.display_name,
+        email: userProfile.email,
+        username: userProfile.username,
+        hasSpotifyData: !!userProfile.spotify_id
+      });
       
-      // Añadir vibración suave
-      Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Heavy);
-      
-      // iOS timeout mechanism
-      let timeoutId: number | undefined;
-      const isIOS = require('react-native').Platform.OS === 'ios';
-      
-      if (isIOS) {
-        console.log('WelcomeScreen: Setting iOS maximum attempt timeout (8 seconds)');
-        timeoutId = setTimeout(() => {
-          console.log('WelcomeScreen: iOS timeout reached - stopping authentication attempt');
-          setIsAuthenticating(false);
-        }, 8000);
+      // Prevenir múltiples navegaciones
+      if (hasNavigated.current) {
+        console.log('⚠️ WelcomeScreen: Navigation already handled, skipping');
+        return;
       }
       
-      // Conectar con Spotify usando Supabase
-      await connectSpotify();
-      console.log('WelcomeScreen: Spotify OAuth initiated, waiting for session');
-      
-      // Clear timeout if successful
-      if (timeoutId) {
-        clearTimeout(timeoutId);
-      }
-      
-    } catch (error) {
-      console.error('WelcomeScreen: Error connecting to Spotify:', error);
+      hasNavigated.current = true;
       setIsAuthenticating(false);
-    }
+      
+      console.log('💾 WelcomeScreen: Guardando usuario en contexto...');
+      // Guardar usuario en el contexto
+      setUser(userProfile);
+      
+      // Navegar a CreateProfile después de un pequeño delay
+      // para asegurar que el estado se actualice correctamente
+      setTimeout(() => {
+        if (!isNavigating.current) {
+          isNavigating.current = true;
+          console.log('🚀 WelcomeScreen: Navegando a CreateProfile...');
+          try {
+            navigation.navigate('CreateProfile');
+            console.log('✅ WelcomeScreen: Navegación a CreateProfile exitosa');
+          } catch (navError) {
+            console.error('❌ WelcomeScreen: Error navegando a CreateProfile:', navError);
+          }
+        } else {
+          console.log('⚠️ WelcomeScreen: Navigation already in progress, skipping');
+        }
+      }, 100);
+    },
+    onError: (error) => {
+      console.error('❌ WelcomeScreen: Error en autenticación con Supabase:', error);
+      setIsAuthenticating(false);
+      hasNavigated.current = false; // Permitir reintentos
+    },
+    onCancel: () => {
+      console.log('⏹️ WelcomeScreen: Autenticación cancelada');
+      setIsAuthenticating(false);
+      hasNavigated.current = false; // Permitir reintentos
+    },
+  });
+
+  const handleConnectSpotify = useCallback(async () => {
+    // Marcar que estamos autenticando
+    setIsAuthenticating(true);
+    
+    // Añadir vibración suave
+    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Heavy);
+    
+    // Conectar con Spotify directamente
+    await connectSpotify();
   }, [connectSpotify]);
 
   const handleShowSkipAlert = useCallback(() => {
@@ -136,7 +172,7 @@ export const WelcomeScreen: React.FC<WelcomeScreenProps> = ({ navigation }) => {
       };
       
       // Establecer el usuario base
-      // setUser(baseUser); // This line was removed as per the new_code
+      setUser(baseUser);
 
       await setUserProfileData(baseUser.username, baseUser.name);
     
@@ -146,7 +182,7 @@ export const WelcomeScreen: React.FC<WelcomeScreenProps> = ({ navigation }) => {
     } finally {
       isNavigating.current = false;
     }
-  }, [setUserProfileData, navigation]); // Added setUserProfileData to dependencies
+  }, [setUser, navigation]);
 
   const handleCancelSkipAlert = useCallback(() => {
     setShowSkipAlert(false);
@@ -169,18 +205,20 @@ export const WelcomeScreen: React.FC<WelcomeScreenProps> = ({ navigation }) => {
 
           {/* Botón fijo abajo */}
           <View style={styles.bottomSection}>
-            <ResizingButton
+            {/* <ResizingButton
               onPress={handleShowSkipAlert}
-              title="Continuar sin Spotify"
+              //onPress={handleContinueWithoutConnection}
+              title="Skip process"
               backgroundColor={Colors.background}
               textColor={Colors.white}
               borderColor={Colors.white}
               isLoading={false}
               isDisabled={isAuthenticating}
-            />
-            <View style={{paddingBottom: 8}}></View>
+            /> */}
+            <View style={{paddingBottom: 0}}></View>
             <ResizingButton
               onPress={handleConnectSpotify}
+              //onPress={handleContinueWithoutConnection}
               title="Conectar con Spotify"
               backgroundColor={Colors.white}
               textColor={Colors.background}
