@@ -1,8 +1,8 @@
 import BottomSheet, { BottomSheetBackdrop, BottomSheetView } from '@gorhom/bottom-sheet';
 import React, { forwardRef, useCallback, useImperativeHandle, useMemo, useRef } from 'react';
 import { StyleSheet, View } from 'react-native';
-import { TouchableRipple } from 'react-native-paper';
 import { Colors } from '../../../constants/Colors';
+import { PlatformTouchable } from '../PlatformTouchable';
 import { AppText } from '../Text';
 
 // Componente de fondo personalizado para redondear bordes
@@ -95,7 +95,7 @@ export const OptionsBottomSheet = forwardRef<OptionsBottomSheetRef, OptionsBotto
         <BottomSheetView style={styles.sheetContent}>
           <View style={styles.optionsContainer}>
             {options.map((option, index) => (
-              <TouchableRipple
+              <PlatformTouchable  
                 key={option.id}
                 style={styles.optionItem}
                 onPress={() => handleOptionPress(option.value)}
@@ -120,7 +120,7 @@ export const OptionsBottomSheet = forwardRef<OptionsBottomSheetRef, OptionsBotto
                     {option.label}
                   </AppText>
                 </View>
-              </TouchableRipple>
+              </PlatformTouchable>
             ))}
           </View>
         </BottomSheetView>

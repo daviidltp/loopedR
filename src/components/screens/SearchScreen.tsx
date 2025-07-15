@@ -3,7 +3,6 @@ import { useFocusEffect, useNavigation, useRoute } from '@react-navigation/nativ
 import { StackNavigationProp } from '@react-navigation/stack';
 import React, { useRef, useState } from 'react';
 import { Animated, StyleSheet, View } from 'react-native';
-import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Colors } from '../../constants/Colors';
 import { RootStackParamList } from '../../navigation/AppNavigator';
 import { currentUser, mockUsers } from '../../utils/mockData';
@@ -15,7 +14,6 @@ type SearchScreenNavigationProp = BottomTabNavigationProp<BottomNavigationParamL
 type MainStackNavigationProp = StackNavigationProp<RootStackParamList>;
 
 export const SearchScreen: React.FC = () => {
-  const insets = useSafeAreaInsets();
   const route = useRoute<SearchScreenProps['route']>();
   const navigation = useNavigation<SearchScreenNavigationProp>();
   const stackNavigation = useNavigation<MainStackNavigationProp>();
@@ -88,7 +86,7 @@ export const SearchScreen: React.FC = () => {
 
   return (
     <Layout>
-      <View style={[styles.container, { paddingTop: insets.top }]}>
+      <View style={styles.container}>
         <View style={styles.searchContainer}>
           <SearchBar 
             ref={searchBarRef}
@@ -116,11 +114,13 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: Colors.background,
+    paddingTop: 12,
+    
   },
   searchContainer: {
     paddingHorizontal: 24,
     paddingTop: 0,
-    paddingBottom: 0,
+    marginBottom: 8,
   },
   contentContainer: {
     flex: 1,

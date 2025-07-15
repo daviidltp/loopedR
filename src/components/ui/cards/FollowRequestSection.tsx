@@ -1,7 +1,8 @@
 import React from 'react';
-import { Image, Platform, StyleSheet, TouchableNativeFeedback, TouchableOpacity, View } from 'react-native';
+import { Image, StyleSheet, View } from 'react-native';
 import { Colors } from '../../../constants/Colors';
 import { FollowRequest, getUserById } from '../../../utils/mockData';
+import { PlatformTouchable } from '../PlatformTouchable';
 import { AppText } from '../Text/AppText';
 
 interface FollowRequestSectionProps {
@@ -86,26 +87,14 @@ export const FollowRequestSection: React.FC<FollowRequestSectionProps> = ({
     </View>
   );
 
-  // Usar TouchableNativeFeedback en Android para ripple effect
-  if (Platform.OS === 'android') {
-    return (
-      <TouchableNativeFeedback
-        onPress={onPress}
-        background={TouchableNativeFeedback.Ripple(Colors.gray[700], false)}
-      >
-        {content}
-      </TouchableNativeFeedback>
-    );
-  }
-
   // Fallback para iOS
   return (
-    <TouchableOpacity 
+    <PlatformTouchable 
       onPress={onPress}
-      activeOpacity={0.7}
+      rippleColor={Colors.backgroundSoft}
     >
       {content}
-    </TouchableOpacity>
+    </PlatformTouchable>
   );
 };
 

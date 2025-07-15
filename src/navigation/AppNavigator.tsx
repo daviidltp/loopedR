@@ -1,12 +1,13 @@
 import { Ionicons } from '@expo/vector-icons';
 import { CardStyleInterpolators, createStackNavigator } from '@react-navigation/stack';
 import React, { useEffect } from 'react';
-import { ActivityIndicator, Easing, Platform, TouchableNativeFeedback, TouchableOpacity, View } from 'react-native';
+import { ActivityIndicator, Easing, View } from 'react-native';
 import { CreateProfileScreen, WelcomeScreen } from '../components';
 import { EditProfileScreen } from '../components/screens/EditProfileScreen';
 import { SettingsScreen } from '../components/screens/SettingsScreen';
 import { UserProfileScreen } from '../components/screens/UserProfileScreen';
 import { BottomNavigationBar } from '../components/ui/navigation/BottomNavigationBar';
+import { PlatformTouchable } from '../components/ui/PlatformTouchable';
 import { Colors } from '../constants/Colors';
 import { useAuth } from '../contexts/AuthContext';
 
@@ -36,21 +37,11 @@ const HeaderBackButton: React.FC<{ onPress: () => void }> = React.memo(({ onPres
     </View>
   );
 
-  if (Platform.OS === 'android') {
-    return (
-      <TouchableNativeFeedback
-        onPress={onPress}
-        background={TouchableNativeFeedback.Ripple(Colors.white, true, 24)}
-      >
-        {button}
-      </TouchableNativeFeedback>
-    );
-  }
 
   return (
-    <TouchableOpacity onPress={onPress}>
+    <PlatformTouchable onPress={onPress}>
       {button}
-    </TouchableOpacity>
+    </PlatformTouchable>
   );
 });
 
@@ -205,7 +196,7 @@ export const AppNavigator = () => {
         options={({ navigation }) => ({
           headerShown: false,
           cardStyle: { backgroundColor: Colors.background },
-          cardStyleInterpolator: CardStyleInterpolators.forFadeFromBottomAndroid,
+          cardStyleInterpolator: CardStyleInterpolators.forVerticalIOS,
           gestureEnabled: true,
           gestureDirection: 'horizontal',
         })}

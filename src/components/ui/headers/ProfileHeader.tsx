@@ -1,11 +1,12 @@
 import React from 'react';
-import { Pressable, StyleSheet, View } from 'react-native';
+import { StyleSheet, View } from 'react-native';
 import { Notifier } from 'react-native-notifier';
 import { Icon, IconButton } from 'react-native-paper';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Colors } from '../../../constants/Colors';
-import { AppText } from '../Text/AppText';
 import { AnimatedVerifiedIcon } from '../layout/AnimatedVerifiedIcon';
+import { PlatformTouchable } from '../PlatformTouchable';
+import { AppText } from '../Text/AppText';
 
 interface ProfileHeaderProps {
   username: string;
@@ -84,21 +85,17 @@ export const ProfileHeader: React.FC<ProfileHeaderProps> = ({
     <View style={[styles.container]}>
       <View style={styles.leftSection}>
         {showBackButton && (
-          <Pressable
+          <PlatformTouchable
             style={styles.backButton}
             onPress={handleLeftButtonPress}
-            android_ripple={{ 
-              color: 'rgba(255, 255, 255, 0.2)',
-              borderless: true,
-              radius: 20
-            }}
+            rippleColor={Colors.backgroundSoft}
           >
             <Icon
               source="arrow-left"
               size={26}
               color={Colors.white}
             />
-          </Pressable>
+          </PlatformTouchable>
         )}
 
         {showPrivacyIndicator && (

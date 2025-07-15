@@ -64,7 +64,7 @@ export const mockUsers: User[] = [
 
 // Relaciones de seguimiento simuladas
 export const mockUserRelations: UserRelation[] = [
-  { followerId: 'q888kbwstnr1b5p7j1lv32vr4', followingId: '2' }, // q888kbwstnr1b5p7j1lv32vr4
+  { followerId: '1', followingId: '2' }, // q888kbwstnr1b5p7j1lv32vr4
   { followerId: '2', followingId: '3' },
   
   // musiclover23 sigue a rockstar_girl y dj_beats

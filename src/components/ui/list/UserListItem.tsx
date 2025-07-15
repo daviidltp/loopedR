@@ -1,7 +1,8 @@
 import React from 'react';
-import { Image, Platform, StyleSheet, TouchableNativeFeedback, TouchableOpacity, View } from 'react-native';
+import { Image, StyleSheet, View } from 'react-native';
 import { Colors } from '../../../constants/Colors';
 import { User, currentUser, mockUserRelations } from '../../../utils/mockData';
+import { PlatformTouchable } from '../PlatformTouchable';
 import { AppText } from '../Text/AppText';
 
 interface UserListItemProps {
@@ -102,26 +103,16 @@ export const UserListItem: React.FC<UserListItemProps> = ({
   );
 
   // Usar TouchableNativeFeedback en Android para ripple effect
-  if (Platform.OS === 'android') {
-    return (
-      <TouchableNativeFeedback
-        onPress={handlePress}
-        background={TouchableNativeFeedback.Ripple(Colors.gray[700], false)}
-      >
-        {content}
-      </TouchableNativeFeedback>
-    );
-  }
 
-  // Fallback para iOS
   return (
-    <TouchableOpacity 
+    <PlatformTouchable
       onPress={handlePress}
-      activeOpacity={0.7}
+      rippleColor={Colors.gray[700]}
     >
       {content}
-    </TouchableOpacity>
+    </PlatformTouchable>
   );
+  
 };
 
 const styles = StyleSheet.create({

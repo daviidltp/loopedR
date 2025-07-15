@@ -243,7 +243,7 @@ export const SettingsScreen = () => {
   };
 
   return (
-    <Layout>
+    <Layout excludeBottomSafeArea>
       <View style={styles.container}>
         <SettingsHeader onBackPress={handleBackPress} />
         

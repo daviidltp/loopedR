@@ -1,20 +1,19 @@
 import { useNavigation } from '@react-navigation/native';
 import React, { useCallback, useEffect, useRef, useState } from 'react';
 import {
-    BackHandler,
-    Keyboard,
-    Platform,
-    ScrollView,
-    StyleSheet,
-    TouchableWithoutFeedback,
-    View
+  BackHandler,
+  Keyboard,
+  Platform,
+  ScrollView,
+  StyleSheet,
+  TouchableWithoutFeedback,
+  View
 } from 'react-native';
-import { TouchableRipple } from 'react-native-paper';
 import Animated, {
-    Easing,
-    useAnimatedStyle,
-    useSharedValue,
-    withTiming
+  Easing,
+  useAnimatedStyle,
+  useSharedValue,
+  withTiming
 } from 'react-native-reanimated';
 import { Colors } from '../../constants/Colors';
 import { currentUser } from '../../utils/mockData';
@@ -25,6 +24,7 @@ import { TextArea } from '../ui/forms/TextArea';
 import { TextInput } from '../ui/forms/TextInput';
 import { SettingsHeader } from '../ui/headers/SettingsHeader';
 import { Layout } from '../ui/layout/Layout';
+import { PlatformTouchable } from '../ui/PlatformTouchable';
 
 export const EditProfileScreen = () => {
   const navigation = useNavigation();
@@ -231,10 +231,10 @@ export const EditProfileScreen = () => {
           >
               {/* Avatar Section */}
               <View style={styles.avatarSection}>
-                <TouchableRipple 
+                <PlatformTouchable 
                   style={styles.avatarContainer}
                   onPress={handleAvatarPress}
-                  rippleColor={Colors.white + '20'}
+                  rippleColor={Colors.backgroundSoft}
                   borderless={true}
                 >
                   <View style={styles.avatarWrapper}>
@@ -244,7 +244,7 @@ export const EditProfileScreen = () => {
                       selectedImage={selectedAvatar ? { uri: selectedAvatar } : undefined}
                     />
                   </View>
-                </TouchableRipple>
+                </PlatformTouchable>
                 
                 {/* Botón de upload fuera del avatar */}
                 <View style={styles.uploadButtonContainer}>

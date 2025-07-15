@@ -45,7 +45,7 @@ export const InboxScreen: React.FC = () => {
   };
 
   return (
-    <Layout>
+    <Layout excludeBottomSafeArea>
       
       <ScrollView 
         style={styles.container} 

@@ -1,7 +1,6 @@
 import { useNavigation } from '@react-navigation/native';
 import { StackNavigationProp } from '@react-navigation/stack';
 import React from 'react';
-import { Icon } from 'react-native-paper';
 import { Colors } from '../../constants/Colors';
 import { RootStackParamList } from '../../navigation/AppNavigator';
 import { currentUser, getUserFollowers, getUserFollowing } from '../../utils/mockData';
@@ -46,7 +45,6 @@ export const ProfileScreen: React.FC = () => {
   // Botón de acción para mi perfil
   const actionButton = (
     <ResizingButton
-      icon={<Icon source="pencil" size={18} color={Colors.white} />}
       title="Editar perfil"
       onPress={handleEditProfile}
       backgroundColor={Colors.backgroundUltraSoft}

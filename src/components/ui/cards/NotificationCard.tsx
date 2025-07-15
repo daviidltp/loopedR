@@ -1,9 +1,10 @@
 import React from 'react';
-import { Image, Pressable, StyleSheet, Text, View } from 'react-native';
+import { Image, StyleSheet, Text, View } from 'react-native';
 import CommentIcon from '../../../../assets/icons/comment.svg';
 import HeartIcon from '../../../../assets/icons/heart.svg';
 import { Colors } from '../../../constants/Colors';
 import { Notification, getCommentById, getUserById } from '../../../utils/mockData';
+import { PlatformTouchable } from '../PlatformTouchable';
 import { AppText } from '../Text/AppText';
 
 const verifiedBlue = require('../../../../assets/icons/verified_blue.png');
@@ -93,10 +94,10 @@ export const NotificationCard: React.FC<NotificationCardProps> = ({
 
   return (
     <View style={styles.outerContainer}>
-      <Pressable
+      <PlatformTouchable
         style={styles.container}
         onPress={onPress}
-        android_ripple={{ color: Colors.gray[600], borderless: false }}
+
       >
         <View style={styles.rowContent}>
           {/* Ícono de tipo de notificación alineado verticalmente con el username */}
@@ -131,7 +132,7 @@ export const NotificationCard: React.FC<NotificationCardProps> = ({
             {renderTextWithTime()}
           </View>
         </View>
-      </Pressable>
+      </PlatformTouchable>
     </View>
   );
 };

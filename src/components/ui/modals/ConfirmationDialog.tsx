@@ -1,6 +1,7 @@
 import React, { useEffect, useRef } from 'react';
 import { Animated, Pressable, StyleSheet, View } from 'react-native';
 import { Colors } from '../../../constants/Colors';
+import { PlatformTouchable } from '../PlatformTouchable';
 import { AppText } from '../Text/AppText';
 
 interface ConfirmationDialogProps {
@@ -67,13 +68,9 @@ export const ConfirmationDialog: React.FC<ConfirmationDialogProps> = ({
         
         <View style={styles.buttonsContainer}>
           <View style={[styles.buttonWrapper, styles.cancelButtonWrapper]}>
-            <Pressable 
+            <PlatformTouchable 
               style={styles.button}
               onPress={onCancel}
-              android_ripple={{ 
-                color: 'rgba(255, 255, 255, 0.2)',
-                borderless: false
-              }}
             >
               <AppText
                 variant="body"
@@ -84,17 +81,13 @@ export const ConfirmationDialog: React.FC<ConfirmationDialogProps> = ({
               >
                 {cancelText}
               </AppText>
-            </Pressable>
+            </PlatformTouchable>
           </View>
           
           <View style={[styles.buttonWrapper, styles.confirmButtonWrapper]}>
-            <Pressable 
+            <PlatformTouchable 
               style={styles.button}
               onPress={onConfirm}
-              android_ripple={{ 
-                color: 'rgba(255, 255, 255, 0.2)',
-                borderless: false
-              }}
             >
               <AppText
                 variant="body"
@@ -105,7 +98,7 @@ export const ConfirmationDialog: React.FC<ConfirmationDialogProps> = ({
               >
                 {confirmText}
               </AppText>
-            </Pressable>
+            </PlatformTouchable>
           </View>
         </View>
       </View>

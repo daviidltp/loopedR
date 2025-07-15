@@ -1,7 +1,8 @@
 import React from 'react';
 import { StyleSheet, Switch, View } from 'react-native';
-import { Icon, TouchableRipple } from 'react-native-paper';
+import { Icon } from 'react-native-paper';
 import { Colors } from '../../../constants/Colors';
+import { PlatformTouchable } from '../PlatformTouchable';
 import { AppText } from '../Text/AppText';
 
 interface SettingsItemProps {
@@ -52,10 +53,10 @@ export const SettingsItem: React.FC<SettingsItemProps> = ({
   };
 
   return (
-    <TouchableRipple 
+    <PlatformTouchable 
       style={[
         styles.container,
-        isLast && styles.lastItem
+        ...(isLast ? [styles.lastItem] : [])
       ]} 
       onPress={handlePress}
       disabled={!onPress && !hasSwitch}
@@ -108,7 +109,7 @@ export const SettingsItem: React.FC<SettingsItemProps> = ({
           )}
         </View>
       </View>
-    </TouchableRipple>
+    </PlatformTouchable>
   );
 };
 

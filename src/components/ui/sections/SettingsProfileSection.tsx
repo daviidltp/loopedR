@@ -1,7 +1,8 @@
 import React from 'react';
 import { Image, StyleSheet, View } from 'react-native';
-import { Icon, TouchableRipple } from 'react-native-paper';
+import { Icon } from 'react-native-paper';
 import { Colors } from '../../../constants/Colors';
+import { PlatformTouchable } from '../PlatformTouchable';
 import { AppText } from '../Text/AppText';
 
 interface SettingsProfileSectionProps {
@@ -18,7 +19,7 @@ export const SettingsProfileSection: React.FC<SettingsProfileSectionProps> = ({
   onEditPress,
 }) => {
   return (
-    <TouchableRipple 
+    <PlatformTouchable 
       style={styles.container}
       onPress={onEditPress}
       rippleColor={Colors.gray[700]}
@@ -62,7 +63,7 @@ export const SettingsProfileSection: React.FC<SettingsProfileSectionProps> = ({
           <Icon source="chevron-right" size={16} color={Colors.mutedWhite} />
         </View>
       </View>
-    </TouchableRipple>
+    </PlatformTouchable>
   );
 };
 

@@ -1,9 +1,10 @@
 import React from 'react';
-import { FlatList, Modal, Pressable, StyleSheet, View } from 'react-native';
+import { FlatList, Modal, StyleSheet, View } from 'react-native';
 import { Icon } from 'react-native-paper';
 import DeleteUserIcon from '../../../../assets/icons/delete-user.svg';
 import { Colors } from '../../../constants/Colors';
 import { FollowRequest } from '../../../utils/mockData';
+import { PlatformTouchable } from '../PlatformTouchable';
 import { AppText } from '../Text/AppText';
 import { FollowRequestCard } from '../cards/FollowRequestCard';
 
@@ -33,21 +34,17 @@ export const FollowRequestsModal: React.FC<FollowRequestsModalProps> = ({
         {/* Header */}
         <View style={styles.header}>
           <View style={styles.leftSection}>
-            <Pressable
+              <PlatformTouchable
               style={styles.backButton}
               onPress={onClose}
-              android_ripple={{ 
-                color: 'rgba(255, 255, 255, 0.2)',
-                borderless: true,
-                radius: 20
-              }}
+              rippleColor={Colors.backgroundSoft}
             >
               <Icon
                 source="arrow-left"
                 size={26}
                 color={Colors.white}
               />
-            </Pressable>
+            </PlatformTouchable>
         
             <View style={styles.titleContainer}>
               <AppText 
