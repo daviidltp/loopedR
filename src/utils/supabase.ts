@@ -32,7 +32,7 @@ export const supabase = createClient(supabaseUrl, supabaseAnonKey, {
  */
 export const getRedirectUrl = (): string => {
   const redirectUri = Constants.appOwnership === 'expo' 
-    ? 'exp://192.168.1.60:8081' 
+    ? 'exp://oi9p_5o-daviidltp-8081.exp.direct' 
     : 'loopedr://callback';
   
   console.log('🔗 Supabase: Redirect URI configured:', redirectUri);

@@ -15,7 +15,7 @@ export const Layout: React.FC<LayoutProps> = ({ children, style, excludeBottomSa
 
   useEffect(() => {
     if (Platform.OS === 'android') {
-      NavigationBar.setVisibilityAsync('hidden');
+      NavigationBar.setVisibilityAsync('visible');
       NavigationBar.setButtonStyleAsync('light');
     }
   }, []);

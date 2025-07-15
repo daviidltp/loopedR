@@ -81,6 +81,44 @@ export const useSpotifyAuth = ({ onSuccess, onError, onCancel }: UseSpotifyAuthP
     }
   };
 
+  // Función para extraer errores de la URL de respuesta
+  const extractErrorsFromUrl = (url: string) => {
+    try {
+      const urlObj = new URL(url);
+      
+      // Buscar errores en los query parameters
+      const queryParams = new URLSearchParams(urlObj.search);
+      const queryError = queryParams.get('error');
+      const queryErrorCode = queryParams.get('error_code');
+      const queryErrorDescription = queryParams.get('error_description');
+      
+      // Buscar errores en el fragment
+      const fragment = urlObj.hash.substring(1);
+      const fragmentParams = new URLSearchParams(fragment);
+      const fragmentError = fragmentParams.get('error');
+      const fragmentErrorCode = fragmentParams.get('error_code');
+      const fragmentErrorDescription = fragmentParams.get('error_description');
+      
+      // Retornar el primer error encontrado
+      const error = queryError || fragmentError;
+      const errorCode = queryErrorCode || fragmentErrorCode;
+      const errorDescription = queryErrorDescription || fragmentErrorDescription;
+      
+      if (error) {
+        return {
+          error,
+          error_code: errorCode,
+          error_description: errorDescription ? decodeURIComponent(errorDescription.replace(/\+/g, ' ')) : undefined
+        };
+      }
+      
+      return null;
+    } catch (error) {
+      console.error('❌ useSpotifyAuth: Error parsing URL for errors:', error);
+      return null;
+    }
+  };
+
   // Callbacks estabilizados para evitar re-renders
   const stableOnSuccess = useCallback((userProfile: any) => {
     onSuccess?.(userProfile);
@@ -296,6 +334,42 @@ export const useSpotifyAuth = ({ onSuccess, onError, onCancel }: UseSpotifyAuthP
             if (result.type === 'success' && 'url' in result && typeof result.url === 'string') {
               console.log('✅ useSpotifyAuth: Browser returned success with URL');
               
+              // Primero verificar si la URL contiene errores
+              const authError = extractErrorsFromUrl(result.url);
+              if (authError) {
+                console.error('❌ useSpotifyAuth: Authentication error received:', authError);
+                resetProcessingState();
+                
+                // Crear un mensaje de error más descriptivo
+                let errorMessage = 'Error de autenticación con Spotify';
+                if (authError.error_description) {
+                  switch (authError.error_code) {
+                    case 'unexpected_failure':
+                      if (authError.error_description.includes('Database error')) {
+                        errorMessage = 'Error en la base de datos al crear el usuario. Por favor, inténtalo de nuevo más tarde.';
+                      } else {
+                        errorMessage = 'Fallo inesperado durante la autenticación. Por favor, inténtalo de nuevo.';
+                      }
+                      break;
+                    case 'access_denied':
+                      errorMessage = 'Acceso denegado. Has cancelado la autorización o no has otorgado los permisos necesarios.';
+                      break;
+                    default:
+                      errorMessage = authError.error_description;
+                  }
+                }
+                
+                stableOnError({ 
+                  error: authError.error,
+                  error_code: authError.error_code,
+                  error_description: authError.error_description,
+                  message: errorMessage
+                });
+                
+                Alert.alert('Error de autenticación', errorMessage);
+                return;
+              }
+              
               // Verificar si la URL contiene tokens (deep link response)
               if (result.url.includes('access_token=') || result.url.includes('code=')) {
                 console.log('🔑 useSpotifyAuth: URL contains auth tokens, processing...');
@@ -385,7 +459,7 @@ export const useSpotifyAuth = ({ onSuccess, onError, onCancel }: UseSpotifyAuthP
       Alert.alert('Error', 'No se pudo iniciar la autenticación con Spotify');
       stableOnError(error);
     }
-  }, [redirectUri, onError, onCancel, resetProcessingState, decodeJWT, extractTokensFromUrl, stableOnSuccess, stableOnError]);
+  }, [redirectUri, onError, onCancel, resetProcessingState, decodeJWT, extractTokensFromUrl, extractErrorsFromUrl, stableOnSuccess, stableOnError]);
 
   return {
     connectSpotify,
