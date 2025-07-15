@@ -31,3 +31,7 @@ export * from './sections';
 // List components
 export * from './list';
 
+// Platform components
+export { PlatformIconButton } from './PlatformIconButton';
+export { PlatformTouchable } from './PlatformTouchable';
+

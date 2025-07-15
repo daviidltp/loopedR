@@ -71,6 +71,7 @@ export const ConfirmationDialog: React.FC<ConfirmationDialogProps> = ({
             <PlatformTouchable 
               style={styles.button}
               onPress={onCancel}
+              
             >
               <AppText
                 variant="body"

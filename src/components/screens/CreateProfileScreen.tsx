@@ -507,7 +507,7 @@ export const CreateProfileScreen: React.FC<CreateProfileScreenProps> = ({ naviga
   // ===========================
   
   return (
-    <Layout excludeBottomSafeArea={true}>
+    <Layout>
       <TouchableWithoutFeedback onPress={dismissKeyboard}>
         <View style={styles.container}>
           {/* Content Area */}

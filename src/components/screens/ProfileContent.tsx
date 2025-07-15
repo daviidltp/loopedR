@@ -105,7 +105,7 @@ export const ProfileContent: React.FC<ProfileContentProps> = ({
                   fontFamily="inter" 
                   color={Colors.gray[400]}
                 >
-                  {followersCount === 1 ? ' seguidor · ' : ' seguidores · '}
+                  {followersCount === 1 ? ' seguidor   ' : ' seguidores   '}
                 </AppText>
                 <AppText 
                   variant="bodySmall" 
@@ -114,13 +114,14 @@ export const ProfileContent: React.FC<ProfileContentProps> = ({
                   color={Colors.white}
                 >
                   {formatFollowersCount(followingCount)}
-                </AppText>
+                
                 <AppText 
                   variant="bodySmall" 
                   fontFamily="inter" 
                   color={Colors.gray[400]}
                 >
                   {followingCount === 1 ? ' seguido' : ' seguidos'}
+                  </AppText>
                 </AppText>
               </View>
             </View>

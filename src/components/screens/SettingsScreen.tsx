@@ -3,12 +3,12 @@ import { StackNavigationProp } from '@react-navigation/stack';
 import * as WebBrowser from 'expo-web-browser';
 import React, { useEffect, useRef, useState } from 'react';
 import {
-  BackHandler,
-  Image,
-  Platform,
-  ScrollView,
-  StyleSheet,
-  View
+    BackHandler,
+    Image,
+    Platform,
+    ScrollView,
+    StyleSheet,
+    View
 } from 'react-native';
 import { Icon } from 'react-native-paper';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
@@ -17,13 +17,13 @@ import { useAuth } from '../../contexts/AuthContext';
 import { RootStackParamList } from '../../navigation/AppNavigator';
 import { currentUser } from '../../utils/mockData';
 import { ResizingButton } from '../ui/buttons';
-import { SettingsHeader } from '../ui/headers/SettingsHeader';
+import { DefaultHeader } from '../ui/headers/DefaultHeader';
 import { Layout } from '../ui/layout/Layout';
 import { OptionsBottomSheet, OptionsBottomSheetRef } from '../ui/modals';
 import {
-  SettingsItem,
-  SettingsProfileSection,
-  SettingsSectionTitle
+    SettingsItem,
+    SettingsProfileSection,
+    SettingsSectionTitle
 } from '../ui/sections';
 
 // Importar iconos personalizados
@@ -245,7 +245,7 @@ export const SettingsScreen = () => {
   return (
     <Layout excludeBottomSafeArea>
       <View style={styles.container}>
-        <SettingsHeader onBackPress={handleBackPress} />
+        <DefaultHeader title="Ajustes" onBackPress={handleBackPress} />
         
         <ScrollView style={styles.scrollView} showsVerticalScrollIndicator={false}>
           {/* Sección de perfil */}

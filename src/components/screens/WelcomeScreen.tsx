@@ -205,7 +205,7 @@ export const WelcomeScreen: React.FC<WelcomeScreenProps> = ({ navigation }) => {
 
           {/* Botón fijo abajo */}
           <View style={styles.bottomSection}>
-            {/* <ResizingButton
+            <ResizingButton
               onPress={handleShowSkipAlert}
               //onPress={handleContinueWithoutConnection}
               title="Skip process"
@@ -214,8 +214,8 @@ export const WelcomeScreen: React.FC<WelcomeScreenProps> = ({ navigation }) => {
               borderColor={Colors.white}
               isLoading={false}
               isDisabled={isAuthenticating}
-            /> */}
-            <View style={{paddingBottom: 0}}></View>
+            />
+            <View style={{paddingBottom: 10}}></View>
             <ResizingButton
               onPress={handleConnectSpotify}
               //onPress={handleContinueWithoutConnection}
@@ -263,7 +263,7 @@ const styles = StyleSheet.create({
   },
   animatedTextSection: {
     paddingHorizontal: 24,
-    marginBottom: 20,
+    marginBottom: 0,
     alignItems: 'flex-start', // Alineado a la izquierda
     height: 100, // Aumentado para evitar que se corte el texto largo
     width: '80%',

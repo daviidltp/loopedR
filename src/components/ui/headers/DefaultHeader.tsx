@@ -1,25 +1,22 @@
 import React from 'react';
 import { StyleSheet, View } from 'react-native';
-import { IconButton } from 'react-native-paper';
-import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Colors } from '../../../constants/Colors';
+import { PlatformIconButton } from '../PlatformIconButton';
 import { AppText } from '../Text/AppText';
 
-interface SettingsHeaderProps {
-  title?: string;
+interface DefaultHeaderProps {
+  title: string;
   onBackPress?: () => void;
 }
 
-export const SettingsHeader: React.FC<SettingsHeaderProps> = ({ 
-  title = "Ajustes",
+export const DefaultHeader: React.FC<DefaultHeaderProps> = ({ 
+  title,
   onBackPress,
 }) => {
-  const insets = useSafeAreaInsets();
-
   return (
     <View style={styles.container}>
       <View style={styles.leftSection}>
-        <IconButton
+        <PlatformIconButton
           icon="arrow-left"
           size={24}
           iconColor={Colors.white}
@@ -49,7 +46,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'space-between',
     paddingHorizontal: 20,
-    minHeight: 48,
+    minHeight: 54,
   },
   leftSection: {
     flexDirection: 'row',
@@ -67,7 +64,7 @@ const styles = StyleSheet.create({
     minHeight: 40,
   },
   titleText: {
-    lineHeight: 24,
+    lineHeight: 28,
     includeFontPadding: false,
     textAlignVertical: 'center',
     marginLeft: 8,
