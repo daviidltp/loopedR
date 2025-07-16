@@ -1,6 +1,5 @@
-import { Ionicons } from '@expo/vector-icons';
 import React, { useState } from 'react';
-import { Platform, Pressable, ViewStyle } from 'react-native';
+import { Platform, ViewStyle } from 'react-native';
 import { IconButton } from 'react-native-paper';
 import { Colors } from '../../constants/Colors';
 
@@ -68,21 +67,15 @@ export const PlatformIconButton: React.FC<PlatformIconButtonProps> = ({
   };
 
   return (
-    <Pressable
+    <IconButton
+      icon={icon}
+      size={size}
+      iconColor={iconColor}
       onPress={onPress}
-      onLongPress={onLongPress}
-      onPressIn={handlePressIn}
-      onPressOut={handlePressOut}
       disabled={disabled}
-      style={[defaultStyle, style]}
+      style={style}
+      rippleColor='transparent'
       accessibilityLabel={accessibilityLabel}
-      accessibilityRole="button"
-    >
-      <Ionicons 
-        name={icon as any}
-        size={size}
-        color={iconColor}
-      />
-    </Pressable>
+    />
   );
 }; 
