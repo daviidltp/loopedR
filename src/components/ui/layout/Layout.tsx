@@ -34,7 +34,7 @@ export const Layout: React.FC<LayoutProps> = ({ children, style, excludeBottomSa
             paddingLeft: insets.left,
             paddingRight: insets.right,
             paddingBottom: excludeBottomSafeArea ? 0 : insets.bottom,
-            paddingTop: insets.top,
+            paddingTop: insets.top + 6,
           },
         ]}
       >

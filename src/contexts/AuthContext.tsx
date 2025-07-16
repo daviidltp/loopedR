@@ -1,199 +1,183 @@
-import AsyncStorage from '@react-native-async-storage/async-storage';
+import { Session } from '@supabase/supabase-js';
 import React, { createContext, useContext, useEffect, useState } from 'react';
+import { Alert, AppState } from 'react-native';
 import { supabase } from '../utils/supabase';
 
-interface UserProfile {
-  id?: string;
-  display_name?: string;
-  email?: string;
-  images?: Array<{ url: string; height: number; width: number }>;
-  followers?: { total: number };
-  country?: string;
-  username: string;
-  name: string;
-  bio?: string;
-  avatar?: any; // Avatar seleccionado (puede ser una imagen o DEFAULT_AVATAR_ID)
-  avatarBackgroundColor?: string; // Color de fondo específico del avatar seleccionado
-  // Campos adicionales para Spotify via Supabase
-  spotify_id?: string;
-  spotify_data?: any;
+// Polyfill para structuredClone
+if (!global.structuredClone) {
+  global.structuredClone = (obj) => JSON.parse(JSON.stringify(obj));
 }
 
+// Monitoriza cambios de estado de la app
+AppState.addEventListener('change', (state) => {
+  console.log('[AppState] Estado actual:', state);
+  if (state === 'active') {
+    console.log('[Supabase] Iniciando auto-refresh de sesión');
+    supabase.auth.startAutoRefresh();
+  } else {
+    console.log('[Supabase] Deteniendo auto-refresh de sesión');
+    supabase.auth.stopAutoRefresh();
+  }
+});
+
 interface AuthContextType {
-  user: UserProfile | null;
+  session: Session | null;
+  user: any;
   isLoading: boolean;
-  isLoggedIn: boolean;
   hasCompletedProfile: boolean;
-  setUser: (user: UserProfile | null) => void;
-  setUserProfileData: (username: string, name: string, avatar?: any, avatarBackgrounds?: string[]) => void;
-  logout: () => void;
+  logout: () => Promise<void>;
+  setUserProfileData: (username: string, displayName: string, avatar?: any, avatarBackgrounds?: string[]) => Promise<void>;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
-const STORAGE_KEYS = {
-  USER: '@user_data',
-  AUTH_STATUS: '@auth_status',
-  PROFILE_COMPLETED: '@profile_completed',
-};
-
 export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
-  const [user, setUser] = useState<UserProfile | null>(null);
+  const [session, setSession] = useState<Session | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [hasCompletedProfile, setHasCompletedProfile] = useState(false);
 
-  // Cargar datos del usuario al iniciar la app
-  useEffect(() => {
-    loadUserData();
-  }, []);
-
-  const loadUserData = async () => {
+  // Función para verificar si el usuario tiene un perfil completado
+  const checkProfileCompletion = async (userId: string) => {
     try {
-      setIsLoading(true);
-      const [userData, profileCompleted] = await Promise.all([
-        AsyncStorage.getItem(STORAGE_KEYS.USER),
-        AsyncStorage.getItem(STORAGE_KEYS.PROFILE_COMPLETED),
-      ]);
+      const { data, error } = await supabase
+        .from('profiles')
+        .select('username, display_name')
+        .eq('id', userId)
+        .single();
 
-      console.log('AuthContext - Datos cargados:', {
-        hasUserData: !!userData,
-        profileCompleted
+      if (error) {
+        console.log('[Auth] Error al verificar perfil:', error);
+        return false;
+      }
+
+      const isComplete = data && data.username && data.display_name;
+      console.log('[Auth] Perfil verificado:', { 
+        hasUsername: !!data?.username, 
+        hasDisplayName: !!data?.display_name,
+        isComplete 
       });
+      
+      return isComplete;
+    } catch (error) {
+      console.error('[Auth] Error al verificar perfil:', error);
+      return false;
+    }
+  };
 
-      if (userData) {
-        const parsedUser = JSON.parse(userData);
-        setUser(parsedUser);
-        setHasCompletedProfile(profileCompleted === 'true');
+  useEffect(() => {
+    // Obtener sesión inicial
+    supabase.auth.getSession().then(async ({ data: { session } }) => {
+      console.log('[Auth] ===== SESIÓN INICIAL =====');
+      console.log('[Auth] Sesión encontrada:', !!session);
+      if (session) {
+        console.log('[Auth] ID de usuario:', session.user?.id);
+        console.log('[Auth] Email:', session.user?.email);
+        console.log('[Auth] Provider:', session.user?.app_metadata?.provider);
+        console.log('[Auth] Datos completos del usuario:', JSON.stringify(session.user, null, 2));
+        
+        // Verificar si el usuario tiene perfil completado
+        const profileComplete = await checkProfileCompletion(session.user.id);
+        setHasCompletedProfile(profileComplete);
+      }
+      console.log('[Auth] ===============================');
+      setSession(session);
+      setIsLoading(false);
+    });
+
+    // Escuchar cambios en la autenticación
+    const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
+      console.log('[Auth] ===== CAMBIO DE ESTADO =====');
+      console.log('[Auth] Evento:', event);
+      console.log('[Auth] Tiene sesión:', !!session);
+      if (session) {
+        console.log('[Auth] ✅ Usuario autenticado:', session.user?.email);
+        console.log('[Auth] Provider:', session.user?.app_metadata?.provider);
+        
+        // Verificar si el usuario tiene perfil completado
+        const profileComplete = await checkProfileCompletion(session.user.id);
+        setHasCompletedProfile(profileComplete);
       } else {
-        // Asegurarnos que los estados estén limpios si no hay datos
-        setUser(null);
+        console.log('[Auth] ❌ Sin sesión');
         setHasCompletedProfile(false);
       }
-    } catch (error) {
-      console.error('Error cargando datos del usuario:', error);
-      // En caso de error, también limpiamos los estados
-      setUser(null);
+      console.log('[Auth] ===============================');
+      setSession(session);
+      setIsLoading(false);
+    });
+
+    return () => subscription.unsubscribe();
+
+  }, []);
+
+  const logout = async () => {
+    try {
+      console.log('[Auth] Iniciando proceso de cierre de sesión...');
+      
+      // Limpiar el estado local primero
+      setSession(null);
       setHasCompletedProfile(false);
+      
+      // Cerrar sesión en Supabase
+      const { error } = await supabase.auth.signOut();
+      
+      if (error) {
+        console.error('[Auth] Error al cerrar sesión en Supabase:', error);
+        throw error;
+      }
+      
+      console.log('[Auth] ✅ Sesión cerrada correctamente');
+    } catch (error) {
+      console.error('[Auth] ❌ Error durante el cierre de sesión:', error);
+      // Asegurar que el estado se limpie incluso si hay error
+      setSession(null);
+      setHasCompletedProfile(false);
+      throw error;
+    }
+  };
+
+  const setUserProfileData = async (username: string, displayName: string, avatar?: any, avatarBackgrounds?: string[]) => {
+    try {
+      setIsLoading(true);
+      if (!session?.user) throw new Error('No hay usuario en la sesión');
+
+      const updates = {
+        id: session.user.id,
+        username,
+        display_name: displayName,
+        updated_at: new Date().toISOString(),
+      };
+
+      const { error } = await supabase.from('profiles').upsert(updates);
+
+      if (error) {
+        throw error;
+      }
+
+      console.log('[Auth] Perfil actualizado correctamente');
+      
+      // Actualizar el estado de hasCompletedProfile después de guardar
+      setHasCompletedProfile(true);
+      
+    } catch (error) {
+      console.error('[Auth] Error al actualizar perfil:', error);
+      if (error instanceof Error) {
+        Alert.alert('Error', error.message);
+      } else {
+        Alert.alert('Error', 'No se pudo actualizar el perfil');
+      }
+      throw error;
     } finally {
       setIsLoading(false);
     }
   };
 
-  const saveUserData = async (userData: UserProfile) => {
-    try {
-      await Promise.all([
-        AsyncStorage.setItem(STORAGE_KEYS.USER, JSON.stringify(userData)),
-        AsyncStorage.setItem(STORAGE_KEYS.AUTH_STATUS, 'logged_in'),
-      ]);
-      setUser(userData);
-    } catch (error) {
-      console.error('Error guardando datos del usuario:', error);
-    }
-  };
-
-  const setUserProfileData = async (username: string, name: string, avatar?: any, avatarBackgrounds?: string[]) => {
-    // Array de avatares preestablecidos (mismo orden que en PresetAvatarGrid)
-    const PRESET_AVATARS = [
-      require('../../assets/images/profilePics/profileicon1.png'),
-      require('../../assets/images/profilePics/profileicon2.png'),
-      require('../../assets/images/profilePics/profileicon6.png'),
-      require('../../assets/images/profilePics/profileicon4.png'),
-      require('../../assets/images/profilePics/profileicon5.png'),
-    ];
-
-    const DEFAULT_AVATAR_ID = 'default_avatar';
-
-    // Determinar el color de fondo correcto basándose en el avatar seleccionado
-    let avatarBackgroundColor = '#222222'; // Color por defecto
-    if (avatarBackgrounds) {
-      if (avatar === DEFAULT_AVATAR_ID) {
-        // DefaultAvatar está en el índice 5
-        avatarBackgroundColor = avatarBackgrounds[5] || '#222222';
-      } else {
-        // Buscar el índice del avatar preestablecido
-        const avatarIndex = PRESET_AVATARS.findIndex(presetAvatar => presetAvatar === avatar);
-        if (avatarIndex !== -1) {
-          avatarBackgroundColor = avatarBackgrounds[avatarIndex] || '#222222';
-        }
-      }
-    }
-
-    console.log('🎭 Guardando perfil:', {
-      avatar: avatar === DEFAULT_AVATAR_ID ? 'DEFAULT_AVATAR' : 'PRESET_AVATAR',
-      avatarBackgroundColor,
-      avatarBackgrounds
-    });
-
-    const userData = {
-      username,
-      name,
-      avatar,
-      avatarBackgroundColor, // Guardar solo el color específico
-      // Si hay un usuario previo, mantener sus datos de Spotify
-      ...(user || {}),
-    };
-    
-    try {
-      await Promise.all([
-        AsyncStorage.setItem(STORAGE_KEYS.USER, JSON.stringify(userData)),
-        AsyncStorage.setItem(STORAGE_KEYS.PROFILE_COMPLETED, 'true'),
-      ]);
-      setUser(userData);
-      setHasCompletedProfile(true);
-    } catch (error) {
-      console.error('Error guardando datos del perfil:', error);
-    }
-  };
-
-  const logout = async () => {
-    try {
-      // Pequeño delay para evitar conflictos de renderizado
-      await new Promise(resolve => setTimeout(resolve, 100));
-      
-      // Cerrar sesión en Supabase
-      console.log('🔄 AuthContext: Cerrando sesión en Supabase...');
-      await supabase.auth.signOut();
-      
-      // Limpiar AsyncStorage
-      await Promise.all([
-        AsyncStorage.removeItem(STORAGE_KEYS.USER),
-        AsyncStorage.removeItem(STORAGE_KEYS.AUTH_STATUS),
-        AsyncStorage.removeItem(STORAGE_KEYS.PROFILE_COMPLETED),
-      ]);
-      
-      setUser(null);
-      setHasCompletedProfile(false);
-      console.log('✅ AuthContext: Sesión cerrada correctamente');
-    } catch (error) {
-      console.error('❌ AuthContext: Error cerrando sesión:', error);
-    }
-  };
-
-  const handleSetUser = (userData: UserProfile | null) => {
-    console.log('📝 AuthContext - handleSetUser llamado:', {
-      hasUserData: !!userData,
-      userData: userData ? {
-        username: userData.username,
-        display_name: userData.display_name,
-        hasSpotifyData: !!(userData.email || userData.images)
-      } : null
-    });
-    
-    if (userData) {
-      saveUserData(userData);
-    } else {
-      logout();
-    }
-  };
-
   const contextValue: AuthContextType = {
-    user,
+    session,
+    user: session?.user || null,
     isLoading,
-    isLoggedIn: hasCompletedProfile,
     hasCompletedProfile,
-    setUser: handleSetUser,
-    setUserProfileData,
     logout,
+    setUserProfileData,
   };
 
   return (

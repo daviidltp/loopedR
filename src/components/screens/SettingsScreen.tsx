@@ -5,7 +5,6 @@ import React, { useEffect, useRef, useState } from 'react';
 import {
     BackHandler,
     Image,
-    Platform,
     ScrollView,
     StyleSheet,
     View
@@ -15,7 +14,6 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Colors } from '../../constants/Colors';
 import { useAuth } from '../../contexts/AuthContext';
 import { RootStackParamList } from '../../navigation/AppNavigator';
-import { currentUser } from '../../utils/mockData';
 import { ResizingButton } from '../ui/buttons';
 import { DefaultHeader } from '../ui/headers/DefaultHeader';
 import { Layout } from '../ui/layout/Layout';
@@ -36,7 +34,7 @@ type SettingsScreenNavigationProp = StackNavigationProp<RootStackParamList, 'Set
 export const SettingsScreen = () => {
   const insets = useSafeAreaInsets();
   const navigation = useNavigation<SettingsScreenNavigationProp>();
-  const { logout } = useAuth();
+  const { logout, user, session } = useAuth();
   
   // Toggle switch state management
   const [notificationsEnabled, setNotificationsEnabled] = useState(true);
@@ -52,8 +50,12 @@ export const SettingsScreen = () => {
   const languageBottomSheetRef = useRef<OptionsBottomSheetRef>(null);
   const privacyBottomSheetRef = useRef<OptionsBottomSheetRef>(null);
 
-  // Mock user data source - TODO: Replace with actual user data from authentication context
-  const userData = currentUser;
+  // Obtener datos del usuario autenticado
+  const userData = {
+    displayName: user?.user_metadata?.full_name || user?.email || 'Usuario',
+    username: user?.user_metadata?.username || user?.email?.split('@')[0] || 'usuario',
+    avatarUrl: user?.user_metadata?.avatar_url || null,
+  };
 
   // Configuration options for bottom sheet modals
   const languageOptions = [
@@ -102,56 +104,10 @@ export const SettingsScreen = () => {
     navigation.navigate('EditProfile');
   };
 
-  /**
-   * Safely clears the Spotify session with platform-specific handling.
-   * 
-   * iOS: Uses Promise.race with a 2-second timeout to prevent indefinite hanging
-   * that can occur with WebBrowser.dismissBrowser() on iOS devices.
-   * 
-   * Android: Uses standard WebBrowser.dismissBrowser() with error handling.
-   * 
-   * @returns Promise<void> - Always resolves, never throws to prevent logout blocking
-   */
-  const clearSpotifySessionSafe = async (): Promise<void> => {
-    try {
-      console.log('SettingsScreen: Initiating Spotify session cleanup');
-      
-      if (Platform.OS === 'ios') {
-        // iOS-specific timeout mechanism to prevent WebBrowser.dismissBrowser() hanging
-        const timeoutPromise = new Promise<void>((resolve) => {
-          setTimeout(() => {
-            console.log('SettingsScreen: iOS timeout reached, proceeding with logout');
-            resolve();
-          }, 2000);
-        });
-        
-        const dismissPromise = WebBrowser.dismissBrowser().catch((error) => {
-          console.log('SettingsScreen: Expected iOS browser dismissal error:', error.message);
-          // Error is caught and logged but not re-thrown to prevent blocking
-        });
-        
-        // Race condition ensures logout proceeds regardless of browser dismissal success
-        await Promise.race([dismissPromise, timeoutPromise]);
-      } else {
-        // Android platform uses standard implementation with graceful error handling
-        await WebBrowser.dismissBrowser().catch((error) => {
-          console.log('SettingsScreen: Android browser dismissal error:', error.message);
-        });
-      }
-      
-      console.log('SettingsScreen: Spotify session cleanup completed');
-    } catch (error) {
-      console.log('SettingsScreen: Unexpected error during Spotify cleanup:', error);
-      // Errors are logged but not re-thrown to ensure logout process continues
-    }
-  };
+
 
   /**
    * Handles the user logout process with protection against concurrent executions.
-   * 
-   * The logout process consists of two main steps:
-   * 1. Clear Spotify authentication session (platform-specific handling)
-   * 2. Clear application authentication state and local storage
    * 
    * @returns Promise<void> - Completes logout process or handles errors gracefully
    */
@@ -166,19 +122,15 @@ export const SettingsScreen = () => {
       setIsLoggingOut(true);
       console.log('SettingsScreen: Initiating logout sequence');
       
-      // Step 1: Clear Spotify session with platform-specific error handling
-      await clearSpotifySessionSafe();
-      
-      // Step 2: Clear application authentication state and persistent storage
-      console.log('SettingsScreen: Clearing application authentication state');
+      // Clear application authentication state
       await logout();
       
       console.log('SettingsScreen: Logout sequence completed successfully');
     } catch (error) {
       console.error('SettingsScreen: Error during logout sequence:', error);
+      // Mostrar error al usuario si es necesario
     } finally {
       // Reset loading state with delay to provide visual feedback
-      // and prevent immediate re-triggering of the logout action
       setTimeout(() => {
         setIsLoggingOut(false);
       }, 1000);
