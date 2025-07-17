@@ -1,26 +1,28 @@
+import { CommonActions, RouteProp } from '@react-navigation/native';
 import { StackNavigationProp } from '@react-navigation/stack';
 import React, { Suspense, lazy, useCallback, useEffect, useRef, useState } from 'react';
 import {
-  ActivityIndicator,
-  Alert,
-  BackHandler,
-  InteractionManager,
-  Keyboard,
-  Platform,
-  TextInput as RNTextInput,
-  StyleSheet,
-  TouchableWithoutFeedback,
-  View
+	ActivityIndicator,
+	Alert,
+	BackHandler,
+	InteractionManager,
+	Keyboard,
+	Platform,
+	TextInput as RNTextInput,
+	StyleSheet,
+	TouchableWithoutFeedback,
+	View
 } from 'react-native';
 import Animated, {
-  Easing,
-  useAnimatedStyle,
-  useSharedValue,
-  withTiming
+	Easing,
+	useAnimatedStyle,
+	useSharedValue,
+	withTiming
 } from 'react-native-reanimated';
 import { Colors } from '../../constants/Colors';
 import { useAuth } from '../../contexts/AuthContext';
 import { RootStackParamList } from '../../navigation/AppNavigator';
+import { supabase } from '../../utils/supabase';
 import { DefaultAvatar } from '../ui/Avatar/DefaultAvatar';
 import { DEFAULT_AVATAR_ID, DEFAULT_BACKGROUNDS, SELECTABLE_COLORS } from '../ui/Avatar/PresetAvatarGrid';
 import { UploadButton } from '../ui/Avatar/UploadButton';
@@ -50,9 +52,11 @@ const PRESET_AVATARS = [
 // ===========================
 
 type CreateProfileScreenNavigationProp = StackNavigationProp<RootStackParamList, 'CreateProfile'>;
+type CreateProfileScreenRouteProp = RouteProp<RootStackParamList, 'CreateProfile'>;
 
 interface CreateProfileScreenProps {
   navigation: CreateProfileScreenNavigationProp;
+  route: CreateProfileScreenRouteProp;
 }
 
 type ProfileStep = 'name' | 'username' | 'avatar';
@@ -77,7 +81,25 @@ const KEYBOARD_HIDE_EASING = Easing.bezier(0.6, 0.5, 0.25, 0.5);
 // MAIN COMPONENT
 // ===========================
 
-export const CreateProfileScreen: React.FC<CreateProfileScreenProps> = ({ navigation }) => {
+export const CreateProfileScreen: React.FC<CreateProfileScreenProps> = ({ navigation, route }) => {
+  // ===========================
+  // PARAMS & SETUP
+  // ===========================
+  
+  const { initialStep = 0 } = route.params || {};
+  
+  // Convertir initialStep numérico a ProfileStep
+  const getInitialProfileStep = (step: number): ProfileStep => {
+    switch (step) {
+      case 0: return 'name';
+      case 1: return 'username';
+      case 2: return 'avatar'; // Fallback por si llega aquí
+      default: return 'name';
+    }
+  };
+
+  console.log('[CreateProfile] 🎬 Iniciando con step:', initialStep, '→', getInitialProfileStep(initialStep));
+
   // ===========================
   // STATE
   // ===========================
@@ -92,8 +114,8 @@ export const CreateProfileScreen: React.FC<CreateProfileScreenProps> = ({ naviga
   const [isLoading, setIsLoading] = useState(false);
   const [keyboardHeight, setKeyboardHeight] = useState(0);
   const [isKeyboardVisible, setIsKeyboardVisible] = useState(false);
-  const [currentStep, setCurrentStep] = useState<ProfileStep>('name');
-  const [shouldFocusNameInput, setShouldFocusNameInput] = useState(true);
+  const [currentStep, setCurrentStep] = useState<ProfileStep>(getInitialProfileStep(initialStep));
+  const [shouldFocusNameInput, setShouldFocusNameInput] = useState(initialStep === 0);
 
   // Nuevo estado para controlar la carga diferida de componentes pesados
   const [shouldLoadAvatarGrid, setShouldLoadAvatarGrid] = useState(false);
@@ -102,7 +124,44 @@ export const CreateProfileScreen: React.FC<CreateProfileScreenProps> = ({ naviga
   // CONTEXT & HOOKS
   // ===========================
   
-  const { setUserProfileData } = useAuth();
+  const { setUserProfileData, session } = useAuth();
+
+  // ===========================
+  // LOAD EXISTING DATA
+  // ===========================
+  
+  useEffect(() => {
+    const loadExistingData = async () => {
+      if (!session?.user?.id) return;
+      
+      try {
+        console.log('[CreateProfile] 📋 Cargando datos existentes...');
+        const { data, error } = await supabase
+          .from('profiles')
+          .select('username, display_name')
+          .eq('id', session.user.id)
+          .single();
+
+        if (data) {
+          console.log('[CreateProfile] ✅ Datos encontrados:', { 
+            display_name: data.display_name, 
+            username: data.username 
+          });
+          
+          if (data.display_name) {
+            setName(data.display_name);
+          }
+          if (data.username) {
+            setUsername(data.username);
+          }
+        }
+      } catch (error) {
+        console.log('[CreateProfile] ℹ️ No hay datos previos o error:', error);
+      }
+    };
+
+    loadExistingData();
+  }, [session?.user?.id]);
 
   // ===========================
   // ANIMATIONS
@@ -121,15 +180,47 @@ export const CreateProfileScreen: React.FC<CreateProfileScreenProps> = ({ naviga
     const task = InteractionManager.runAfterInteractions(() => {
       setShouldLoadAvatarGrid(true);
       
-      // Iniciar animación inicial
-      nameStepSlideAnim.value = withTiming(0, {
-        duration: ANIMATION_DURATION,
-        easing: ANIMATION_EASING,
-      });
+      // Configurar animaciones según el step inicial
+      console.log('[CreateProfile] 🎭 Configurando animaciones para step:', currentStep);
+      
+      if (currentStep === 'name') {
+        // Step 1: name visible, otros ocultos
+        nameStepSlideAnim.value = withTiming(0, {
+          duration: ANIMATION_DURATION,
+          easing: ANIMATION_EASING,
+        });
+        nameStepOpacityAnim.value = 1;
+        usernameStepSlideAnim.value = SLIDE_DISTANCE;
+        usernameStepOpacityAnim.value = 0;
+        avatarStepSlideAnim.value = SLIDE_DISTANCE;
+        avatarStepOpacityAnim.value = 0;
+      } else if (currentStep === 'username') {
+        // Step 2: username visible, name oculto a la izquierda, avatar oculto a la derecha
+        nameStepSlideAnim.value = -SLIDE_DISTANCE;
+        nameStepOpacityAnim.value = 0;
+        usernameStepSlideAnim.value = withTiming(0, {
+          duration: ANIMATION_DURATION,
+          easing: ANIMATION_EASING,
+        });
+        usernameStepOpacityAnim.value = 1;
+        avatarStepSlideAnim.value = SLIDE_DISTANCE;
+        avatarStepOpacityAnim.value = 0;
+      } else if (currentStep === 'avatar') {
+        // Step 3: avatar visible, otros ocultos a la izquierda
+        nameStepSlideAnim.value = -SLIDE_DISTANCE;
+        nameStepOpacityAnim.value = 0;
+        usernameStepSlideAnim.value = -SLIDE_DISTANCE;
+        usernameStepOpacityAnim.value = 0;
+        avatarStepSlideAnim.value = withTiming(0, {
+          duration: ANIMATION_DURATION,
+          easing: ANIMATION_EASING,
+        });
+        avatarStepOpacityAnim.value = 1;
+      }
     });
 
     return () => task.cancel();
-  }, []);
+  }, [currentStep]);
 
   // Efectos del teclado
   useEffect(() => {
@@ -418,11 +509,27 @@ export const CreateProfileScreen: React.FC<CreateProfileScreenProps> = ({ naviga
         // Simulate API call
         await new Promise(resolve => setTimeout(resolve, 0));
 
+        console.log('[CreateProfile] 💾 Guardando datos del perfil...');
+        
         // Save profile data to context
         await setUserProfileData(username, name, selectedAvatar, avatarBackgrounds);
         
-        // La navegación será manejada automáticamente por AppNavigator
-        // basándose en el estado de hasCompletedProfile
+        console.log('[CreateProfile] ✅ Perfil guardado, esperando navegación automática...');
+        
+        // Fallback: Si después de 2 segundos no navega automáticamente, forzar reset
+        setTimeout(() => {
+          console.log('[CreateProfile] 🚨 Timeout - Forzando navegación manual');
+          try {
+            navigation.dispatch(
+              CommonActions.reset({
+                index: 0,
+                routes: [{ name: 'MainApp' }],
+              })
+            );
+          } catch (error) {
+            console.error('[CreateProfile] ❌ Error en navegación manual:', error);
+          }
+        }, 2000);
         
       } catch (error) {
         Alert.alert('Error', 'No se pudo crear el perfil. Inténtalo de nuevo.');
@@ -474,11 +581,14 @@ export const CreateProfileScreen: React.FC<CreateProfileScreenProps> = ({ naviga
   }, [shouldFocusNameInput]);
 
   useEffect(() => {
+    console.log('[CreateProfile] 🎯 Enfocando input para step:', currentStep);
+    
     if (currentStep === 'name') {
-      nameInputRef.current?.focus();
+      setTimeout(() => nameInputRef.current?.focus(), 300);
     } else if (currentStep === 'username') {
-      usernameInputRef.current?.focus();
+      setTimeout(() => usernameInputRef.current?.focus(), 300);
     }
+    // Avatar step no necesita focus
   }, [currentStep]);
 
   // Renderizado del grid de avatares

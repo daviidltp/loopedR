@@ -23,7 +23,7 @@ export const WelcomeScreen: React.FC<WelcomeScreenProps> = ({ navigation }) => {
   const [showSkipAlert, setShowSkipAlert] = useState(false);
   const hasNavigated = useRef(false);
   
-  const { session, user, isLoading } = useAuth();
+  const { session, user, isLoading, profileCompletionStep } = useAuth();
   const { signInWithSpotify, loading } = useSpotifyAuth();
 
   // Detectar cuando el usuario se autentica exitosamente
@@ -32,6 +32,7 @@ export const WelcomeScreen: React.FC<WelcomeScreenProps> = ({ navigation }) => {
     console.log('[WelcomeScreen] Tiene sesión:', !!session);
     console.log('[WelcomeScreen] Tiene usuario:', !!user);
     console.log('[WelcomeScreen] Está cargando:', isLoading);
+    console.log('[WelcomeScreen] Profile completion step:', profileCompletionStep);
     console.log('[WelcomeScreen] Ya navegó:', hasNavigated.current);
     
     if (session && user && !hasNavigated.current && !isLoading) {
@@ -44,8 +45,8 @@ export const WelcomeScreen: React.FC<WelcomeScreenProps> = ({ navigation }) => {
       hasNavigated.current = true;
       
       setTimeout(() => {
-        console.log('[WelcomeScreen] 🚀 Navegando a CreateProfile...');
-        navigation.navigate('CreateProfile');
+        console.log('[WelcomeScreen] 🚀 Navegando a CreateProfile con step:', profileCompletionStep);
+        navigation.navigate('CreateProfile', { initialStep: profileCompletionStep });
       }, 100);
     } else {
       console.log('[WelcomeScreen] ❌ Condiciones no cumplidas para navegar');
@@ -55,7 +56,7 @@ export const WelcomeScreen: React.FC<WelcomeScreenProps> = ({ navigation }) => {
       if (isLoading) console.log('[WelcomeScreen] - Aún cargando');
     }
     console.log('[WelcomeScreen] =======================================');
-  }, [session, user, isLoading, navigation]);
+  }, [session, user, isLoading, profileCompletionStep, navigation]);
 
   // Textos que se van alternando
   const texts = [
@@ -113,7 +114,8 @@ export const WelcomeScreen: React.FC<WelcomeScreenProps> = ({ navigation }) => {
     if (hasNavigated.current) return;
     hasNavigated.current = true;
     setShowSkipAlert(false);
-    navigation.navigate('CreateProfile');
+    console.log('[WelcomeScreen] 🏃‍♂️ Saltando conexión, iniciando desde step 0');
+    navigation.navigate('CreateProfile', { initialStep: 0 });
   }, [navigation]);
 
   const handleCancelSkipAlert = useCallback(() => {

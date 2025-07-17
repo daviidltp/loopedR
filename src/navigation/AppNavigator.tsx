@@ -13,7 +13,7 @@ import { useAuth } from '../contexts/AuthContext';
 
 export type RootStackParamList = {
   Welcome: undefined;
-  CreateProfile: undefined;
+  CreateProfile: { initialStep?: number };
   MainApp: undefined;
   Settings: undefined;
   EditProfile: undefined;
@@ -58,22 +58,27 @@ const LoadingScreen = () => (
 );
 
 export const AppNavigator = () => {
-  const { isLoading, hasCompletedProfile } = useAuth();
+  const { isLoading, profileCompletionStep } = useAuth();
 
   // Log para debugging
   useEffect(() => {
-    console.log('AppNavigator - Estado de autenticación:', { 
+    console.log('🧭 [AppNavigator] Estado cambió:', { 
       isLoading, 
-      hasCompletedProfile,
+      profileCompletionStep,
+      timestamp: new Date().toISOString()
     });
-  }, [isLoading, hasCompletedProfile]);
+  }, [isLoading, profileCompletionStep]);
+
+  console.log('🧭 [AppNavigator] Render:', { isLoading, profileCompletionStep });
 
   // Mostrar pantalla de carga mientras se determina el estado
   if (isLoading) {
+    console.log('🧭 [AppNavigator] Mostrando LoadingScreen');
     return <LoadingScreen />;
   }
 
-  if (!hasCompletedProfile) {
+  if (profileCompletionStep < 2) {
+    console.log('🧭 [AppNavigator] Mostrando Welcome Stack - Step:', profileCompletionStep);
     // Usuario sin perfil completado - mostrar welcome y create profile
     return (
       <Stack.Navigator
@@ -116,6 +121,7 @@ export const AppNavigator = () => {
         <Stack.Screen 
           name="CreateProfile" 
           component={CreateProfileScreen}
+          initialParams={{ initialStep: profileCompletionStep }}
           options={({ navigation }) => ({
             headerShown: false,
             headerStyle: {
@@ -132,6 +138,8 @@ export const AppNavigator = () => {
     );
   }
 
+  console.log('🧭 [AppNavigator] Mostrando Main App Stack');
+  
   // Usuario con perfil completado - mostrar app principal
   return (
     <Stack.Navigator

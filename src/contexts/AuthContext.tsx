@@ -24,7 +24,7 @@ interface AuthContextType {
   session: Session | null;
   user: any;
   isLoading: boolean;
-  hasCompletedProfile: boolean;
+  profileCompletionStep: number; // 0: sin datos, 1: solo display_name, 2: completo
   logout: () => Promise<void>;
   setUserProfileData: (username: string, displayName: string, avatar?: any, avatarBackgrounds?: string[]) => Promise<void>;
 }
@@ -34,54 +34,34 @@ const AuthContext = createContext<AuthContextType | undefined>(undefined);
 export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [session, setSession] = useState<Session | null>(null);
   const [isLoading, setIsLoading] = useState(true);
-  const [hasCompletedProfile, setHasCompletedProfile] = useState(false);
+  const [profileCompletionStep, setProfileCompletionStep] = useState(0);
 
-  // Función para verificar si el usuario tiene un perfil completado
-  const checkProfileCompletion = async (userId: string) => {
-    try {
-      const { data, error } = await supabase
-        .from('profiles')
-        .select('username, display_name')
-        .eq('id', userId)
-        .single();
 
-      if (error) {
-        console.log('[Auth] Error al verificar perfil:', error);
-        return false;
-      }
-
-      const isComplete = data && data.username && data.display_name;
-      console.log('[Auth] Perfil verificado:', { 
-        hasUsername: !!data?.username, 
-        hasDisplayName: !!data?.display_name,
-        isComplete 
-      });
-      
-      return isComplete;
-    } catch (error) {
-      console.error('[Auth] Error al verificar perfil:', error);
-      return false;
-    }
-  };
 
   useEffect(() => {
     // Obtener sesión inicial
     supabase.auth.getSession().then(async ({ data: { session } }) => {
       console.log('[Auth] ===== SESIÓN INICIAL =====');
       console.log('[Auth] Sesión encontrada:', !!session);
-      if (session) {
-        console.log('[Auth] ID de usuario:', session.user?.id);
-        console.log('[Auth] Email:', session.user?.email);
-        console.log('[Auth] Provider:', session.user?.app_metadata?.provider);
-        console.log('[Auth] Datos completos del usuario:', JSON.stringify(session.user, null, 2));
-        
-        // Verificar si el usuario tiene perfil completado
-        const profileComplete = await checkProfileCompletion(session.user.id);
-        setHasCompletedProfile(profileComplete);
+      
+      try {
+        if (session) {
+          console.log('[Auth] ID de usuario:', session.user?.id);
+          console.log('[Auth] Email:', session.user?.email);
+          console.log('[Auth] Provider:', session.user?.app_metadata?.provider);
+          
+          // Asumir directamente step 0 (sin verificación)
+          setProfileCompletionStep(0);
+        }
+      } catch (error) {
+        console.error('[Auth] 💥 Error en sesión inicial:', error);
+        setProfileCompletionStep(0);
       }
-      console.log('[Auth] ===============================');
+      
+      console.log('[Auth] 📱 Finalizando carga inicial...');
       setSession(session);
       setIsLoading(false);
+      console.log('[Auth] ===============================');
     });
 
     // Escuchar cambios en la autenticación
@@ -89,25 +69,70 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       console.log('[Auth] ===== CAMBIO DE ESTADO =====');
       console.log('[Auth] Evento:', event);
       console.log('[Auth] Tiene sesión:', !!session);
-      if (session) {
-        console.log('[Auth] ✅ Usuario autenticado:', session.user?.email);
-        console.log('[Auth] Provider:', session.user?.app_metadata?.provider);
-        
-        // Verificar si el usuario tiene perfil completado
-        const profileComplete = await checkProfileCompletion(session.user.id);
-        setHasCompletedProfile(profileComplete);
-      } else {
-        console.log('[Auth] ❌ Sin sesión');
-        setHasCompletedProfile(false);
+      
+      try {
+        if (session) {
+          console.log('[Auth] ✅ Usuario autenticado:', session.user?.email);
+          console.log('[Auth] Provider:', session.user?.app_metadata?.provider);
+          
+          // Asumir directamente step 0 (sin verificación)
+          setProfileCompletionStep(0);
+        } else {
+          console.log('[Auth] ❌ Sin sesión');
+          setProfileCompletionStep(0);
+        }
+      } catch (error) {
+        console.error('[Auth] 💥 Error en onAuthStateChange:', error);
+        setProfileCompletionStep(0);
       }
-      console.log('[Auth] ===============================');
+      
+      console.log('[Auth] 📱 Actualizando estado final...');
       setSession(session);
       setIsLoading(false);
+      console.log('[Auth] ===============================');
     });
 
     return () => subscription.unsubscribe();
 
   }, []);
+
+  // ✅ SOLUCIÓN ADICIONAL: Listener de cambios en tiempo real en la tabla profiles
+  useEffect(() => {
+    let profileSubscription: any = null;
+
+    if (session?.user?.id) {
+      console.log('[Auth] 🔄 Configurando listener de cambios en perfil...');
+      
+      profileSubscription = supabase
+        .channel('profile-changes')
+        .on(
+          'postgres_changes',
+          {
+            event: '*',
+            schema: 'public',
+            table: 'profiles',
+            filter: `id=eq.${session.user.id}`
+          },
+          async (payload) => {
+            console.log('[Auth] 🔔 Cambio detectado en perfil:', payload);
+            
+            // Asumir perfil completo cuando hay cambios en la tabla
+            console.log('[Auth] 🎯 Perfil actualizado via listener - asumiendo completo');
+            setProfileCompletionStep(2);
+          }
+        )
+        .subscribe();
+        
+      console.log('[Auth] ✅ Listener de perfil configurado');
+    }
+
+    return () => {
+      if (profileSubscription) {
+        console.log('[Auth] 🔇 Desconectando listener de perfil');
+        profileSubscription.unsubscribe();
+      }
+    };
+  }, [session?.user?.id]);
 
   const logout = async () => {
     try {
@@ -115,7 +140,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       
       // Limpiar el estado local primero
       setSession(null);
-      setHasCompletedProfile(false);
+      setProfileCompletionStep(0);
       
       // Cerrar sesión en Supabase
       const { error } = await supabase.auth.signOut();
@@ -130,7 +155,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       console.error('[Auth] ❌ Error durante el cierre de sesión:', error);
       // Asegurar que el estado se limpie incluso si hay error
       setSession(null);
-      setHasCompletedProfile(false);
+      setProfileCompletionStep(0);
       throw error;
     }
   };
@@ -155,8 +180,9 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
       console.log('[Auth] Perfil actualizado correctamente');
       
-      // Actualizar el estado de hasCompletedProfile después de guardar
-      setHasCompletedProfile(true);
+      // Asumir perfil completo después de guardar
+      setProfileCompletionStep(2);
+      console.log('[Auth] Estado actualizado - profileCompletionStep: 2 (completo)');
       
     } catch (error) {
       console.error('[Auth] Error al actualizar perfil:', error);
@@ -175,7 +201,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     session,
     user: session?.user || null,
     isLoading,
-    hasCompletedProfile,
+    profileCompletionStep,
     logout,
     setUserProfileData,
   };
