@@ -1,8 +1,8 @@
 import React from 'react';
 import { Pressable, StyleSheet, View } from 'react-native';
 import { Colors } from '../../../constants/Colors';
+import { AnimatedVerifiedIcon } from '../../icons/AnimatedVerifiedIcon';
 import { AppText } from '../Text/AppText';
-import { AnimatedVerifiedIcon } from '../layout/AnimatedVerifiedIcon';
 
 export const Header: React.FC = () => {
   const handlePremiumPress = () => {

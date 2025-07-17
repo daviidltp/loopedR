@@ -1,13 +1,13 @@
+import CommentIcon from '@assets/icons/comment.svg';
+import HeartIcon from '@assets/icons/heart.svg';
 import React from 'react';
 import { Image, StyleSheet, Text, View } from 'react-native';
-import CommentIcon from '../../../../assets/icons/comment.svg';
-import HeartIcon from '../../../../assets/icons/heart.svg';
 import { Colors } from '../../../constants/Colors';
 import { Notification, getCommentById, getUserById } from '../../../utils/mockData';
-import { PlatformTouchable } from '../PlatformTouchable';
+import { PlatformTouchable } from '../buttons/PlatformTouchable';
 import { AppText } from '../Text/AppText';
 
-const verifiedBlue = require('../../../../assets/icons/verified_blue.png');
+const verifiedBlue = require('@assets/icons/verified_blue.png');
 
 interface NotificationCardProps {
   notification: Notification;

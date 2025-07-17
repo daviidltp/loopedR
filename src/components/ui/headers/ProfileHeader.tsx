@@ -4,8 +4,8 @@ import { Notifier } from 'react-native-notifier';
 import { Icon, IconButton } from 'react-native-paper';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Colors } from '../../../constants/Colors';
-import { AnimatedVerifiedIcon } from '../layout/AnimatedVerifiedIcon';
-import { PlatformTouchable } from '../PlatformTouchable';
+import { AnimatedVerifiedIcon } from '../../icons/AnimatedVerifiedIcon';
+import { PlatformTouchable } from '../buttons/PlatformTouchable';
 import { AppText } from '../Text/AppText';
 
 interface ProfileHeaderProps {
@@ -115,6 +115,7 @@ export const ProfileHeader: React.FC<ProfileHeaderProps> = ({
             fontWeight="semiBold" 
             color={Colors.white}
             style={styles.usernameText}
+            lineHeight={20}
           >
             {username}
           </AppText>
@@ -157,7 +158,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'space-between',
     paddingHorizontal:20,
-    minHeight: 48, // Asegurar altura mínima consistente
+    minHeight: 100, // Asegurar altura mínima consistente
   },
   leftSection: {
     flexDirection: 'row',
@@ -180,7 +181,6 @@ const styles = StyleSheet.create({
     minHeight: 40, // Misma altura que los botones
   },
   usernameText: {
-    lineHeight: 24, // Controlar línea específicamente
     includeFontPadding: false, // Eliminar padding interno del font
     textAlignVertical: 'center', // Centrar verticalmente
     marginLeft: 8,

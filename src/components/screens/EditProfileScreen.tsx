@@ -1,30 +1,30 @@
 import { useNavigation } from '@react-navigation/native';
 import React, { useCallback, useEffect, useRef, useState } from 'react';
 import {
-    BackHandler,
-    Keyboard,
-    Platform,
-    ScrollView,
-    StyleSheet,
-    TouchableWithoutFeedback,
-    View
+  BackHandler,
+  Keyboard,
+  Platform,
+  ScrollView,
+  StyleSheet,
+  TouchableWithoutFeedback,
+  View
 } from 'react-native';
 import Animated, {
-    Easing,
-    useAnimatedStyle,
-    useSharedValue,
-    withTiming
+  Easing,
+  useAnimatedStyle,
+  useSharedValue,
+  withTiming
 } from 'react-native-reanimated';
 import { Colors } from '../../constants/Colors';
 import { currentUser } from '../../utils/mockData';
 import { DefaultAvatar } from '../ui/Avatar/DefaultAvatar';
 import { UploadButton } from '../ui/Avatar/UploadButton';
+import { PlatformTouchable } from '../ui/buttons/PlatformTouchable';
 import { ResizingButton } from '../ui/buttons/ResizingButton';
 import { TextArea } from '../ui/forms/TextArea';
 import { TextInput } from '../ui/forms/TextInput';
 import { DefaultHeader } from '../ui/headers/DefaultHeader';
 import { Layout } from '../ui/layout/Layout';
-import { PlatformTouchable } from '../ui/PlatformTouchable';
 
 export const EditProfileScreen = () => {
   const navigation = useNavigation();

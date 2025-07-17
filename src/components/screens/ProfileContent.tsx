@@ -71,84 +71,102 @@ export const ProfileContent: React.FC<ProfileContentProps> = ({
           showsVerticalScrollIndicator={false}
           {...scrollViewProps}
         >
-          {/* Profile Info Row */}
-          <View style={styles.profileRow}>
-            <View style={styles.avatarContainer}>
-              <Image
-                source={{ uri: userData.avatarUrl }}
-                style={styles.avatar}
-              />
-            </View>
-            
-            <View style={styles.profileInfo}>
-              <AppText 
-                variant="h3" 
-                fontFamily="inter" 
-                fontWeight="bold" 
-                color={Colors.white}
-                style={styles.displayName}
-              >
-                {userData.displayName}
-              </AppText>
-              
-              <View style={styles.followStatsContainer}>
+          {/* === CONTENEDOR PRINCIPAL DE INFO DE PERFIL (avatar, nombre, stats, bio, botón) === */}
+          <View style={styles.profileInfoMainContainer}>
+            {/* === ROW: Avatar + DisplayName + Stats === */}
+            <View style={styles.profileRow}>
+              {/* Avatar */}
+              <View style={styles.avatarContainer}>
+                <Image
+                  source={{ uri: userData.avatarUrl }}
+                  style={styles.avatar}
+                />
+              </View>
+              {/* Contenedor: DisplayName + Stats */}
+              <View style={styles.profileInfoContainer}>
                 <AppText 
-                  variant="bodySmall" 
+                  variant="h3" 
                   fontFamily="inter" 
-                  fontWeight='bold'
+                  fontWeight="bold" 
                   color={Colors.white}
+                  numberOfLines={1}
+                  ellipsizeMode="tail"
                 >
-                  {formatFollowersCount(followersCount)}
+                  {userData.displayName}
                 </AppText>
-                <AppText 
-                  variant="bodySmall" 
-                  fontFamily="inter" 
-                  color={Colors.gray[400]}
-                >
-                  {followersCount === 1 ? ' seguidor   ' : ' seguidores   '}
-                </AppText>
-                <AppText 
-                  variant="bodySmall" 
-                  fontFamily="inter" 
-                  fontWeight='bold'
-                  color={Colors.white}
-                >
-                  {formatFollowersCount(followingCount)}
-                
-                <AppText 
-                  variant="bodySmall" 
-                  fontFamily="inter" 
-                  color={Colors.gray[400]}
-                >
-                  {followingCount === 1 ? ' seguido' : ' seguidos'}
-                  </AppText>
-                </AppText>
+                <View style={styles.statsRow}>
+                  {/* Seguidores */}
+                  <View style={styles.statBox}>
+                    <View style={styles.statInnerRow}>
+                      <AppText 
+                        variant="bodySmall" 
+                        fontFamily="inter" 
+                        fontWeight='bold'
+                        color={Colors.white}
+                        numberOfLines={1}
+                        ellipsizeMode="tail"
+                        style={{ marginRight: 4 }}
+                      >
+                        {formatFollowersCount(followersCount)}
+                          <AppText 
+                          variant="bodySmall" 
+                          fontFamily="inter" 
+                          color={Colors.mutedWhite}
+                          numberOfLines={1}
+                          ellipsizeMode="tail"
+                        >
+                          {followersCount === 1 ? ' seguidor' : ' seguidores'}
+                        </AppText>
+                      </AppText>
+                      
+                    </View>
+                  </View>
+                  {/* Seguidos */}
+                  <View style={styles.statBox}>
+                    <View style={styles.statInnerRow}>
+                      <AppText 
+                        variant="bodySmall" 
+                        fontFamily="inter" 
+                        fontWeight='bold'
+                        color={Colors.white}
+                        numberOfLines={1}
+                        ellipsizeMode="tail"
+                        style={{ marginRight: 4 }}
+                      >
+                        {formatFollowersCount(followingCount)}
+                        <AppText 
+                        variant="bodySmall" 
+                        fontFamily="inter" 
+                        color={Colors.mutedWhite}
+                        numberOfLines={1}
+                        ellipsizeMode="tail"
+                      >
+                        {followingCount === 1 ? ' seguido' : ' seguidos'}
+                      </AppText>
+                      </AppText>   
+                    </View>
+                  </View>
+                </View>
               </View>
             </View>
-          </View>
 
-          {/* Bio Section - Solo renderizar si hay bio */}
-          {userData.bio && userData.bio.trim() !== '' && (
-            <View style={styles.bioSection}>
-              <AppText 
-                variant="body" 
-                fontFamily="inter" 
-                color={Colors.lessMutedWhite}
-              >
-                {userData.bio}
-              </AppText>
+            {/* === BIO (descripción) === */}
+            {userData.bio && userData.bio.trim() !== '' && (
+              <View>
+                <AppText 
+                  variant="body" 
+                  fontFamily="inter" 
+                  color={Colors.lessMutedWhite}
+                >
+                  {userData.bio}
+                </AppText>
+              </View>
+            )}
+
+            {/* === BOTÓN DE ACCIÓN (editar perfil, seguir, etc) === */}
+            <View>
+              {actionButton}
             </View>
-          )}
-
-          {/* Botón de acción personalizable */}
-          <View style={[
-            styles.buttonSection,
-            // Condicionar el padding top basado en si hay bio
-            userData.bio && userData.bio.trim() !== '' 
-              ? styles.buttonSectionWithBio 
-              : styles.buttonSectionNoBio
-          ]}>
-            {actionButton}
           </View>
 
           {/* Contenido adicional personalizable */}
@@ -163,6 +181,7 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: Colors.background,
+    
   },
   scrollView: {
     flex: 1,
@@ -173,7 +192,6 @@ const styles = StyleSheet.create({
   profileRow: {
     flexDirection: 'row',
     alignItems: 'center',
-    paddingHorizontal: 16,
     paddingTop: 24,
     gap: 16,
   },
@@ -187,30 +205,30 @@ const styles = StyleSheet.create({
     width: '100%',
     height: '100%',
   },
-  profileInfo: {
+  // Nuevo contenedor para displayName y stats
+  profileInfoContainer: {
     flex: 1,
     justifyContent: 'center',
-    gap: 6
+    gap: 8,
   },
-  displayName: {
-    marginBottom: 4,
-  },
-  followStatsContainer: {
+  // Fila para los stats
+  statsRow: {
     flexDirection: 'row',
     alignItems: 'center',
-    flexWrap: 'wrap',
+    gap: 8,
   },
-  bioSection: {
+  // Cada box ocupa como máximo el 50%
+  statBox: {
+    maxWidth: '50%',
+    minWidth: 0, // Para que el texto pueda truncarse
+  },
+  statInnerRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
+  // Contenedor principal de la info de perfil
+  profileInfoMainContainer: {
     paddingHorizontal: 16,
-    paddingTop: 24,
-  },
-  buttonSection: {
-    paddingHorizontal: 16,
-  },
-  buttonSectionWithBio: {
-    paddingTop: 24, // Distancia estándar desde la bio
-  },
-  buttonSectionNoBio: {
-    paddingTop: 32, // Un poco más de espacio cuando no hay bio
+    gap: 24,
   },
 }); 

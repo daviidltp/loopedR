@@ -1,8 +1,8 @@
 import { textStyles } from '@/src/constants';
+import SearchIcon from '@assets/icons/search.svg';
 import React, { forwardRef, useImperativeHandle, useRef, useState } from 'react';
 import { StyleSheet, TextInput, TouchableOpacity, View } from 'react-native';
 import { IconButton } from 'react-native-paper';
-import SearchIcon from '../../../../assets/icons/search.svg';
 import { Colors } from '../../../constants/Colors';
 
 interface SearchBarProps {
@@ -77,7 +77,7 @@ export const SearchBar = forwardRef<any, SearchBarProps>(({
       ]}
     >
       {/* Icono de búsqueda a la izquierda */}
-      <SearchIcon width={18} height={18} fill={Colors.mutedWhite} style={styles.searchIcon} />
+      <SearchIcon width={16} height={16} fill={Colors.mutedWhite} style={styles.searchIcon} />
 
       <TextInput
         ref={inputRef}
@@ -151,6 +151,7 @@ const styles = StyleSheet.create({
     fontFamily: 'Inter-Regular',
     includeFontPadding: false,
     textAlignVertical: 'center',
+    fontWeight: '400', // Añadido fontWeight normal
   },
   clearIcon: {
     padding: 4,

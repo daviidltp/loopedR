@@ -1,7 +1,7 @@
 import React, { useRef, useState } from 'react';
 import { Platform, Pressable, View, ViewStyle } from 'react-native';
 import { TouchableRipple } from 'react-native-paper';
-import { Colors } from '../../constants/Colors';
+import { Colors } from '../../../constants/Colors';
 
 interface PlatformTouchableProps {
   style?: ViewStyle | ViewStyle[];

@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { Platform, ViewStyle } from 'react-native';
 import { IconButton } from 'react-native-paper';
-import { Colors } from '../../constants/Colors';
+import { Colors } from '../../../constants/Colors';
 
 interface PlatformIconButtonProps {
   icon: string;

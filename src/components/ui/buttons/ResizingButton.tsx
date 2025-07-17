@@ -1,10 +1,10 @@
 import React, { ReactElement } from "react";
 import { ActivityIndicator, Pressable, StyleSheet } from "react-native";
 import Animated, {
-    interpolate,
-    useAnimatedStyle,
-    useSharedValue,
-    withTiming,
+  interpolate,
+  useAnimatedStyle,
+  useSharedValue,
+  withTiming,
 } from "react-native-reanimated";
 import { AppText } from "../Text/AppText";
 
@@ -22,6 +22,7 @@ export interface ResizingButtonProps {
     borderColor?: string;
     height?: number;
     width?: number;
+    fontSize?: number; // Nuevo prop opcional
 }
 
 const DURATION = 100;
@@ -71,6 +72,7 @@ export const ResizingButton = ({
     borderColor = "transparent",
     height = 52,
     width,
+    fontSize, // Nuevo prop
 }: ResizingButtonProps) => {
     const transition = useSharedValue(0);
     const isActive = useSharedValue(false);
@@ -92,6 +94,9 @@ export const ResizingButton = ({
         width,
         borderRadius: height / 4,
     };
+
+    // Calcula el fontSize si no se especifica
+    const resolvedFontSize = fontSize ?? (6 + Math.sqrt(height) * 1.6);
 
     return (
         <Pressable
@@ -144,7 +149,7 @@ export const ResizingButton = ({
                               Por ejemplo, usando la raíz cuadrada: fontSize = 6 + Math.sqrt(height) * 3.5
                               Así, para valores pequeños de height, el texto no se hace demasiado pequeño.
                             */}
-                            <AppText fontSize={6 + Math.sqrt(height) * 1.6} fontWeight="semiBold" numberOfLines={1} color={textColor}>
+                            <AppText fontSize={resolvedFontSize} fontWeight="semiBold" numberOfLines={1} color={textColor}>
                                 {title}
                             </AppText>
                         </Animated.View>

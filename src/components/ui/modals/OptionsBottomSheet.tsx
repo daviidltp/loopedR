@@ -2,7 +2,7 @@ import BottomSheet, { BottomSheetBackdrop, BottomSheetView } from '@gorhom/botto
 import React, { forwardRef, useCallback, useImperativeHandle, useMemo, useRef } from 'react';
 import { StyleSheet, View } from 'react-native';
 import { Colors } from '../../../constants/Colors';
-import { PlatformTouchable } from '../PlatformTouchable';
+import { PlatformTouchable } from '../buttons/PlatformTouchable';
 import { AppText } from '../Text';
 
 // Componente de fondo personalizado para redondear bordes

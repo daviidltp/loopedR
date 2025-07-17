@@ -15,13 +15,13 @@ import { DEFAULT_AVATAR_ID } from '../Avatar/PresetAvatarGrid';
 import { AppText } from '../Text/AppText';
 
 // Importar los iconos SVG directamente
-import AddFilledIcon from '../../../../assets/icons/add_filled.svg';
-import HeartIcon from '../../../../assets/icons/heart.svg';
-import HeartFilledIcon from '../../../../assets/icons/heart_filled.svg';
-import HouseIcon from '../../../../assets/icons/house.svg';
-import HouseFilledIcon from '../../../../assets/icons/house_filled.svg';
-import SearchIcon from '../../../../assets/icons/search.svg';
-import SearchFilledIcon from '../../../../assets/icons/search_filled.svg';
+import AddFilledIcon from '@assets/icons/add_filled.svg';
+import HeartIcon from '@assets/icons/heart.svg';
+import HeartFilledIcon from '@assets/icons/heart_filled.svg';
+import HouseIcon from '@assets/icons/house.svg';
+import HouseFilledIcon from '@assets/icons/house_filled.svg';
+import SearchIcon from '@assets/icons/search.svg';
+import SearchFilledIcon from '@assets/icons/search_filled.svg';
 
 export type BottomNavigationParamList = {
   Home: undefined;
@@ -323,7 +323,6 @@ const styles = StyleSheet.create({
     width: 28,
     height: 28,
     borderRadius: 14,
-    backgroundColor: Colors.appleRed,
   },
   blurContainer: {
     position: 'absolute',

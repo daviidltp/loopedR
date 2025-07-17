@@ -3,38 +3,40 @@ import { StackNavigationProp } from '@react-navigation/stack';
 import * as WebBrowser from 'expo-web-browser';
 import React, { useEffect, useRef, useState } from 'react';
 import {
-    BackHandler,
-    Image,
-    ScrollView,
-    StyleSheet,
-    View
+  BackHandler,
+  Image,
+  ScrollView,
+  StyleSheet,
+  View
 } from 'react-native';
 import { Icon } from 'react-native-paper';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Colors } from '../../constants/Colors';
 import { useAuth } from '../../contexts/AuthContext';
 import { RootStackParamList } from '../../navigation/AppNavigator';
+import { handleDeleteAccount, handleLogout } from '../../utils/userActions';
 import { ResizingButton } from '../ui/buttons';
 import { DefaultHeader } from '../ui/headers/DefaultHeader';
 import { Layout } from '../ui/layout/Layout';
-import { OptionsBottomSheet, OptionsBottomSheetRef } from '../ui/modals';
+import { OptionsBottomSheetRef } from '../ui/modals';
+import { ConfirmationDialog } from '../ui/modals/ConfirmationDialog';
 import {
-    SettingsItem,
-    SettingsProfileSection,
-    SettingsSectionTitle
+  SettingsItem,
+  SettingsProfileSection,
+  SettingsSectionTitle
 } from '../ui/sections';
 
 // Importar iconos personalizados
-import DocumentIcon from '../../../assets/icons/document.svg';
-import LanguageIcon from '../../../assets/icons/language.svg';
-import UserLockIcon from '../../../assets/icons/user-lock.svg';
+import DocumentIcon from '@assets/icons/document.svg';
+import LanguageIcon from '@assets/icons/language.svg';
+import UserLockIcon from '@assets/icons/user-lock.svg';
 
 type SettingsScreenNavigationProp = StackNavigationProp<RootStackParamList, 'Settings'>;
 
 export const SettingsScreen = () => {
   const insets = useSafeAreaInsets();
   const navigation = useNavigation<SettingsScreenNavigationProp>();
-  const { logout, user, session } = useAuth();
+  const { user, session } = useAuth();
   
   // Toggle switch state management
   const [notificationsEnabled, setNotificationsEnabled] = useState(true);
@@ -45,6 +47,8 @@ export const SettingsScreen = () => {
   
   // Logout operation state management to prevent race conditions and provide user feedback
   const [isLoggingOut, setIsLoggingOut] = useState(false);
+  // Estado para mostrar el diálogo de confirmación
+  const [showLogoutDialog, setShowLogoutDialog] = useState(false);
   
   // Bottom sheet modal references for option selection
   const languageBottomSheetRef = useRef<OptionsBottomSheetRef>(null);
@@ -106,42 +110,7 @@ export const SettingsScreen = () => {
 
 
 
-  /**
-   * Handles the user logout process with protection against concurrent executions.
-   * 
-   * @returns Promise<void> - Completes logout process or handles errors gracefully
-   */
-  const handleLogout = async () => {
-    // Prevent concurrent logout operations to avoid race conditions
-    if (isLoggingOut) {
-      console.log('SettingsScreen: Logout already in progress, ignoring duplicate request');
-      return;
-    }
-
-    try {
-      setIsLoggingOut(true);
-      console.log('SettingsScreen: Initiating logout sequence');
-      
-      // Clear application authentication state
-      await logout();
-      
-      console.log('SettingsScreen: Logout sequence completed successfully');
-    } catch (error) {
-      console.error('SettingsScreen: Error during logout sequence:', error);
-      // Mostrar error al usuario si es necesario
-    } finally {
-      // Reset loading state with delay to provide visual feedback
-      setTimeout(() => {
-        setIsLoggingOut(false);
-      }, 1000);
-    }
-  };
-
-  const handleDeleteAccount = () => {
-    console.log('SettingsScreen: Delete account action triggered');
-    // TODO: Implement account deletion confirmation dialog
-    // Should include user verification and irreversible action warning
-  };
+  // Ahora se usan las funciones utilitarias importadas
 
   const handleLanguagePress = () => {
     languageBottomSheetRef.current?.expand();
@@ -241,7 +210,7 @@ export const SettingsScreen = () => {
             <SettingsItem
               customIcon={
                 <Image 
-                  source={require('../../../assets/icons/verified_blue.png')} 
+                  source={require('@assets/icons/verified_blue.png')} 
                   style={[styles.verifiedIcon, { tintColor: Colors.mutedWhite }]}
                 />
               }
@@ -276,8 +245,8 @@ export const SettingsScreen = () => {
           <View style={styles.logoutContainer}>
             <ResizingButton
               title={isLoggingOut ? "Cerrando sesión..." : "Cerrar sesión"}
-              onPress={handleLogout}
-              backgroundColor="#151515"
+              onPress={() => setShowLogoutDialog(true)}
+              backgroundColor={Colors.backgroundSoft}
               textColor={Colors.appleRed}
               icon={<Icon source="logout" size={20} color={Colors.appleRed} />}
               isLoading={isLoggingOut}
@@ -289,8 +258,8 @@ export const SettingsScreen = () => {
         </ScrollView>
       </View>
 
-      {/* Bottom Sheets */}
-      <OptionsBottomSheet
+      {/* Bottom Sheets - Causando lag*/}
+      {/* <OptionsBottomSheet
         ref={languageBottomSheetRef}
         title="Idioma"
         options={languageOptions}
@@ -304,6 +273,20 @@ export const SettingsScreen = () => {
         options={privacyOptions}
         selectedValue={selectedPrivacy}
         onOptionSelect={handlePrivacySelect}
+      /> */}
+
+      {/* ConfirmationDialog para cerrar sesión */}
+      <ConfirmationDialog
+        visible={showLogoutDialog}
+        title="¿Cerrar sesión?"
+        description="¿Estás seguro de que quieres cerrar sesión?"
+        onCancel={() => setShowLogoutDialog(false)}
+        onConfirm={async () => {
+          setShowLogoutDialog(false);
+          await handleLogout(isLoggingOut, setIsLoggingOut);
+        }}
+        confirmText="Cerrar sesión"
+        cancelText="Cancelar"
       />
     </Layout>
   );
@@ -318,7 +301,7 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   section: {
-    backgroundColor: '#151515',
+    backgroundColor: Colors.backgroundSoft,
     borderRadius: 24,
     borderWidth: 1,
     borderColor: '#22222200',

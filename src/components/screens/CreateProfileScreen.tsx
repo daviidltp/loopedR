@@ -38,11 +38,11 @@ const PresetAvatarGrid = lazy(() =>
 
 // Array actualizado con el nuevo orden (sin profileicon3, profileicon6 movido a posición 3)
 const PRESET_AVATARS = [
-  require('../../../assets/images/profilePics/profileicon1.png'),
-  require('../../../assets/images/profilePics/profileicon2.png'),
-  require('../../../assets/images/profilePics/profileicon6.png'), // Movido de posición 6 a 3
-  require('../../../assets/images/profilePics/profileicon4.png'),
-  require('../../../assets/images/profilePics/profileicon5.png'),
+  require('@assets/images/profilePics/profileicon1.png'),
+  require('@assets/images/profilePics/profileicon2.png'),
+  require('@assets/images/profilePics/profileicon6.png'), // Movido de posición 6 a 3
+  require('@assets/images/profilePics/profileicon4.png'),
+  require('@assets/images/profilePics/profileicon5.png'),
 ];
 
 // ===========================

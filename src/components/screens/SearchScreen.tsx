@@ -2,7 +2,7 @@ import type { BottomTabNavigationProp, BottomTabScreenProps } from '@react-navig
 import { useFocusEffect, useNavigation, useRoute } from '@react-navigation/native';
 import { StackNavigationProp } from '@react-navigation/stack';
 import React, { useRef, useState } from 'react';
-import { Animated, StyleSheet, View } from 'react-native';
+import { StyleSheet, View } from 'react-native';
 import { Colors } from '../../constants/Colors';
 import { RootStackParamList } from '../../navigation/AppNavigator';
 import { currentUser, mockUsers } from '../../utils/mockData';
@@ -19,7 +19,8 @@ export const SearchScreen: React.FC = () => {
   const stackNavigation = useNavigation<MainStackNavigationProp>();
   const [searchText, setSearchText] = useState('');
   const searchBarRef = useRef<any>(null);
-  const fadeOpacity = useRef(new Animated.Value(1)).current; // Inicia en 1 por defecto
+  // Eliminar fadeOpacity y animación
+  // const fadeOpacity = useRef(new Animated.Value(1)).current;
   
   // Verificar si viene de la animación del SearchBar
   const fromSearchAnimation = route.params?.fromSearchAnimation || false;
@@ -35,32 +36,20 @@ export const SearchScreen: React.FC = () => {
         user.username.toLowerCase().startsWith(searchText.toLowerCase())
       );
 
-  // Solo hacer autofocus y fadein si viene de la animación
+  // Hacer focus solo si viene de HomeScreen, sin animación
   useFocusEffect(
     React.useCallback(() => {
       if (fromSearchAnimation) {
-        fadeOpacity.setValue(0);
-        
-        const fadeTimer = setTimeout(() => {
-          Animated.timing(fadeOpacity, {
-            toValue: 1,
-            duration: 300,
-            useNativeDriver: true,
-          }).start();
-        }, 0);
-        
         const focusTimer = setTimeout(() => {
           if (searchBarRef.current && searchBarRef.current.focus) {
             searchBarRef.current.focus();
           }
         }, 200);
-
         return () => {
           clearTimeout(focusTimer);
-          clearTimeout(fadeTimer);
         };
       }
-    }, [fromSearchAnimation, fadeOpacity])
+    }, [fromSearchAnimation])
   );
 
   // Limpiar parámetro al salir de la pantalla
@@ -96,7 +85,8 @@ export const SearchScreen: React.FC = () => {
           />
         </View>
 
-        <Animated.View style={[styles.contentContainer, { opacity: fadeOpacity }]}>
+        {/* Eliminar Animated.View y usar View normal */}
+        <View style={styles.contentContainer}>
           {filteredUsers.length > 0 && (
             <UserList 
               users={filteredUsers}
@@ -104,7 +94,7 @@ export const SearchScreen: React.FC = () => {
               showSeparator={true}
             />
           )}
-        </Animated.View>
+        </View>
       </View>
     </Layout>
   );

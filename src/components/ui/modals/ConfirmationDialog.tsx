@@ -1,7 +1,7 @@
 import React, { useEffect, useRef } from 'react';
 import { Animated, Pressable, StyleSheet, View } from 'react-native';
 import { Colors } from '../../../constants/Colors';
-import { PlatformTouchable } from '../PlatformTouchable';
+import { RippleButton } from '../buttons';
 import { AppText } from '../Text/AppText';
 
 interface ConfirmationDialogProps {
@@ -68,38 +68,26 @@ export const ConfirmationDialog: React.FC<ConfirmationDialogProps> = ({
         
         <View style={styles.buttonsContainer}>
           <View style={[styles.buttonWrapper, styles.cancelButtonWrapper]}>
-            <PlatformTouchable 
-              style={styles.button}
+            <RippleButton 
               onPress={onCancel}
-              
-            >
-              <AppText
-                variant="body"
-                fontFamily="inter"
-                fontWeight="semiBold"
-                color={Colors.white}
-                style={styles.buttonText}
-              >
-                {cancelText}
-              </AppText>
-            </PlatformTouchable>
+              title={cancelText}
+              backgroundColor={Colors.backgroundUltraSoft}
+              textColor={Colors.white}
+              borderColor={Colors.backgroundUltraSoft}
+              height={48}
+            />
           </View>
           
           <View style={[styles.buttonWrapper, styles.confirmButtonWrapper]}>
-            <PlatformTouchable 
-              style={styles.button}
+            <RippleButton 
               onPress={onConfirm}
-            >
-              <AppText
-                variant="body"
-                fontFamily="inter"
-                fontWeight="semiBold"
-                color={Colors.white}
-                style={styles.buttonText}
-              >
-                {confirmText}
-              </AppText>
-            </PlatformTouchable>
+              title={confirmText}
+              backgroundColor={Colors.appleRed}
+              textColor={Colors.white}
+              borderColor={Colors.appleRed}
+              height={48}
+              rippleColor={Colors.appleRed}
+            />
           </View>
         </View>
       </View>

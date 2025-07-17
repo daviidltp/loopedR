@@ -26,7 +26,7 @@ export const DangerButton: React.FC<DangerButtonProps> = ({
       <ResizingButton
         title={title}
         onPress={handlePress}
-        backgroundColor="#151515"
+        backgroundColor={Colors.backgroundSoft}
         textColor={Colors.appleRed}
         icon={<Icon source={icon} size={20} color={Colors.appleRed} />}
       />

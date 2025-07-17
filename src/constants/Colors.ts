@@ -1,6 +1,6 @@
 export const Colors = {
   background: '#000000',
-  backgroundSoft: '#111111',
+  backgroundSoft: '#151515',
   backgroundUltraSoft: '#252525',
   foregroundSoft: '#ffffff15',
   spotifyGreen: '#1DB954',

@@ -2,7 +2,7 @@ import React from 'react';
 import { StyleSheet, Switch, View } from 'react-native';
 import { Icon } from 'react-native-paper';
 import { Colors } from '../../../constants/Colors';
-import { PlatformTouchable } from '../PlatformTouchable';
+import { PlatformTouchable } from '../buttons/PlatformTouchable';
 import { AppText } from '../Text/AppText';
 
 interface SettingsItemProps {
@@ -76,6 +76,8 @@ export const SettingsItem: React.FC<SettingsItemProps> = ({
                 fontWeight="medium" 
                 color={textColor}
                 style={styles.titleText}
+                numberOfLines={1}
+                ellipsizeMode="tail"
               >
                 {title}
               </AppText>
@@ -96,12 +98,15 @@ export const SettingsItem: React.FC<SettingsItemProps> = ({
         
         <View style={styles.rightSection}>
           {hasSwitch ? (
-            <Switch
-              value={switchValue}
-              onValueChange={onSwitchChange}
-              trackColor={{ false: Colors.gray[700], true: Colors.secondaryGreenDark }}
-              thumbColor={switchValue ? Colors.secondaryGreen : Colors.gray[300]}
-            />
+            <View style={{ transform: [{ scale: 0.8 }] }}>
+              <Switch
+                value={switchValue}
+                onValueChange={onSwitchChange}
+                trackColor={{ false: Colors.gray[700], true: Colors.secondaryGreenDark }}
+                thumbColor={switchValue ? Colors.secondaryGreen : Colors.gray[300]}
+                
+              />
+            </View>
           ) : (
             showChevron && (
               <Icon source="chevron-right" size={20} color={Colors.gray[500]} />

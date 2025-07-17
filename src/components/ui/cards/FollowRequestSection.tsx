@@ -2,7 +2,7 @@ import React from 'react';
 import { Image, StyleSheet, View } from 'react-native';
 import { Colors } from '../../../constants/Colors';
 import { FollowRequest, getUserById } from '../../../utils/mockData';
-import { PlatformTouchable } from '../PlatformTouchable';
+import { PlatformTouchable } from '../buttons/PlatformTouchable';
 import { AppText } from '../Text/AppText';
 
 interface FollowRequestSectionProps {

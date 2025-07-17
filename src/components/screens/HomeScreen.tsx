@@ -1,13 +1,11 @@
 import type { BottomTabNavigationProp } from '@react-navigation/bottom-tabs';
-import { useFocusEffect } from '@react-navigation/native';
+import { useNavigation } from '@react-navigation/native';
 import React from 'react';
 import { Keyboard, ScrollView, StyleSheet, TouchableWithoutFeedback, View } from 'react-native';
-import Animated from 'react-native-reanimated';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Colors } from '../../constants/Colors';
-import { useSearchBarAnimation } from '../../hooks/useSearchBarAnimation';
 import { currentUser, hasAnyFollowing } from '../../utils/mockData';
-import { SearchBar } from '../ui';
+import { SearchBar } from '../ui/forms/SearchBar';
 import { Header } from '../ui/headers';
 import { Layout } from '../ui/layout';
 import type { BottomNavigationParamList } from '../ui/navigation/BottomNavigationBar';
@@ -20,30 +18,13 @@ const SEARCH_BAR_INITIAL_POSITION = 230;
 export const HomeScreen: React.FC = () => {
   const insets = useSafeAreaInsets();
   const userHasFriends = hasAnyFollowing(currentUser.id);
+  const navigation = useNavigation<BottomTabNavigationProp<BottomNavigationParamList, 'Home'>>();
   
-  const { 
-    fadeAnimatedStyle, 
-    searchBarAnimatedStyle, 
-    handleSearchFocus,
-    resetAnimations 
-  } = useSearchBarAnimation({
-    initialPosition: SEARCH_BAR_INITIAL_POSITION,
-    targetPosition: insets.top
-  });
-
-  // Usar useFocusEffect para resetear animaciones
-  useFocusEffect(
-    React.useCallback(() => {
-      resetAnimations();
-    }, [resetAnimations])
-  );
 
   return (
     <Layout>
       <View style={styles.container}>
-        <Animated.View style={fadeAnimatedStyle}>
-          <Header />
-        </Animated.View>
+        <Header />
 
         <ScrollView 
           style={styles.mainScrollView}
@@ -54,15 +35,17 @@ export const HomeScreen: React.FC = () => {
           {!userHasFriends ? (
             <View style={styles.emptyStateContainer}>
               <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
-                <View>
-                  <Animated.View style={fadeAnimatedStyle}>
-                    <AppText variant='h1' fontFamily='inter' fontWeight='semiBold' lineHeight={36} color={Colors.white} style={{marginBottom: 24}}>
-                      Vaya, esto está un poco vacío...
-                    </AppText>
-                    <AppText variant='body' fontFamily='inter' fontWeight='regular' color={Colors.mutedWhite}>Empieza añadiendo a un amigo</AppText>
-                  </Animated.View>
-                  
-                  <View style={styles.searchSpaceholder} />
+                <View style={styles.emptyStateColumn}>
+                  <AppText variant='h1' fontFamily='inter' fontWeight='semiBold' lineHeight={36} color={Colors.white}>
+                    Vaya, esto está un poco vacío...
+                  </AppText>
+                  <AppText variant='body' fontFamily='inter' fontWeight='regular' color={Colors.mutedWhite}>
+                    Empieza añadiendo a un amigo
+                  </AppText>
+                  <SearchBar
+                    placeholder="Buscar usuarios"
+                    onSearchPress={() => navigation.navigate('Search', { fromSearchAnimation: true })}
+                  />
                 </View>
               </TouchableWithoutFeedback>
             </View>
@@ -74,23 +57,6 @@ export const HomeScreen: React.FC = () => {
             </TouchableWithoutFeedback>
           )}
         </ScrollView>
-        
-        {!userHasFriends && (
-          <Animated.View 
-            style={[
-              styles.absoluteSearchBar,
-              { top: SEARCH_BAR_INITIAL_POSITION },
-              searchBarAnimatedStyle
-            ]}
-          >
-            <SearchBar 
-              placeholder="Buscar usuarios"
-              onFocus={handleSearchFocus}
-              showSoftInputOnFocus={false}
-              disableFocusBackgroundChange={true}
-            />
-          </Animated.View>
-        )}
       </View>
     </Layout>
   );
@@ -107,18 +73,18 @@ const styles = StyleSheet.create({
   },
   emptyStateContainer: {
     paddingHorizontal: 24,
-    paddingTop: 16,
-    minHeight: '100%',
+    flex: 1,
+    flexDirection: 'column',
+    justifyContent: 'flex-start',
+    alignItems: 'stretch',
   },
-  searchSpaceholder: {
-    height: 72,
+  emptyStateColumn: {
+    flexDirection: 'column',
+    gap: 16,
+    alignItems: 'stretch',
+    justifyContent: 'flex-start',
+    width: '100%',
     marginTop: 16,
-  },
-  absoluteSearchBar: {
-    position: 'absolute',
-    left: 24,
-    right: 24,
-    zIndex: 1000,
   },
   feedContainer: {
     flex: 1,

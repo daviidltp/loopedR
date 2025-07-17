@@ -2,7 +2,7 @@ import React from 'react';
 import { Image, StyleSheet, View } from 'react-native';
 import { Icon } from 'react-native-paper';
 import { Colors } from '../../../constants/Colors';
-import { PlatformTouchable } from '../PlatformTouchable';
+import { PlatformTouchable } from '../buttons/PlatformTouchable';
 import { AppText } from '../Text/AppText';
 
 interface SettingsProfileSectionProps {

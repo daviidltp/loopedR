@@ -2,7 +2,7 @@ import React from 'react';
 import { Image, StyleSheet, View } from 'react-native';
 import { Colors } from '../../../constants/Colors';
 import { User, currentUser, mockUserRelations } from '../../../utils/mockData';
-import { PlatformTouchable } from '../PlatformTouchable';
+import { PlatformTouchable } from '../buttons/PlatformTouchable';
 import { AppText } from '../Text/AppText';
 
 interface UserListItemProps {
@@ -70,7 +70,7 @@ export const UserListItem: React.FC<UserListItemProps> = ({
           </AppText>
           {user.isVerified && (
             <Image 
-              source={require('../../../../assets/icons/verified_blue.png')} 
+              source={require('@assets/icons/verified_blue.png')} 
               style={styles.verifiedIcon}
             />
           )}

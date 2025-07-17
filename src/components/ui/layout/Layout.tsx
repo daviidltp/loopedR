@@ -1,7 +1,8 @@
-import * as NavigationBar from 'expo-navigation-bar';
-import React, { useEffect } from 'react';
-import { Platform, StyleSheet, View } from 'react-native';
+import { StatusBar } from 'expo-status-bar';
+import React from 'react';
+import { StyleSheet, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import SystemNavigationBar from 'react-native-system-navigation-bar';
 import { Colors } from '../../../constants/Colors';
 
 interface LayoutProps {
@@ -12,13 +13,8 @@ interface LayoutProps {
 
 export const Layout: React.FC<LayoutProps> = ({ children, style, excludeBottomSafeArea = false}) => {
   const insets = useSafeAreaInsets();
-
-  useEffect(() => {
-    if (Platform.OS === 'android') {
-      NavigationBar.setVisibilityAsync('visible');
-      NavigationBar.setButtonStyleAsync('light');
-    }
-  }, []);
+  SystemNavigationBar.navigationShow();
+  SystemNavigationBar.setNavigationColor(Colors.appleRed);
 
   const bottomPadding = excludeBottomSafeArea 
     ? 0 
@@ -26,6 +22,7 @@ export const Layout: React.FC<LayoutProps> = ({ children, style, excludeBottomSa
 
   return (
     <View style={[styles.container, style]}>
+      <StatusBar style="light" translucent={true} />
 
       <View
         style={[

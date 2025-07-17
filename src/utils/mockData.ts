@@ -53,8 +53,8 @@ export const mockUsers: User[] = [
   },
   {
     id: '5',
-    username: 'marcos18xe',
-    displayName: 'Marcos Jesús',
+    username: 'benitoanotniomartinezocasioparera',
+    displayName: 'Benito Antonio Martinez Ocasio Parera',
     bio: '',
     avatarUrl: 'https://pbs.twimg.com/profile_images/1492654234122207234/su1Dtj9B_400x400.jpg',
     isVerified: false,

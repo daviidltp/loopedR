@@ -39,4 +39,26 @@ export const getRedirectUrl = (): string => {
   return redirectUri;
 };
 
+/**
+ * Cierra la sesión del usuario autenticado en Supabase
+ */
+export const signOutUser = async (): Promise<void> => {
+  const { error } = await supabase.auth.signOut();
+  if (error) throw error;
+};
+
+/**
+ * Elimina la cuenta del usuario autenticado en Supabase
+ * (Requiere configuración de Supabase y puede necesitar lógica adicional)
+ */
+export const deleteUserAccount = async (): Promise<void> => {
+  const user = (await supabase.auth.getUser()).data.user;
+  if (!user) throw new Error('No hay usuario autenticado');
+  // Aquí deberías llamar a una función RPC o endpoint seguro para eliminar la cuenta
+  // Ejemplo:
+  // const { error } = await supabase.rpc('delete_user', { user_id: user.id });
+  // if (error) throw error;
+  throw new Error('Funcionalidad de eliminación de cuenta no implementada');
+};
+
 console.log('Supabase client initialized for React Native with AsyncStorage persistence'); 

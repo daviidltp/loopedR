@@ -1,7 +1,7 @@
 import React from 'react';
 import { StyleSheet, View } from 'react-native';
 import { Colors } from '../../../constants/Colors';
-import { PlatformIconButton } from '../PlatformIconButton';
+import { PlatformIconButton } from '../buttons/PlatformIconButton';
 import { AppText } from '../Text/AppText';
 
 interface DefaultHeaderProps {

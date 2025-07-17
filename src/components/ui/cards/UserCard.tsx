@@ -38,7 +38,7 @@ export const UserCard: React.FC<UserCardProps> = ({
           </AppText>
           {user.isVerified && (
             <Image 
-              source={require('../../../../assets/icons/verified_blue.png')} 
+              source={require('@assets/icons/verified_blue.png')} 
               style={styles.verifiedIcon}
             />
           )}

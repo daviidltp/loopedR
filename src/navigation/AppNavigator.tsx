@@ -6,8 +6,8 @@ import { CreateProfileScreen, WelcomeScreen } from '../components';
 import { EditProfileScreen } from '../components/screens/EditProfileScreen';
 import { SettingsScreen } from '../components/screens/SettingsScreen';
 import { UserProfileScreen } from '../components/screens/UserProfileScreen';
+import { PlatformTouchable } from '../components/ui/buttons/PlatformTouchable';
 import { BottomNavigationBar } from '../components/ui/navigation/BottomNavigationBar';
-import { PlatformTouchable } from '../components/ui/PlatformTouchable';
 import { Colors } from '../constants/Colors';
 import { useAuth } from '../contexts/AuthContext';
 
