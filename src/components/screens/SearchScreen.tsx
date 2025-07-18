@@ -36,17 +36,32 @@ export const SearchScreen: React.FC = () => {
         user.username.toLowerCase().startsWith(searchText.toLowerCase())
       );
 
+  
   // Hacer focus solo si viene de HomeScreen, sin animación
   useFocusEffect(
     React.useCallback(() => {
-      if (fromSearchAnimation && searchBarRef.current?.focus) {
-        const timer = setTimeout(() => {
-          searchBarRef.current?.focus();
-        }, 100);
-        
-        return () => clearTimeout(timer);
+      if (fromSearchAnimation) {
+        const focusTimer = setTimeout(() => {
+          if (searchBarRef.current && searchBarRef.current.focus) {
+            searchBarRef.current.focus();
+          }
+        }, 200);
+        return () => {
+          clearTimeout(focusTimer);
+        };
       }
     }, [fromSearchAnimation])
+  );
+
+  // Limpiar parámetro al salir de la pantalla
+  useFocusEffect(
+    React.useCallback(() => {
+      return () => {
+        if (fromSearchAnimation) {
+          navigation.setParams({ fromSearchAnimation: undefined });
+        }
+      };
+    }, [fromSearchAnimation, navigation])
   );
 
   // Función para manejar navegación a perfiles

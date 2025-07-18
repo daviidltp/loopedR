@@ -4,8 +4,7 @@ import React from 'react';
 import { Keyboard, ScrollView, StyleSheet, TouchableWithoutFeedback, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Colors } from '../../constants/Colors';
-import { useCurrentUser } from '../../hooks/useCurrentUser';
-import { hasAnyFollowing } from '../../utils/mockData';
+import { currentUser, hasAnyFollowing } from '../../utils/mockData';
 import { SearchBar } from '../ui/forms/SearchBar';
 import { Header } from '../ui/headers';
 import { Layout } from '../ui/layout';
@@ -18,8 +17,7 @@ const SEARCH_BAR_INITIAL_POSITION = 230;
 
 export const HomeScreen: React.FC = () => {
   const insets = useSafeAreaInsets();
-  const { currentUser } = useCurrentUser();
-  const userHasFriends = currentUser ? hasAnyFollowing(currentUser.id) : false;
+  const userHasFriends = hasAnyFollowing(currentUser.id);
   const navigation = useNavigation<BottomTabNavigationProp<BottomNavigationParamList, 'Home'>>();
   
 
@@ -30,70 +28,34 @@ export const HomeScreen: React.FC = () => {
 
         <ScrollView 
           style={styles.mainScrollView}
-          contentContainerStyle={styles.scrollContent}
           showsVerticalScrollIndicator={false}
-          scrollEventThrottle={16}
-          bounces={true}
+          keyboardShouldPersistTaps="handled"
+          nestedScrollEnabled={true}
         >
-          
-          {/* SearchBar */}
-          <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
-            <View style={styles.searchSection}>
-              <SearchBar
-                placeholder="Buscar amigos"
-                onSearchPress={() => {
-                  navigation.navigate('Search', { fromSearchAnimation: true });
-                }}
-                showSoftInputOnFocus={false}
-                disableFocusBackgroundChange={true}
-              />
+          {!userHasFriends ? (
+            <View style={styles.emptyStateContainer}>
+              <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
+                <View style={styles.emptyStateColumn}>
+                  <AppText variant='h1' fontFamily='inter' fontWeight='semiBold' lineHeight={36} color={Colors.white}>
+                    Vaya, esto está un poco vacío...
+                  </AppText>
+                  <AppText variant='body' fontFamily='inter' fontWeight='regular' color={Colors.mutedWhite}>
+                    Empieza añadiendo a un amigo
+                  </AppText>
+                  <SearchBar
+                    placeholder="Buscar usuarios"
+                    onSearchPress={() => navigation.navigate('Search', { fromSearchAnimation: true })}
+                  />
+                </View>
+              </TouchableWithoutFeedback>
             </View>
-          </TouchableWithoutFeedback>
-
-          {/* Contenido principal */}
-          <View style={styles.mainContent}>
-            {userHasFriends ? (
-              <View style={styles.friendsContent}>
-                <AppText 
-                  variant="h3" 
-                  fontFamily="inter" 
-                  fontWeight="bold" 
-                  color={Colors.white}
-                  style={styles.welcomeText}
-                >
-                  Feed de tus amigos
-                </AppText>
-                <AppText 
-                  variant="body" 
-                  fontFamily="inter" 
-                  color={Colors.mutedWhite}
-                  style={styles.subtitleText}
-                >
-                  Próximamente...
-                </AppText>
+          ) : (
+            <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
+              <View style={styles.feedContainer}>
+                <AppText variant='body' fontFamily='inter' fontWeight='regular' color={Colors.mutedWhite}>Feed con amigos (próximamente)</AppText>
               </View>
-            ) : (
-              <View style={styles.noFriendsContent}>
-                <AppText 
-                  variant="h3" 
-                  fontFamily="inter" 
-                  fontWeight="bold" 
-                  color={Colors.white}
-                  style={styles.welcomeText}
-                >
-                  ¡Encuentra a tus amigos!
-                </AppText>
-                <AppText 
-                  variant="body" 
-                  fontFamily="inter" 
-                  color={Colors.mutedWhite}
-                  style={styles.subtitleText}
-                >
-                  Conecta con personas que comparten tu pasión por la música
-                </AppText>
-              </View>
-            )}
-          </View>
+            </TouchableWithoutFeedback>
+          )}
         </ScrollView>
       </View>
     </Layout>
@@ -107,34 +69,28 @@ const styles = StyleSheet.create({
   },
   mainScrollView: {
     flex: 1,
+    paddingTop: 24,
   },
-  scrollContent: {
-    flexGrow: 1,
-    paddingBottom: 100, // Espacio para el bottom navigation
-  },
-  searchSection: {
-    paddingHorizontal: 20,
-    paddingTop: 16,
-    paddingBottom: 20,
-  },
-  mainContent: {
+  emptyStateContainer: {
+    paddingHorizontal: 24,
     flex: 1,
-    paddingHorizontal: 20,
+    flexDirection: 'column',
+    justifyContent: 'flex-start',
+    alignItems: 'stretch',
+  },
+  emptyStateColumn: {
+    flexDirection: 'column',
+    gap: 16,
+    alignItems: 'stretch',
+    justifyContent: 'flex-start',
+    width: '100%',
+    marginTop: 16,
+  },
+  feedContainer: {
+    flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
-  },
-  friendsContent: {
-    alignItems: 'center',
-  },
-  noFriendsContent: {
-    alignItems: 'center',
-  },
-  welcomeText: {
-    textAlign: 'center',
-    marginBottom: 8,
-  },
-  subtitleText: {
-    textAlign: 'center',
-    opacity: 0.8,
+    paddingHorizontal: 24,
+    minHeight: 400,
   },
 }); 
