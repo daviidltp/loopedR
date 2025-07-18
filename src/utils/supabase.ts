@@ -34,7 +34,6 @@ export const getRedirectUrl = (): string => {
     ? 'exp://192.168.1.60:8081' 
     : 'loopedr://callback';
   
-  console.log('🔗 Supabase: Redirect URI configured:', redirectUri);
   return redirectUri;
 };
 
@@ -60,4 +59,4 @@ export const deleteUserAccount = async (): Promise<void> => {
   throw new Error('Funcionalidad de eliminación de cuenta no implementada');
 };
 
-console.log('Supabase client initialized for React Native with AsyncStorage persistence'); 
+console.log('Supabase inicializado correctamente'); 

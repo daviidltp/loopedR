@@ -8,7 +8,7 @@ import { AppText } from '../Text/AppText';
 interface SettingsProfileSectionProps {
   name: string;
   username: string;
-  avatarUrl?: string; // Vuelvo a string porque currentUser del mockData usa avatarUrl como string
+  avatarUrl?: string; // Puede ser preset, url o default_avatar
   onEditPress?: () => void;
 }
 
@@ -18,6 +18,31 @@ export const SettingsProfileSection: React.FC<SettingsProfileSectionProps> = ({
   avatarUrl,
   onEditPress,
 }) => {
+  // Función para obtener el source correcto
+  const getImageSource = (avatarUrl?: string) => {
+    if (!avatarUrl || avatarUrl === 'default_avatar') return null;
+    const presetAvatars: Record<string, any> = {
+      'profileicon1.png': require('@assets/images/profilePics/profileicon1.png'),
+      'profileicon2.png': require('@assets/images/profilePics/profileicon2.png'),
+      'profileicon6.png': require('@assets/images/profilePics/profileicon6.png'),
+      'profileicon4.png': require('@assets/images/profilePics/profileicon4.png'),
+      'profileicon5.png': require('@assets/images/profilePics/profileicon5.png'),
+    };
+    if (presetAvatars[avatarUrl]) return presetAvatars[avatarUrl];
+    if (avatarUrl.startsWith('http')) return { uri: avatarUrl };
+    return null;
+  };
+
+  const getInitials = (name: string): string => {
+    const words = name.trim().split(/\s+/);
+    if (words.length >= 2) {
+      return (words[0][0] + words[1][0]).toUpperCase();
+    }
+    return (words[0][0] + (words[0][1] || '')).toUpperCase();
+  };
+
+  const imageSource = getImageSource(avatarUrl);
+
   return (
     <PlatformTouchable 
       style={styles.container}
@@ -26,14 +51,23 @@ export const SettingsProfileSection: React.FC<SettingsProfileSectionProps> = ({
     >
       <View style={styles.content}>
         <View style={styles.avatarContainer}>
-          {avatarUrl ? (
+          {imageSource ? (
             <Image 
-              source={{ uri: avatarUrl }}
+              source={imageSource}
               style={styles.avatar}
+              resizeMode="cover"
             />
           ) : (
             <View style={styles.defaultAvatar}>
-              <Icon source="account" size={40} color={Colors.gray[400]} />
+              <AppText 
+                variant="h2"
+                fontFamily="raleway"
+                fontWeight="bold"
+                color={Colors.white}
+                style={{ fontSize: 28 }}
+              >
+                {getInitials(name)}
+              </AppText>
             </View>
           )}
         </View>

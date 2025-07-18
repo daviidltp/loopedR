@@ -1,5 +1,5 @@
 import { CardStyleInterpolators, createStackNavigator } from '@react-navigation/stack';
-import React, { useEffect } from 'react';
+import React from 'react';
 import { ActivityIndicator, Easing, View } from 'react-native';
 import { CreateProfileScreen, WelcomeScreen } from '../components';
 import { EditProfileScreen } from '../components/screens/EditProfileScreen';
@@ -11,7 +11,7 @@ import { useAuth } from '../contexts/AuthContext';
 
 export type RootStackParamList = {
   Welcome: undefined;
-  CreateProfile: undefined;
+  CreateProfile: { initialStep?: number };
   MainApp: undefined;
   Settings: undefined;
   EditProfile: undefined;
@@ -35,22 +35,15 @@ const LoadingScreen = () => (
 );
 
 export const AppNavigator = () => {
-  const { isLoading, hasCompletedProfile } = useAuth();
-
-  // Log para debugging
-  useEffect(() => {
-    console.log('AppNavigator - Estado de autenticación:', { 
-      isLoading, 
-      hasCompletedProfile,
-    });
-  }, [isLoading, hasCompletedProfile]);
+  const { isLoading, profileCompletionStep } = useAuth();
 
   // Mostrar pantalla de carga mientras se determina el estado
   if (isLoading) {
     return <LoadingScreen />;
   }
 
-  if (!hasCompletedProfile) {
+  if (profileCompletionStep < 2) {
+    console.log('[AppNavigator] Mostrando pantallas de perfil (step:', profileCompletionStep + ')');
     // Usuario sin perfil completado - mostrar welcome y create profile
     return (
       <Stack.Navigator
@@ -93,6 +86,7 @@ export const AppNavigator = () => {
         <Stack.Screen 
           name="CreateProfile" 
           component={CreateProfileScreen}
+          initialParams={{ initialStep: profileCompletionStep }}
           options={({ navigation }) => ({
             headerShown: false,
             headerStyle: {
@@ -109,6 +103,7 @@ export const AppNavigator = () => {
     );
   }
 
+  console.log('[AppNavigator] Perfil completo, mostrando app principal');
   // Usuario con perfil completado - mostrar app principal
   return (
     <Stack.Navigator

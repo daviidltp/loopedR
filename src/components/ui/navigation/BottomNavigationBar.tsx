@@ -5,13 +5,12 @@ import { BackHandler, Dimensions, Image, Pressable, StyleSheet, View } from 'rea
 import Animated, { interpolate, useAnimatedStyle, useSharedValue, withTiming } from 'react-native-reanimated';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Colors } from '../../../constants/Colors';
-import { useAuth } from '../../../contexts/AuthContext';
+import { useCurrentUser } from '../../../hooks/useCurrentUser';
 import { HomeScreen } from '../../screens/HomeScreen';
 import { InboxScreen } from '../../screens/InboxScreen';
 import { ProfileScreen } from '../../screens/ProfileScreen';
 import { SearchScreen } from '../../screens/SearchScreen';
 import { UploadScreen } from '../../screens/UploadScreen';
-import { DEFAULT_AVATAR_ID } from '../Avatar/PresetAvatarGrid';
 import { AppText } from '../Text/AppText';
 
 // Importar los iconos como imágenes
@@ -39,8 +38,8 @@ const { width: screenWidth } = Dimensions.get('window');
 
 // Componente CircleAvatar para el perfil actualizado
 const CircleAvatar = ({ focused }: { focused: boolean }) => {
-  const { user } = useAuth();
-  
+  const { currentUser } = useCurrentUser();
+
   const getInitials = (name: string): string => {
     const words = name.trim().split(/\s+/);
     if (words.length >= 2) {
@@ -49,41 +48,47 @@ const CircleAvatar = ({ focused }: { focused: boolean }) => {
     return (words[0][0] + (words[0][1] || '')).toUpperCase();
   };
 
+  const getImageSource = (avatarUrl: string) => {
+    if (!avatarUrl || avatarUrl === 'default_avatar') return null;
+    const presetAvatars: Record<string, any> = {
+      'profileicon1.png': require('@assets/images/profilePics/profileicon1.png'),
+      'profileicon2.png': require('@assets/images/profilePics/profileicon2.png'),
+      'profileicon6.png': require('@assets/images/profilePics/profileicon6.png'),
+      'profileicon4.png': require('@assets/images/profilePics/profileicon4.png'),
+      'profileicon5.png': require('@assets/images/profilePics/profileicon5.png'),
+    };
+    if (presetAvatars[avatarUrl]) return presetAvatars[avatarUrl];
+    if (avatarUrl.startsWith('http')) return { uri: avatarUrl };
+    return null;
+  };
+
   const opacity = focused ? 1 : 0.6;
-  const avatarBackgroundColor = user?.avatarBackgroundColor || '#222222';
+  const avatarUrl = currentUser?.avatarUrl;
+  const displayName = currentUser?.displayName || '';
+  const imageSource = avatarUrl ? getImageSource(avatarUrl) : null;
 
   return (
     <View style={[
       styles.avatarContainer,
-      { 
-        opacity,
-        backgroundColor: avatarBackgroundColor
-      }
+      { opacity }
     ]}>
-      {user?.avatar && user.avatar !== DEFAULT_AVATAR_ID ? (
-        // Avatar preestablecido
-        <Image 
-          source={user.avatar}
+      {imageSource ? (
+        <Image
+          source={imageSource}
           style={styles.avatarImage}
-          resizeMode="contain"
+          resizeMode="cover"
         />
+      ) : displayName ? (
+        <AppText
+          variant="body"
+          fontFamily="raleway"
+          fontWeight="bold"
+          style={styles.avatarText}
+        >
+          {getInitials(displayName)}
+        </AppText>
       ) : (
-        // Avatar por defecto con iniciales o avatar inner cuando no hay nombre
-        user?.name ? (
-          <AppText 
-            variant="body" 
-            fontFamily="raleway" 
-            fontWeight="bold"
-            style={[
-              styles.avatarText,
-              { color: Colors.white }
-            ]}
-          >
-            {getInitials(user.name)}
-          </AppText>
-        ) : (
-          <View style={styles.avatarInner} />
-        )
+        <View style={styles.avatarInner} />
       )}
     </View>
   );

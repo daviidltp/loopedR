@@ -11,10 +11,9 @@ export const useSpotifyAuth = () => {
 
   const signInWithSpotify = async () => {
     setLoading(true);
-    console.log('[SpotifyAuth] Iniciando autenticación...');
+    console.log('[SpotifyAuth] Iniciando autenticación con Spotify...');
 
     const redirectUri = getRedirectUrl();
-    console.log('[SpotifyAuth] Redirect URI a usar:', redirectUri);
 
     try {
       const { data, error } = await supabase.auth.signInWithOAuth({
@@ -32,23 +31,16 @@ export const useSpotifyAuth = () => {
       }
 
       if (data?.url) {
-        console.log('[SpotifyAuth] URL generada por Supabase:', data.url);
-        console.log('[SpotifyAuth] Abriendo navegador...');
-        
         const result = await WebBrowser.openAuthSessionAsync(
           data.url,
           redirectUri
         );
-
-        console.log('[SpotifyAuth] Resultado completo del navegador:', JSON.stringify(result, null, 2));
         
         if (result.type === 'cancel') {
-          console.log('[SpotifyAuth] Usuario canceló');
+          console.log('[SpotifyAuth] Autenticación cancelada por el usuario');
           Alert.alert('Cancelado', 'Autenticación cancelada');
         } else if (result.type === 'success') {
-          console.log('[SpotifyAuth] ✅ Éxito - URL de retorno:', result.url);
-          console.log('[SpotifyAuth] 🔄 Procesando tokens manualmente...');
-          
+          console.log('[SpotifyAuth] Autenticación exitosa, procesando tokens...');
           // Extraer tokens de la URL
           try {
             const url = new URL(result.url);
@@ -57,17 +49,8 @@ export const useSpotifyAuth = () => {
             
             const accessToken = params.get('access_token');
             const refreshToken = params.get('refresh_token');
-            const expiresAt = params.get('expires_at');
-            
-            console.log('[SpotifyAuth] Tokens extraídos:', {
-              hasAccessToken: !!accessToken,
-              hasRefreshToken: !!refreshToken,
-              expiresAt
-            });
             
             if (accessToken && refreshToken) {
-              console.log('[SpotifyAuth] 🔧 Estableciendo sesión manualmente...');
-              
               // Establecer la sesión manualmente en Supabase
               const { data: sessionData, error: sessionError } = await supabase.auth.setSession({
                 access_token: accessToken,
@@ -75,27 +58,21 @@ export const useSpotifyAuth = () => {
               });
               
               if (sessionError) {
-                console.error('[SpotifyAuth] ❌ Error estableciendo sesión:', sessionError);
+                console.error('[SpotifyAuth] Error estableciendo sesión:', sessionError);
                 Alert.alert('Error', 'No se pudo establecer la sesión');
               } else {
-                console.log('[SpotifyAuth] ✅ Sesión establecida correctamente:', {
-                  userId: sessionData.user?.id,
-                  email: sessionData.user?.email
-                });
+                console.log('[SpotifyAuth] Sesión establecida correctamente');
               }
             } else {
-              console.error('[SpotifyAuth] ❌ Tokens faltantes en la URL');
+              console.error('[SpotifyAuth] Tokens faltantes en la URL');
               Alert.alert('Error', 'No se pudieron extraer los tokens de autenticación');
             }
           } catch (parseError) {
-            console.error('[SpotifyAuth] ❌ Error procesando URL:', parseError);
+            console.error('[SpotifyAuth] Error procesando URL:', parseError);
             Alert.alert('Error', 'No se pudo procesar la respuesta de autenticación');
           }
-          // En caso de éxito, Supabase manejará automáticamente la sesión
         } else if (result.type === 'dismiss') {
-          console.log('[SpotifyAuth] Navegador cerrado/dismissed');
-        } else {
-          console.log('[SpotifyAuth] Tipo de resultado inesperado:', result.type);
+          // Usuario cerró el navegador sin completar
         }
       } else {
         console.error('[SpotifyAuth] No se recibió URL de Supabase');

@@ -9,14 +9,10 @@ export const useFonts = () => {
   useEffect(() => {
     const loadFonts = async () => {
       try {
-        console.log('🔤 Iniciando carga de fuentes...');
-        
         await Font.loadAsync(FONT_ASSETS);
-        
-        console.log('✅ Fuentes cargadas exitosamente');
         setFontsLoaded(true);
       } catch (error) {
-        console.error('❌ Error loading fonts:', error);
+        console.error('Error loading fonts:', error);
         setFontError(error instanceof Error ? error.message : 'Error desconocido');
         setFontsLoaded(true); // Set to true anyway to avoid blocking the app
       }

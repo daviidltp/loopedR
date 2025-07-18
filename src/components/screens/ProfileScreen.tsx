@@ -1,9 +1,11 @@
 import { useNavigation } from '@react-navigation/native';
 import { StackNavigationProp } from '@react-navigation/stack';
 import React from 'react';
+import { ActivityIndicator, StyleSheet, View } from 'react-native';
 import { Colors } from '../../constants/Colors';
+import { useCurrentUser } from '../../hooks/useCurrentUser';
 import { RootStackParamList } from '../../navigation/AppNavigator';
-import { currentUser, getUserFollowers, getUserFollowing } from '../../utils/mockData';
+import { getUserFollowers, getUserFollowing } from '../../utils/mockData';
 import { ResizingButton } from '../ui/buttons/ResizingButton';
 import { ProfileHeader } from '../ui/headers/ProfileHeader';
 import { ProfileContent } from './ProfileContent';
@@ -12,32 +14,43 @@ type ProfileScreenNavigationProp = StackNavigationProp<RootStackParamList>;
 
 export const ProfileScreen: React.FC = () => {
   const navigation = useNavigation<ProfileScreenNavigationProp>();
-  
-  // Usar siempre el usuario actual para esta pantalla (mi perfil)
-  const userData = currentUser;
+  const { currentUser, isLoading } = useCurrentUser();
 
   const openSettings = () => {
     navigation.navigate('Settings');
   };
 
   const handleEditProfile = () => {
-    console.log('Edit profile pressed');
-    // TODO: Navegar a editar perfil
+    navigation.navigate('EditProfile');
   };
+
+  // Mostrar loading mientras se cargan los datos
+  if (isLoading || !currentUser) {
+    return (
+      <View style={[styles.container, styles.loadingContainer]}>
+        <ProfileHeader 
+          username=""
+          isPublicProfile={true}
+          showPrivacyIndicator={false}
+        />
+        <ActivityIndicator size="large" color={Colors.white} />
+      </View>
+    );
+  }
   
   // Obtener datos de seguidores/seguidos desde mockData
-  const followers = getUserFollowers(userData.id);
-  const following = getUserFollowing(userData.id);
-  const followersCount = followers.length + 100000;
-  const followingCount = following.length + 100000;
+  const followers = getUserFollowers(currentUser.id);
+  const following = getUserFollowing(currentUser.id);
+  const followersCount = followers.length;
+  const followingCount = following.length;
 
   // Header para mi perfil
   const headerComponent = (
     <ProfileHeader 
-      username={userData.username}
+      username={currentUser.username}
       onMenuPress={openSettings}
-      isVerified={userData.isVerified}
-      isPublicProfile={userData.isPublic}
+      isVerified={currentUser.isVerified}
+      isPublicProfile={currentUser.isPublic}
       showPrivacyIndicator={true} // Solo mostrar en mi perfil
     />
   );
@@ -55,11 +68,22 @@ export const ProfileScreen: React.FC = () => {
 
   return (
     <ProfileContent
-      userData={userData}
+      userData={currentUser}
       followersCount={followersCount}
       followingCount={followingCount}
       headerComponent={headerComponent}
       actionButton={actionButton}
     />
   );
-}; 
+};
+
+const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+    backgroundColor: Colors.background,
+  },
+  loadingContainer: {
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+}); 
