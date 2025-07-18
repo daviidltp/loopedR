@@ -104,6 +104,7 @@ export const CreateProfileScreen: React.FC<CreateProfileScreenProps> = ({ naviga
   
   const [name, setName] = useState('');
   const [username, setUsername] = useState('');
+  const [bio, setBio] = useState('');
   const [usernameError, setUsernameError] = useState('');
   const [nameError, setNameError] = useState('');
   const [selectedAvatar, setSelectedAvatar] = useState<any>(DEFAULT_AVATAR_ID);
@@ -135,7 +136,7 @@ export const CreateProfileScreen: React.FC<CreateProfileScreenProps> = ({ naviga
       try {
         const { data, error } = await supabase
           .from('profiles')
-          .select('username, display_name, avatar_url')
+          .select('username, display_name, avatar_url, bio')
           .eq('id', session.user.id)
           .single();
 
@@ -177,6 +178,9 @@ export const CreateProfileScreen: React.FC<CreateProfileScreenProps> = ({ naviga
             
             const selectedAvatarFromDB = getSelectedAvatar(data.avatar_url);
             setSelectedAvatar(selectedAvatarFromDB);
+          }
+          if (data.bio !== undefined && data.bio !== null) {
+            setBio(data.bio);
           }
         }
       } catch (error) {
@@ -533,7 +537,7 @@ export const CreateProfileScreen: React.FC<CreateProfileScreenProps> = ({ naviga
         
         console.log('[CreateProfile] Guardando perfil...');
         // Save profile data to context
-        await setUserProfileData(username, name, selectedAvatar, avatarBackgrounds);
+        await setUserProfileData(username, name, selectedAvatar, bio);
         
         // Fallback: Si después de 2 segundos no navega automáticamente, forzar reset
         setTimeout(() => {

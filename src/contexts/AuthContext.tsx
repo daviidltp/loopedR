@@ -23,7 +23,7 @@ interface AuthContextType {
   isLoading: boolean;
   profileCompletionStep: number; // 0: sin datos, 1: solo display_name, 2: completo
   logout: () => Promise<void>;
-  setUserProfileData: (username: string, displayName: string, avatar?: any, avatarBackgrounds?: string[]) => Promise<void>;
+  setUserProfileData: (username: string, displayName: string, avatar?: any, bio?: string, avatarBackgrounds?: string[]) => Promise<void>;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -131,7 +131,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     }
   };
 
-  const setUserProfileData = async (username: string, displayName: string, avatar?: any, avatarBackgrounds?: string[]) => {
+  const setUserProfileData = async (username: string, displayName: string, avatar?: any, bio?: string, avatarBackgrounds?: string[]) => {
     try {
       setIsLoading(true);
       if (!session?.user) throw new Error('No hay usuario en la sesión');
@@ -176,6 +176,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         username,
         display_name: displayName,
         avatar_url: avatarUrl,
+        bio: typeof bio === 'string' ? bio : '',
         updated_at: new Date().toISOString(),
       };
 

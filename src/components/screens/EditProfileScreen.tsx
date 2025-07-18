@@ -1,25 +1,26 @@
 import { useNavigation } from '@react-navigation/native';
 import React, { useCallback, useEffect, useRef, useState } from 'react';
 import {
-    ActivityIndicator,
-    Alert,
-    BackHandler,
-    Keyboard,
-    Platform,
-    ScrollView,
-    StyleSheet,
-    TouchableWithoutFeedback,
-    View
+	ActivityIndicator,
+	Alert,
+	BackHandler,
+	Keyboard,
+	Platform,
+	ScrollView,
+	StyleSheet,
+	TouchableWithoutFeedback,
+	View
 } from 'react-native';
 import Animated, {
-    Easing,
-    useAnimatedStyle,
-    useSharedValue,
-    withTiming
+	Easing,
+	useAnimatedStyle,
+	useSharedValue,
+	withTiming
 } from 'react-native-reanimated';
 import { Colors } from '../../constants/Colors';
 import { useAuth } from '../../contexts/AuthContext';
 import { useCurrentUser } from '../../hooks/useCurrentUser';
+import { DefaultAvatar } from '../ui/Avatar/DefaultAvatar';
 import { UploadButton } from '../ui/Avatar/UploadButton';
 import { ResizingButton } from '../ui/buttons/ResizingButton';
 import { TextArea } from '../ui/forms/TextArea';
@@ -56,7 +57,33 @@ export const EditProfileScreen = () => {
       setName(currentUser.displayName);
       setUsername(currentUser.username);
       setBio(currentUser.bio || '');
-      setSelectedAvatar(currentUser.avatarUrl);
+      // Transformar avatarUrl de Supabase a valor compatible con el selector
+      const avatarUrl = currentUser.avatarUrl;
+      const getSelectedAvatar = (avatarUrl: string) => {
+        if (!avatarUrl || avatarUrl === 'default_avatar') return 'default_avatar';
+        const avatarFileNames = [
+          'profileicon1.png',
+          'profileicon2.png',
+          'profileicon6.png',
+          'profileicon4.png',
+          'profileicon5.png',
+        ];
+        const presetAvatars = [
+          require('@assets/images/profilePics/profileicon1.png'),
+          require('@assets/images/profilePics/profileicon2.png'),
+          require('@assets/images/profilePics/profileicon6.png'),
+          require('@assets/images/profilePics/profileicon4.png'),
+          require('@assets/images/profilePics/profileicon5.png'),
+        ];
+        const avatarIndex = avatarFileNames.indexOf(avatarUrl);
+        if (avatarIndex !== -1) {
+          return presetAvatars[avatarIndex];
+        }
+        // Si es una url remota, devolver el string
+        if (avatarUrl.startsWith('http')) return avatarUrl;
+        return 'default_avatar';
+      };
+      setSelectedAvatar(getSelectedAvatar(avatarUrl));
     }
   }, [currentUser]);
 
@@ -141,7 +168,8 @@ export const EditProfileScreen = () => {
       await setUserProfileData(
         username.trim(),
         name.trim(),
-        selectedAvatar
+        selectedAvatar,
+        bio
       );
 
       console.log('[EditProfile] Perfil actualizado correctamente');
@@ -157,7 +185,7 @@ export const EditProfileScreen = () => {
     } finally {
       setIsLoading(false);
     }
-  }, [currentUser, name, username, selectedAvatar, setUserProfileData, navigation, validateName, validateUsername]);
+  }, [currentUser, name, username, selectedAvatar, bio, setUserProfileData, navigation, validateName, validateUsername]);
 
   const handleBackPress = useCallback(() => {
     navigation.goBack();
@@ -246,6 +274,11 @@ export const EditProfileScreen = () => {
             <View style={styles.content}>
               {/* Avatar Section */}
               <View style={styles.avatarSection}>
+                <DefaultAvatar
+                  name={name}
+                  size={120}
+                  selectedImage={selectedAvatar === 'default_avatar' ? undefined : selectedAvatar}
+                />
                 <UploadButton size={40} />
               </View>
 

@@ -9,9 +9,9 @@ export interface CurrentUser {
   displayName: string;
   email: string;
   avatarUrl: string;
-  bio: string; // Por defecto vacío hasta que se agregue a la BD
-  isVerified: boolean; // Por defecto false hasta que se agregue a la BD
-  isPublic: boolean; // Por defecto true hasta que se agregue a la BD
+  bio: string; // Ahora viene de la BD
+  isVerified: boolean; // Ahora viene de la BD
+  isPublic: boolean; // Ahora viene de la BD
 }
 
 export const useCurrentUser = () => {
@@ -58,7 +58,7 @@ export const useCurrentUser = () => {
 
         const { data, error } = await supabase
           .from('profiles')
-          .select('id, username, display_name, email, avatar_url')
+          .select('id, username, display_name, email, avatar_url, bio, is_verified, is_public')
           .eq('id', session.user.id)
           .single();
 
@@ -73,9 +73,9 @@ export const useCurrentUser = () => {
             displayName: data.display_name || '',
             email: data.email || session.user.email || '',
             avatarUrl: getFullAvatarUrl(data.avatar_url),
-            bio: '', // Por defecto hasta que se agregue a la BD
-            isVerified: false, // Por defecto hasta que se agregue a la BD
-            isPublic: true, // Por defecto hasta que se agregue a la BD
+            bio: data.bio ?? '',
+            isVerified: data.is_verified ?? false,
+            isPublic: data.is_public ?? true,
           };
 
           setCurrentUser(user);
