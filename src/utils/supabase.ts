@@ -32,10 +32,9 @@ export const supabase = createClient(supabaseUrl, supabaseAnonKey, {
  */
 export const getRedirectUrl = (): string => {
   const redirectUri = Constants.appOwnership === 'expo' 
-    ? 'exp://172.20.10.2:8081' 
+    ? 'exp://192.168.1.60:8081' 
     : 'loopedr://callback';
   
-  console.log('🔗 Supabase: Redirect URI configured:', redirectUri);
   return redirectUri;
 };
 
@@ -61,4 +60,4 @@ export const deleteUserAccount = async (): Promise<void> => {
   throw new Error('Funcionalidad de eliminación de cuenta no implementada');
 };
 
-console.log('Supabase client initialized for React Native with AsyncStorage persistence'); 
+console.log('Supabase inicializado correctamente'); 

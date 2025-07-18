@@ -4,8 +4,9 @@ import { StackNavigationProp } from '@react-navigation/stack';
 import React, { useRef, useState } from 'react';
 import { StyleSheet, View } from 'react-native';
 import { Colors } from '../../constants/Colors';
+import { useCurrentUser } from '../../hooks/useCurrentUser';
 import { RootStackParamList } from '../../navigation/AppNavigator';
-import { currentUser, mockUsers } from '../../utils/mockData';
+import { mockUsers } from '../../utils/mockData';
 import { Layout, SearchBar, UserList } from '../ui';
 import type { BottomNavigationParamList } from '../ui/navigation/BottomNavigationBar';
 
@@ -19,14 +20,13 @@ export const SearchScreen: React.FC = () => {
   const stackNavigation = useNavigation<MainStackNavigationProp>();
   const [searchText, setSearchText] = useState('');
   const searchBarRef = useRef<any>(null);
-  // Eliminar fadeOpacity y animación
-  // const fadeOpacity = useRef(new Animated.Value(1)).current;
+  const { currentUser } = useCurrentUser();
   
   // Verificar si viene de la animación del SearchBar
   const fromSearchAnimation = route.params?.fromSearchAnimation || false;
   
   // Filtrar usuarios excluyendo al usuario actual
-  const allUsers = mockUsers.filter(user => user.id !== currentUser.id);
+  const allUsers = mockUsers.filter(user => user.id !== currentUser?.id);
   
   // Filtrar usuarios según el texto de búsqueda
   const filteredUsers = searchText.trim() === '' 
@@ -39,62 +39,52 @@ export const SearchScreen: React.FC = () => {
   // Hacer focus solo si viene de HomeScreen, sin animación
   useFocusEffect(
     React.useCallback(() => {
-      if (fromSearchAnimation) {
-        const focusTimer = setTimeout(() => {
-          if (searchBarRef.current && searchBarRef.current.focus) {
-            searchBarRef.current.focus();
-          }
-        }, 200);
-        return () => {
-          clearTimeout(focusTimer);
-        };
+      if (fromSearchAnimation && searchBarRef.current?.focus) {
+        const timer = setTimeout(() => {
+          searchBarRef.current?.focus();
+        }, 100);
+        
+        return () => clearTimeout(timer);
       }
     }, [fromSearchAnimation])
   );
 
-  // Limpiar parámetro al salir de la pantalla
-  useFocusEffect(
-    React.useCallback(() => {
-      return () => {
-        if (fromSearchAnimation) {
-          navigation.setParams({ fromSearchAnimation: undefined });
-        }
-      };
-    }, [fromSearchAnimation, navigation])
-  );
-
+  // Función para manejar navegación a perfiles
   const handleUserPress = (userId: string) => {
-    console.log('Navegando al perfil de usuario:', userId);
-    // Navegar al UserProfileScreen con el userId del usuario seleccionado
-    stackNavigation.navigate('UserProfile', { userId });
+    // Si es el usuario actual, navegar a tab de Profile
+    if (userId === currentUser?.id) {
+      navigation.navigate('Profile');
+    } else {
+      // Si es otro usuario, navegar a UserProfileScreen (stack navigation)
+      stackNavigation.navigate('UserProfile', { userId });
+    }
   };
 
-  const handleSearch = (text: string) => {
-    setSearchText(text);
+  // Función para limpiar búsqueda
+  const handleClearSearch = () => {
+    setSearchText('');
+    searchBarRef.current?.clear();
   };
 
   return (
-    <Layout>
-      <View style={styles.container}>
-        <View style={styles.searchContainer}>
-          <SearchBar 
-            ref={searchBarRef}
-            placeholder="Buscar usuarios"
-            value={searchText}
-            onChangeText={handleSearch}
-          />
-        </View>
+    <Layout style={styles.container}>
+      {/* SearchBar siempre visible */}
+      <View style={styles.searchContainer}>
+        <SearchBar
+          ref={searchBarRef}
+          value={searchText}
+          onChangeText={setSearchText}
+          placeholder="Buscar usuarios..."
+          autoFocus={fromSearchAnimation}
+        />
+      </View>
 
-        {/* Eliminar Animated.View y usar View normal */}
-        <View style={styles.contentContainer}>
-          {filteredUsers.length > 0 && (
-            <UserList 
-              users={filteredUsers}
-              onUserPress={handleUserPress}
-              showSeparator={true}
-            />
-          )}
-        </View>
+      {/* Lista de usuarios */}
+      <View style={styles.userListContainer}>
+        <UserList
+          users={filteredUsers}
+          onUserPress={handleUserPress}
+        />
       </View>
     </Layout>
   );
@@ -104,15 +94,15 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: Colors.background,
-    paddingTop: 12,
-    
   },
   searchContainer: {
-    paddingHorizontal: 24,
-    paddingTop: 0,
-    marginBottom: 8,
+    paddingHorizontal: 20,
+    paddingTop: 8,
+    paddingBottom: 16,
+    backgroundColor: Colors.background,
   },
-  contentContainer: {
+  userListContainer: {
     flex: 1,
+    paddingHorizontal: 20,
   },
 }); 

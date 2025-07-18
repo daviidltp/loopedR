@@ -1,11 +1,13 @@
 import { useFocusEffect, useNavigation, useRoute } from '@react-navigation/native';
 import { StackNavigationProp, StackScreenProps } from '@react-navigation/stack';
 import React from 'react';
-import { BackHandler, StyleSheet, View } from 'react-native';
+import { ActivityIndicator, BackHandler, StyleSheet, View } from 'react-native';
 import { Icon } from 'react-native-paper';
 import { Colors } from '../../constants/Colors';
+import { useCurrentUser } from '../../hooks/useCurrentUser';
+import { useUser } from '../../hooks/useUser';
 import { RootStackParamList } from '../../navigation/AppNavigator';
-import { currentUser, getUserFollowers, getUserFollowing, isUserFollowing, mockUsers } from '../../utils/mockData';
+import { getUserFollowers, getUserFollowing, isUserFollowing } from '../../utils/mockData';
 import { ResizingButton } from '../ui/buttons/ResizingButton';
 import { ProfileHeader } from '../ui/headers/ProfileHeader';
 import { AppText } from '../ui/Text/AppText';
@@ -21,17 +23,10 @@ export const UserProfileScreen: React.FC = () => {
   // Obtener userId de los parámetros de navegación (obligatorio para esta pantalla)
   const { userId } = route.params as { userId: string };
   
-  // Buscar el usuario en mockData
-  const userData = mockUsers.find(user => user.id === userId);
+  // Usar el nuevo hook para obtener datos del usuario
+  const { user: userData, isLoading } = useUser(userId);
+  const { currentUser } = useCurrentUser();
   
-  // Si no se encuentra el usuario, mostrar error o navegar atrás
-  if (!userData) {
-    React.useEffect(() => {
-      navigation.goBack();
-    }, [navigation]);
-    return null;
-  }
-
   // Manejar botón físico de Android para volver atrás
   useFocusEffect(
     React.useCallback(() => {
@@ -50,6 +45,10 @@ export const UserProfileScreen: React.FC = () => {
     navigation.goBack();
   };
 
+  const handleEdit = () => {
+    navigation.navigate('EditProfile');
+  };
+
   const handleMorePress = () => {
     console.log('More options pressed for user:', userId);
     // TODO: Mostrar menú de opciones para otros usuarios
@@ -59,30 +58,61 @@ export const UserProfileScreen: React.FC = () => {
     console.log('Follow button pressed for user:', userId);
     // TODO: Implementar funcionalidad de seguir
   };
-  
-  // Obtener datos de seguidores/seguidos desde mockData
+
+  // Mostrar loading mientras se cargan los datos
+  if (isLoading) {
+    return (
+      <View style={[styles.container, styles.loadingContainer]}>
+        <ProfileHeader 
+          username=""
+          onBackPress={handleBackPress}
+          showBackButton={true}
+        />
+        <ActivityIndicator size="large" color={Colors.white} />
+      </View>
+    );
+  }
+
+  // Si no se encuentra el usuario, mostrar error o navegar atrás
+  if (!userData) {
+    React.useEffect(() => {
+      navigation.goBack();
+    }, [navigation]);
+    return null;
+  }
+
+  // Verificar si el usuario actual está siguiendo al usuario del perfil
+  const isFollowing = currentUser ? isUserFollowing(currentUser.id, userData.id) : false;
+
+  // Verificar si es el perfil del usuario actual
+  const isOwnProfile = currentUser?.id === userData.id;
+
+  // Obtener estadísticas de seguimiento
   const followers = getUserFollowers(userData.id);
   const following = getUserFollowing(userData.id);
-  const followersCount = followers.length;
-  const followingCount = following.length;
-  
-  // Verificar si ya seguimos a este usuario
-  const isFollowing = isUserFollowing(currentUser.id, userData.id);
 
-  // Header para perfil de otro usuario
+  // Header para el perfil
   const headerComponent = (
     <ProfileHeader 
       username={userData.username}
       onBackPress={handleBackPress}
-      onMorePress={handleMorePress}
+      onMorePress={!isOwnProfile ? handleMorePress : undefined}
       isVerified={userData.isVerified}
       showBackButton={true}
-      showPrivacyIndicator={false} // No mostrar en perfiles de otros usuarios
+      showPrivacyIndicator={false}
     />
   );
 
-  // Botón de acción para perfil de otro usuario
-  const actionButton = isFollowing ? (
+  // Botón de acción
+  const actionButton = isOwnProfile ? (
+    <ResizingButton
+      title="Editar perfil"
+      onPress={handleEdit}
+      backgroundColor={Colors.backgroundUltraSoft}
+      textColor={Colors.white}
+      height={42}
+    />
+  ) : isFollowing ? (
     <ResizingButton
       icon={<Icon source="check" size={18} color={Colors.white} />}
       title="Siguiendo"
@@ -103,7 +133,7 @@ export const UserProfileScreen: React.FC = () => {
   );
 
   // Contenido adicional específico para perfiles de otros usuarios
-  const additionalContent = !userData.isPublic && !isFollowing ? (
+  const additionalContent = !isOwnProfile && !userData.isPublic && !isFollowing ? (
     // Cuenta privada y no la seguimos
     <View style={styles.privateContentSection}>
       <View style={styles.privateIconContainer}>
@@ -149,8 +179,8 @@ export const UserProfileScreen: React.FC = () => {
   return (
     <ProfileContent
       userData={userData}
-      followersCount={followersCount}
-      followingCount={followingCount}
+      followersCount={followers.length}
+      followingCount={following.length}
       headerComponent={headerComponent}
       actionButton={actionButton}
       scrollViewProps={{
@@ -164,6 +194,14 @@ export const UserProfileScreen: React.FC = () => {
 };
 
 const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+    backgroundColor: Colors.background,
+  },
+  loadingContainer: {
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
   privateContentSection: {
     paddingTop: 80,
     alignItems: 'center',

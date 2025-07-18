@@ -1,25 +1,26 @@
 import { useNavigation } from '@react-navigation/native';
 import React, { useCallback, useEffect, useRef, useState } from 'react';
 import {
-  BackHandler,
-  Keyboard,
-  Platform,
-  ScrollView,
-  StyleSheet,
-  TouchableWithoutFeedback,
-  View
+    ActivityIndicator,
+    Alert,
+    BackHandler,
+    Keyboard,
+    Platform,
+    ScrollView,
+    StyleSheet,
+    TouchableWithoutFeedback,
+    View
 } from 'react-native';
 import Animated, {
-  Easing,
-  useAnimatedStyle,
-  useSharedValue,
-  withTiming
+    Easing,
+    useAnimatedStyle,
+    useSharedValue,
+    withTiming
 } from 'react-native-reanimated';
 import { Colors } from '../../constants/Colors';
-import { currentUser } from '../../utils/mockData';
-import { DefaultAvatar } from '../ui/Avatar/DefaultAvatar';
+import { useAuth } from '../../contexts/AuthContext';
+import { useCurrentUser } from '../../hooks/useCurrentUser';
 import { UploadButton } from '../ui/Avatar/UploadButton';
-import { PlatformTouchable } from '../ui/buttons/PlatformTouchable';
 import { ResizingButton } from '../ui/buttons/ResizingButton';
 import { TextArea } from '../ui/forms/TextArea';
 import { TextInput } from '../ui/forms/TextInput';
@@ -29,11 +30,13 @@ import { Layout } from '../ui/layout/Layout';
 export const EditProfileScreen = () => {
   const navigation = useNavigation();
   const bioInputRef = useRef(null);
+  const { currentUser, isLoading: userLoading } = useCurrentUser();
+  const { setUserProfileData } = useAuth();
   
-  // Estados del formulario - inicializados con datos del usuario actual
-  const [name, setName] = useState(currentUser.displayName);
-  const [username, setUsername] = useState(currentUser.username);
-  const [bio, setBio] = useState(currentUser.bio || '');
+  // Estados del formulario
+  const [name, setName] = useState('');
+  const [username, setUsername] = useState('');
+  const [bio, setBio] = useState('');
   
   // Estados de validación
   const [nameError, setNameError] = useState('');
@@ -45,7 +48,17 @@ export const EditProfileScreen = () => {
   const [isKeyboardVisible, setIsKeyboardVisible] = useState(false);
 
   // Avatar states
-  const [selectedAvatar, setSelectedAvatar] = useState(currentUser.avatarUrl);
+  const [selectedAvatar, setSelectedAvatar] = useState<any>(null);
+
+  // Inicializar datos cuando se carga el usuario
+  useEffect(() => {
+    if (currentUser) {
+      setName(currentUser.displayName);
+      setUsername(currentUser.username);
+      setBio(currentUser.bio || '');
+      setSelectedAvatar(currentUser.avatarUrl);
+    }
+  }, [currentUser]);
 
   // Animaciones
   const buttonBottom = useSharedValue(20);
@@ -62,9 +75,8 @@ export const EditProfileScreen = () => {
       return false;
     }
 
-    const validChars = /^[a-zA-ZáéíóúüñÁÉÍÓÚÜÑ\s.-]*$/;
-    if (!validChars.test(value)) {
-      setNameError('El nombre no puede contener caracteres especiales');
+    if (value.length > 50) {
+      setNameError('El nombre debe tener máximo 50 caracteres');
       return false;
     }
 
@@ -78,14 +90,18 @@ export const EditProfileScreen = () => {
       return false;
     }
 
-    if (value.length < 3) {
-      setUsernameError('El nombre de usuario debe tener al menos 3 caracteres');
+    if (value.length < 2) {
+      setUsernameError('El nombre de usuario debe tener al menos 2 caracteres');
       return false;
     }
 
-    const validChars = /^[a-zA-Z0-9._]*$/;
-    if (!validChars.test(value)) {
-      setUsernameError('El nombre de usuario no puede contener caracteres especiales');
+    if (value.length > 30) {
+      setUsernameError('El nombre de usuario debe tener máximo 30 caracteres');
+      return false;
+    }
+
+    if (!/^[a-zA-Z0-9._]+$/.test(value)) {
+      setUsernameError('Solo se permiten letras, números, puntos y guiones bajos');
       return false;
     }
 
@@ -93,58 +109,93 @@ export const EditProfileScreen = () => {
     return true;
   }, []);
 
-  // Handlers de inputs
+  // Handlers
   const handleNameChange = useCallback((value: string) => {
     setName(value);
-    validateName(value);
-  }, [validateName]);
+    if (nameError) {
+      validateName(value);
+    }
+  }, [nameError, validateName]);
 
   const handleUsernameChange = useCallback((value: string) => {
-    setUsername(value);
-    validateUsername(value);
-  }, [validateUsername]);
+    const cleanValue = value.toLowerCase().replace(/[^a-zA-Z0-9._]/g, '');
+    setUsername(cleanValue);
+    if (usernameError) {
+      validateUsername(cleanValue);
+    }
+  }, [usernameError, validateUsername]);
 
-  const handleBioChange = useCallback((value: string) => {
-    setBio(value);
-  }, []);
+  const handleSave = useCallback(async () => {
+    if (!currentUser) return;
 
-  // Efectos del teclado - igual que CreateProfileScreen
+    const isNameValid = validateName(name);
+    const isUsernameValid = validateUsername(username);
+
+    if (!isNameValid || !isUsernameValid) {
+      return;
+    }
+
+    setIsLoading(true);
+
+    try {
+      await setUserProfileData(
+        username.trim(),
+        name.trim(),
+        selectedAvatar
+      );
+
+      console.log('[EditProfile] Perfil actualizado correctamente');
+      navigation.goBack();
+
+    } catch (error) {
+      console.error('[EditProfile] Error al actualizar perfil:', error);
+      Alert.alert(
+        'Error',
+        'No se pudo actualizar el perfil. Inténtalo de nuevo.',
+        [{ text: 'OK' }]
+      );
+    } finally {
+      setIsLoading(false);
+    }
+  }, [currentUser, name, username, selectedAvatar, setUserProfileData, navigation, validateName, validateUsername]);
+
+  const handleBackPress = useCallback(() => {
+    navigation.goBack();
+  }, [navigation]);
+
+  // Efectos de teclado
   useEffect(() => {
-    const keyboardWillShowListener = Keyboard.addListener(
+    const keyboardDidShowListener = Keyboard.addListener(
       Platform.OS === 'ios' ? 'keyboardWillShow' : 'keyboardDidShow',
-      (e) => {
-        setKeyboardHeight(e.endCoordinates.height);
+      (event) => {
         setIsKeyboardVisible(true);
-        // Botón pegado al teclado - igual que CreateProfileScreen
-        buttonBottom.value = withTiming(e.endCoordinates.height + 20, {
-          duration: 250,
-          easing: Easing.bezier(0.25, 0.1, 0.25, 1.0)
-        });
+        setKeyboardHeight(event.endCoordinates.height);
+        buttonBottom.value = withTiming(
+          event.endCoordinates.height + 20,
+          { duration: 250, easing: Easing.bezier(0.25, 0.1, 0.25, 1.0) }
+        );
       }
     );
-    
-    const keyboardWillHideListener = Keyboard.addListener(
+
+    const keyboardDidHideListener = Keyboard.addListener(
       Platform.OS === 'ios' ? 'keyboardWillHide' : 'keyboardDidHide',
       () => {
-        setKeyboardHeight(0);
         setIsKeyboardVisible(false);
-        // Botón en posición normal
-        buttonBottom.value = withTiming(20, {
-          duration: 250,
-          easing: Easing.bezier(0.6, 0.5, 0.25, 0.5)
-        });
+        setKeyboardHeight(0);
+        buttonBottom.value = withTiming(
+          20,
+          { duration: 250, easing: Easing.bezier(0.6, 0.5, 0.25, 0.5) }
+        );
       }
     );
 
     return () => {
-      keyboardWillShowListener?.remove();
-      keyboardWillHideListener?.remove();
+      keyboardDidShowListener.remove();
+      keyboardDidHideListener.remove();
     };
-  }, []);
+  }, [buttonBottom]);
 
-
-
-  // Navegación hacia atrás
+  // Efecto para manejar botón atrás de Android
   useEffect(() => {
     const backHandler = BackHandler.addEventListener('hardwareBackPress', () => {
       handleBackPress();
@@ -152,163 +203,101 @@ export const EditProfileScreen = () => {
     });
 
     return () => backHandler.remove();
-  }, []);
-
-  const handleBackPress = () => {
-    navigation.goBack();
-  };
-
-  const dismissKeyboard = useCallback(() => {
-    Keyboard.dismiss();
-  }, []);
-
-  // Validación del formulario
-  const isFormValid = 
-    name.trim().length >= 2 && 
-    username.trim().length >= 3 && 
-    !nameError && 
-    !usernameError;
-
-  // Handler para guardar cambios
-  const handleSaveChanges = useCallback(async () => {
-    if (!isFormValid) return;
-
-    setIsLoading(true);
-    
-    try {
-      // Validar antes de guardar
-      const isNameValid = validateName(name);
-      const isUsernameValid = validateUsername(username);
-      
-      if (!isNameValid || !isUsernameValid) {
-        setIsLoading(false);
-        return;
-      }
-
-      // Simular guardado
-      await new Promise(resolve => setTimeout(resolve, 1000));
-      
-      console.log('Perfil actualizado:', { name, username, bio, selectedAvatar });
-      
-      // Regresar a settings
-      navigation.goBack();
-      
-    } catch (error) {
-      console.error('Error al actualizar perfil:', error);
-    } finally {
-      setIsLoading(false);
-    }
-  }, [isFormValid, name, username, bio, selectedAvatar, validateName, validateUsername, navigation]);
-
-  // Handler para cambiar avatar
-  const handleAvatarPress = useCallback(() => {
-    console.log('Avatar pressed - abrir selector de avatar');
-    // TODO: Implementar selector de avatar
-  }, []);
+  }, [handleBackPress]);
 
   // Estilos animados
-  const buttonAnimatedStyle = useAnimatedStyle(() => ({
-    bottom: buttonBottom.value,
-  }));
+  const buttonAnimatedStyle = useAnimatedStyle(() => {
+    return {
+      bottom: buttonBottom.value,
+    };
+  });
+
+  // Mostrar loading mientras se cargan los datos del usuario
+  if (userLoading || !currentUser) {
+    return (
+      <Layout>
+        <View style={[styles.container, styles.loadingContainer]}>
+          <DefaultHeader title="Editar perfil" onBackPress={handleBackPress} />
+          <ActivityIndicator size="large" color={Colors.white} />
+        </View>
+      </Layout>
+    );
+  }
+
+  // Verificar si hubo cambios
+  const hasChanges = 
+    name !== currentUser.displayName ||
+    username !== currentUser.username ||
+    bio !== (currentUser.bio || '') ||
+    selectedAvatar !== currentUser.avatarUrl;
 
   return (
     <Layout>
-      <TouchableWithoutFeedback onPress={dismissKeyboard}>
+      <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
         <View style={styles.container}>
-          {/* Header */}
-          <DefaultHeader
-            title="Editar perfil"
-            onBackPress={handleBackPress}
-          />
+          <DefaultHeader title="Editar perfil" onBackPress={handleBackPress} />
           
-          {/* ScrollView con manejo automático del teclado */}
-          <ScrollView
+          <ScrollView 
             style={styles.scrollView}
             contentContainerStyle={styles.scrollContent}
             showsVerticalScrollIndicator={false}
             keyboardShouldPersistTaps="handled"
-            automaticallyAdjustKeyboardInsets={true}
           >
+            <View style={styles.content}>
               {/* Avatar Section */}
               <View style={styles.avatarSection}>
-                <PlatformTouchable 
-                  style={styles.avatarContainer}
-                  onPress={handleAvatarPress}
-                  rippleColor={Colors.backgroundSoft}
-                  borderless={true}
-                >
-                  <View style={styles.avatarWrapper}>
-                    <DefaultAvatar 
-                      name={name} 
-                      size={120}
-                      selectedImage={selectedAvatar ? { uri: selectedAvatar } : undefined}
-                    />
-                  </View>
-                </PlatformTouchable>
-                
-                {/* Botón de upload fuera del avatar */}
-                <View style={styles.uploadButtonContainer}>
-                  <UploadButton size={32} />
-                </View>
+                <UploadButton size={40} />
               </View>
 
               {/* Form Section */}
               <View style={styles.formSection}>
                 <TextInput
-                  description="Nombre"
                   value={name}
                   onChangeText={handleNameChange}
-                  placeholder="Tu nombre"
-                  maxLength={50}
+                  placeholder="Nombre"
                   autoCapitalize="words"
                   autoCorrect={false}
+                  returnKeyType="next"
                   error={nameError}
+                  maxLength={50}
                 />
 
                 <TextInput
-                  description="Nombre de usuario"
                   value={username}
                   onChangeText={handleUsernameChange}
-                  placeholder="username"
-                  maxLength={20}
+                  placeholder="Nombre de usuario"
                   autoCapitalize="none"
                   autoCorrect={false}
-                  showFixedAtSymbol={true}
+                  returnKeyType="next"
                   error={usernameError}
-                  keyboardType={Platform.OS === 'ios' ? 'default' : 'visible-password'}
-                  textTransform="lowercase"
+                  maxLength={30}
                 />
 
                 <TextArea
-                  ref={bioInputRef}
-                  description="Biografía"
                   value={bio}
-                  onChangeText={handleBioChange}
-                  placeholder="Cuéntanos sobre ti..."
-                  maxLength={150}
-                  minHeight={80}
-                  maxHeight={140}
+                  onChangeText={setBio}
+                  placeholder="Biografía (opcional)"
+                  maxLength={160}
                   autoCapitalize="sentences"
                   autoCorrect={true}
-                  showCharacterCount={true}
+                  returnKeyType="done"
                 />
               </View>
-              
-              {/* Espacio adicional para evitar que el botón tape el contenido */}
-              <View style={{ height: 30 }} />
-            </ScrollView>
-            
-            {/* Botón guardar */}
-            <Animated.View style={[styles.buttonContainer, buttonAnimatedStyle]}>
-              <ResizingButton
-                onPress={handleSaveChanges}
-                title="Guardar cambios"
-                backgroundColor={Colors.white}
-                textColor={Colors.background}
-                isDisabled={!isFormValid}
-                isLoading={isLoading}
-              />
-            </Animated.View>
+            </View>
+          </ScrollView>
+
+          {/* Save Button */}
+          <Animated.View style={[styles.buttonContainer, buttonAnimatedStyle]}>
+            <ResizingButton
+              title="Guardar cambios"
+              onPress={handleSave}
+              backgroundColor={Colors.white}
+              textColor={Colors.background}
+              isLoading={isLoading}
+              isDisabled={isLoading || !hasChanges}
+              height={48}
+            />
+          </Animated.View>
         </View>
       </TouchableWithoutFeedback>
     </Layout>
@@ -320,44 +309,30 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: Colors.background,
   },
+  loadingContainer: {
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
   scrollView: {
     flex: 1,
   },
   scrollContent: {
-    paddingHorizontal: 24,
-    paddingBottom: 20,
-    flexGrow: 1,
+    paddingBottom: 120,
+  },
+  content: {
+    paddingHorizontal: 20,
+    paddingTop: 24,
   },
   avatarSection: {
     alignItems: 'center',
-    paddingTop: 32,
-    paddingBottom: 32,
-    position: 'relative',
-  },
-  avatarContainer: {
-    borderRadius: 60,
-  },
-  avatarWrapper: {
-    position: 'relative',
-  },
-  uploadButtonContainer: {
-    position: 'absolute',
-    right: '32%',
-    bottom: '20%',
-    zIndex: 10,
-    elevation: 10,
-    backgroundColor: Colors.background,
-    borderRadius: 20,
-    padding: 2,
+    marginBottom: 32,
   },
   formSection: {
-    flex: 1,
-    gap: 0,
+    gap: 20,
   },
   buttonContainer: {
     position: 'absolute',
-    left: 0,
-    right: 0,
-    paddingHorizontal: 24,
+    left: 20,
+    right: 20,
   },
 }); 

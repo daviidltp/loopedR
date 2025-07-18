@@ -1,7 +1,8 @@
 import React from 'react';
 import { Image, StyleSheet, View } from 'react-native';
 import { Colors } from '../../../constants/Colors';
-import { User, currentUser, mockUserRelations } from '../../../utils/mockData';
+import { useCurrentUser } from '../../../hooks/useCurrentUser';
+import { User, mockUserRelations } from '../../../utils/mockData';
 import { PlatformTouchable } from '../buttons/PlatformTouchable';
 import { AppText } from '../Text/AppText';
 
@@ -10,10 +11,11 @@ interface UserListItemProps {
   onPress?: (userId: string) => void;
 }
 
-// Función para saber si el usuario actual sigue al usuario mostrado
-const isFollowing = (userId: string): boolean => {
+// Función helper para verificar si seguimos a un usuario
+const isFollowing = (currentUserId: string | undefined, userId: string): boolean => {
+  if (!currentUserId) return false;
   return mockUserRelations.some(
-    (rel) => rel.followerId === currentUser.id && rel.followingId === userId
+    (rel) => rel.followerId === currentUserId && rel.followingId === userId
   );
 };
 
@@ -21,6 +23,8 @@ export const UserListItem: React.FC<UserListItemProps> = ({
   user,
   onPress,
 }) => {
+  const { currentUser } = useCurrentUser();
+
   const getInitials = (name: string): string => {
     const words = name.trim().split(/\s+/);
     if (words.length >= 2) {
@@ -31,7 +35,7 @@ export const UserListItem: React.FC<UserListItemProps> = ({
 
   const handlePress = () => onPress?.(user.id);
 
-  const siguiendo = isFollowing(user.id);
+  const siguiendo = isFollowing(currentUser?.id, user.id);
 
   const content = (
     <View style={styles.container}>
@@ -118,23 +122,27 @@ export const UserListItem: React.FC<UserListItemProps> = ({
 const styles = StyleSheet.create({
   container: {
     flexDirection: 'row',
-    alignItems: 'center',
     paddingVertical: 12,
-    paddingHorizontal: 24,
+    paddingHorizontal: 0,
+    alignItems: 'center',
   },
   avatarContainer: {
     marginRight: 12,
+    borderRadius: 40,
+    overflow: 'hidden',
+    width: 48,
+    height: 48,
   },
   avatar: {
-    width: 52,
-    height: 52,
+    width: 48,
+    height: 48,
     borderRadius: 24,
   },
   defaultAvatar: {
-    width: 52,
-    height: 52,
+    width: 48,
+    height: 48,
     borderRadius: 24,
-    backgroundColor: Colors.gray[700],
+    backgroundColor: '#333',
     justifyContent: 'center',
     alignItems: 'center',
   },
@@ -145,21 +153,20 @@ const styles = StyleSheet.create({
   usernameRow: {
     flexDirection: 'row',
     alignItems: 'center',
-    marginBottom: 0,
+    marginBottom: 2,
   },
   username: {
-    marginBottom: 0,
-    marginRight: 2,
-  },
-  displayName: {
-    // Sin margin adicional
+    marginRight: 6,
   },
   verifiedIcon: {
-    width: 18,
-    height: 18,
-    marginLeft: 4,
+    width: 16,
+    height: 16,
+    marginRight: 6,
   },
   siguiendoText: {
-    marginLeft: 6,
+    marginLeft: 2,
+  },
+  displayName: {
+    opacity: 0.8,
   },
 }); 

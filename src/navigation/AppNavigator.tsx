@@ -1,6 +1,6 @@
 import { Ionicons } from '@expo/vector-icons';
 import { CardStyleInterpolators, createStackNavigator } from '@react-navigation/stack';
-import React, { useEffect } from 'react';
+import React from 'react';
 import { ActivityIndicator, Easing, View } from 'react-native';
 import { CreateProfileScreen, WelcomeScreen } from '../components';
 import { EditProfileScreen } from '../components/screens/EditProfileScreen';
@@ -60,25 +60,13 @@ const LoadingScreen = () => (
 export const AppNavigator = () => {
   const { isLoading, profileCompletionStep } = useAuth();
 
-  // Log para debugging
-  useEffect(() => {
-    console.log('🧭 [AppNavigator] Estado cambió:', { 
-      isLoading, 
-      profileCompletionStep,
-      timestamp: new Date().toISOString()
-    });
-  }, [isLoading, profileCompletionStep]);
-
-  console.log('🧭 [AppNavigator] Render:', { isLoading, profileCompletionStep });
-
   // Mostrar pantalla de carga mientras se determina el estado
   if (isLoading) {
-    console.log('🧭 [AppNavigator] Mostrando LoadingScreen');
     return <LoadingScreen />;
   }
 
   if (profileCompletionStep < 2) {
-    console.log('🧭 [AppNavigator] Mostrando Welcome Stack - Step:', profileCompletionStep);
+    console.log('[AppNavigator] Mostrando pantallas de perfil (step:', profileCompletionStep + ')');
     // Usuario sin perfil completado - mostrar welcome y create profile
     return (
       <Stack.Navigator
@@ -138,8 +126,7 @@ export const AppNavigator = () => {
     );
   }
 
-  console.log('🧭 [AppNavigator] Mostrando Main App Stack');
-  
+  console.log('[AppNavigator] Perfil completo, mostrando app principal');
   // Usuario con perfil completado - mostrar app principal
   return (
     <Stack.Navigator

@@ -10,12 +10,9 @@ if (!global.structuredClone) {
 
 // Monitoriza cambios de estado de la app
 AppState.addEventListener('change', (state) => {
-  console.log('[AppState] Estado actual:', state);
   if (state === 'active') {
-    console.log('[Supabase] Iniciando auto-refresh de sesión');
     supabase.auth.startAutoRefresh();
   } else {
-    console.log('[Supabase] Deteniendo auto-refresh de sesión');
     supabase.auth.stopAutoRefresh();
   }
 });
@@ -41,68 +38,48 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   useEffect(() => {
     // Obtener sesión inicial
     supabase.auth.getSession().then(async ({ data: { session } }) => {
-      console.log('[Auth] ===== SESIÓN INICIAL =====');
-      console.log('[Auth] Sesión encontrada:', !!session);
-      
       try {
         if (session) {
-          console.log('[Auth] ID de usuario:', session.user?.id);
-          console.log('[Auth] Email:', session.user?.email);
-          console.log('[Auth] Provider:', session.user?.app_metadata?.provider);
-          
           // Asumir directamente step 0 (sin verificación)
           setProfileCompletionStep(0);
         }
       } catch (error) {
-        console.error('[Auth] 💥 Error en sesión inicial:', error);
+        console.error('[Auth] Error en sesión inicial:', error);
         setProfileCompletionStep(0);
       }
       
-      console.log('[Auth] 📱 Finalizando carga inicial...');
       setSession(session);
       setIsLoading(false);
-      console.log('[Auth] ===============================');
     });
 
     // Escuchar cambios en la autenticación
     const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
-      console.log('[Auth] ===== CAMBIO DE ESTADO =====');
-      console.log('[Auth] Evento:', event);
-      console.log('[Auth] Tiene sesión:', !!session);
-      
       try {
         if (session) {
-          console.log('[Auth] ✅ Usuario autenticado:', session.user?.email);
-          console.log('[Auth] Provider:', session.user?.app_metadata?.provider);
-          
+          console.log('[Auth] Usuario autenticado:', session.user?.email);
           // Asumir directamente step 0 (sin verificación)
           setProfileCompletionStep(0);
         } else {
-          console.log('[Auth] ❌ Sin sesión');
+          console.log('[Auth] Sesión cerrada');
           setProfileCompletionStep(0);
         }
       } catch (error) {
-        console.error('[Auth] 💥 Error en onAuthStateChange:', error);
+        console.error('[Auth] Error en onAuthStateChange:', error);
         setProfileCompletionStep(0);
       }
       
-      console.log('[Auth] 📱 Actualizando estado final...');
       setSession(session);
       setIsLoading(false);
-      console.log('[Auth] ===============================');
     });
 
     return () => subscription.unsubscribe();
-
   }, []);
 
-  // ✅ SOLUCIÓN ADICIONAL: Listener de cambios en tiempo real en la tabla profiles
+  // Listener de cambios en tiempo real en la tabla profiles
   useEffect(() => {
     let profileSubscription: any = null;
 
     if (session?.user?.id) {
-      console.log('[Auth] 🔄 Configurando listener de cambios en perfil...');
-      
       profileSubscription = supabase
         .channel('profile-changes')
         .on(
@@ -114,21 +91,15 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
             filter: `id=eq.${session.user.id}`
           },
           async (payload) => {
-            console.log('[Auth] 🔔 Cambio detectado en perfil:', payload);
-            
             // Asumir perfil completo cuando hay cambios en la tabla
-            console.log('[Auth] 🎯 Perfil actualizado via listener - asumiendo completo');
             setProfileCompletionStep(2);
           }
         )
         .subscribe();
-        
-      console.log('[Auth] ✅ Listener de perfil configurado');
     }
 
     return () => {
       if (profileSubscription) {
-        console.log('[Auth] 🔇 Desconectando listener de perfil');
         profileSubscription.unsubscribe();
       }
     };
@@ -136,7 +107,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
   const logout = async () => {
     try {
-      console.log('[Auth] Iniciando proceso de cierre de sesión...');
+      console.log('[Auth] Cerrando sesión...');
       
       // Limpiar el estado local primero
       setSession(null);
@@ -146,13 +117,13 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       const { error } = await supabase.auth.signOut();
       
       if (error) {
-        console.error('[Auth] Error al cerrar sesión en Supabase:', error);
+        console.error('[Auth] Error al cerrar sesión:', error);
         throw error;
       }
       
-      console.log('[Auth] ✅ Sesión cerrada correctamente');
+      console.log('[Auth] Sesión cerrada correctamente');
     } catch (error) {
-      console.error('[Auth] ❌ Error durante el cierre de sesión:', error);
+      console.error('[Auth] Error durante el cierre de sesión:', error);
       // Asegurar que el estado se limpie incluso si hay error
       setSession(null);
       setProfileCompletionStep(0);
@@ -165,10 +136,46 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       setIsLoading(true);
       if (!session?.user) throw new Error('No hay usuario en la sesión');
 
+      // Convertir el avatar seleccionado a un URL guardable
+      const getAvatarUrl = (selectedAvatar: any): string | null => {
+        // Si es el avatar por defecto (con iniciales)
+        if (selectedAvatar === 'default_avatar') {
+          return 'default_avatar';
+        }
+        
+        // Si es uno de los avatares preset, obtener su índice
+        const presetAvatars = [
+          require('@assets/images/profilePics/profileicon1.png'),
+          require('@assets/images/profilePics/profileicon2.png'),
+          require('@assets/images/profilePics/profileicon6.png'),
+          require('@assets/images/profilePics/profileicon4.png'),
+          require('@assets/images/profilePics/profileicon5.png'),
+        ];
+        
+        const avatarIndex = presetAvatars.findIndex(presetAvatar => presetAvatar === selectedAvatar);
+        if (avatarIndex !== -1) {
+          // Mapear índice a nombre de archivo
+          const avatarFileNames = [
+            'profileicon1.png',
+            'profileicon2.png', 
+            'profileicon6.png',
+            'profileicon4.png',
+            'profileicon5.png'
+          ];
+          return avatarFileNames[avatarIndex];
+        }
+        
+        // Si no se reconoce el avatar, usar default
+        return 'default_avatar';
+      };
+
+      const avatarUrl = getAvatarUrl(avatar);
+
       const updates = {
         id: session.user.id,
         username,
         display_name: displayName,
+        avatar_url: avatarUrl,
         updated_at: new Date().toISOString(),
       };
 
@@ -178,11 +185,9 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         throw error;
       }
 
-      console.log('[Auth] Perfil actualizado correctamente');
-      
+      console.log('[Auth] Perfil creado correctamente con avatar:', avatarUrl);
       // Asumir perfil completo después de guardar
       setProfileCompletionStep(2);
-      console.log('[Auth] Estado actualizado - profileCompletionStep: 2 (completo)');
       
     } catch (error) {
       console.error('[Auth] Error al actualizar perfil:', error);

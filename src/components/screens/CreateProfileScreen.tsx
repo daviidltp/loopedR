@@ -98,8 +98,6 @@ export const CreateProfileScreen: React.FC<CreateProfileScreenProps> = ({ naviga
     }
   };
 
-  console.log('[CreateProfile] 🎬 Iniciando con step:', initialStep, '→', getInitialProfileStep(initialStep));
-
   // ===========================
   // STATE
   // ===========================
@@ -135,18 +133,14 @@ export const CreateProfileScreen: React.FC<CreateProfileScreenProps> = ({ naviga
       if (!session?.user?.id) return;
       
       try {
-        console.log('[CreateProfile] 📋 Cargando datos existentes...');
         const { data, error } = await supabase
           .from('profiles')
-          .select('username, display_name')
+          .select('username, display_name, avatar_url')
           .eq('id', session.user.id)
           .single();
 
         if (data) {
-          console.log('[CreateProfile] ✅ Datos encontrados:', { 
-            display_name: data.display_name, 
-            username: data.username 
-          });
+          console.log('[CreateProfile] Cargando datos existentes del perfil');
           
           if (data.display_name) {
             setName(data.display_name);
@@ -154,9 +148,39 @@ export const CreateProfileScreen: React.FC<CreateProfileScreenProps> = ({ naviga
           if (data.username) {
             setUsername(data.username);
           }
+          
+          // Convertir avatar_url de vuelta a selectedAvatar
+          if (data.avatar_url) {
+            const getSelectedAvatar = (avatarUrl: string) => {
+              // Si es el avatar por defecto
+              if (avatarUrl === 'default_avatar') {
+                return DEFAULT_AVATAR_ID;
+              }
+              
+              // Si es uno de los avatares preset
+              const avatarFileNames = [
+                'profileicon1.png',
+                'profileicon2.png', 
+                'profileicon6.png',
+                'profileicon4.png',
+                'profileicon5.png'
+              ];
+              
+              const avatarIndex = avatarFileNames.indexOf(avatarUrl);
+              if (avatarIndex !== -1) {
+                return PRESET_AVATARS[avatarIndex];
+              }
+              
+              // Si no se reconoce, usar default
+              return DEFAULT_AVATAR_ID;
+            };
+            
+            const selectedAvatarFromDB = getSelectedAvatar(data.avatar_url);
+            setSelectedAvatar(selectedAvatarFromDB);
+          }
         }
       } catch (error) {
-        console.log('[CreateProfile] ℹ️ No hay datos previos o error:', error);
+        // Silently ignore - no previous data
       }
     };
 
@@ -181,8 +205,6 @@ export const CreateProfileScreen: React.FC<CreateProfileScreenProps> = ({ naviga
       setShouldLoadAvatarGrid(true);
       
       // Configurar animaciones según el step inicial
-      console.log('[CreateProfile] 🎭 Configurando animaciones para step:', currentStep);
-      
       if (currentStep === 'name') {
         // Step 1: name visible, otros ocultos
         nameStepSlideAnim.value = withTiming(0, {
@@ -508,17 +530,13 @@ export const CreateProfileScreen: React.FC<CreateProfileScreenProps> = ({ naviga
       try {
         // Simulate API call
         await new Promise(resolve => setTimeout(resolve, 0));
-
-        console.log('[CreateProfile] 💾 Guardando datos del perfil...');
         
+        console.log('[CreateProfile] Guardando perfil...');
         // Save profile data to context
         await setUserProfileData(username, name, selectedAvatar, avatarBackgrounds);
         
-        console.log('[CreateProfile] ✅ Perfil guardado, esperando navegación automática...');
-        
         // Fallback: Si después de 2 segundos no navega automáticamente, forzar reset
         setTimeout(() => {
-          console.log('[CreateProfile] 🚨 Timeout - Forzando navegación manual');
           try {
             navigation.dispatch(
               CommonActions.reset({
@@ -527,7 +545,7 @@ export const CreateProfileScreen: React.FC<CreateProfileScreenProps> = ({ naviga
               })
             );
           } catch (error) {
-            console.error('[CreateProfile] ❌ Error en navegación manual:', error);
+            console.error('[CreateProfile] Error en navegación manual:', error);
           }
         }, 2000);
         
@@ -581,8 +599,6 @@ export const CreateProfileScreen: React.FC<CreateProfileScreenProps> = ({ naviga
   }, [shouldFocusNameInput]);
 
   useEffect(() => {
-    console.log('[CreateProfile] 🎯 Enfocando input para step:', currentStep);
-    
     if (currentStep === 'name') {
       setTimeout(() => nameInputRef.current?.focus(), 300);
     } else if (currentStep === 'username') {

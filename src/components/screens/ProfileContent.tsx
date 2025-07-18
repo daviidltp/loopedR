@@ -1,6 +1,7 @@
 import React from 'react';
-import { Image, ScrollView, StyleSheet, View } from 'react-native';
+import { ScrollView, StyleSheet, View } from 'react-native';
 import { Colors } from '../../constants/Colors';
+import { UserAvatar } from '../ui/Avatar/UserAvatar';
 import { Layout } from '../ui/layout/Layout';
 import { AppText } from '../ui/Text/AppText';
 
@@ -77,9 +78,10 @@ export const ProfileContent: React.FC<ProfileContentProps> = ({
             <View style={styles.profileRow}>
               {/* Avatar */}
               <View style={styles.avatarContainer}>
-                <Image
-                  source={{ uri: userData.avatarUrl }}
-                  style={styles.avatar}
+                <UserAvatar
+                  avatarUrl={userData.avatarUrl}
+                  displayName={userData.displayName}
+                  size={88}
                 />
               </View>
               {/* Contenedor: DisplayName + Stats */}
@@ -200,10 +202,6 @@ const styles = StyleSheet.create({
     height: 88,
     borderRadius: 44,
     overflow: 'hidden',
-  },
-  avatar: {
-    width: '100%',
-    height: '100%',
   },
   // Nuevo contenedor para displayName y stats
   profileInfoContainer: {
