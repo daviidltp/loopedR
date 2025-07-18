@@ -274,17 +274,23 @@ export const EditProfileScreen = () => {
             <View style={styles.content}>
               {/* Avatar Section */}
               <View style={styles.avatarSection}>
-                <DefaultAvatar
-                  name={name}
-                  size={120}
-                  selectedImage={selectedAvatar === 'default_avatar' ? undefined : selectedAvatar}
-                />
-                <UploadButton size={40} />
+                <View style={styles.avatarWrapper}>
+                  <DefaultAvatar
+                    name={name}
+                    size={140}
+                    selectedImage={selectedAvatar === 'default_avatar' ? undefined : selectedAvatar}
+                    backgroundColor="#232323"
+                  />
+                  <View style={styles.uploadButtonOverlay}>
+                    <UploadButton size={44} />
+                  </View>
+                </View>
               </View>
 
               {/* Form Section */}
               <View style={styles.formSection}>
                 <TextInput
+                  label="Nombre"
                   value={name}
                   onChangeText={handleNameChange}
                   placeholder="Nombre"
@@ -296,6 +302,7 @@ export const EditProfileScreen = () => {
                 />
 
                 <TextInput
+                  label="Nombre de usuario"
                   value={username}
                   onChangeText={handleUsernameChange}
                   placeholder="Nombre de usuario"
@@ -307,13 +314,16 @@ export const EditProfileScreen = () => {
                 />
 
                 <TextArea
+                  label="Biografía"
                   value={bio}
                   onChangeText={setBio}
                   placeholder="Biografía (opcional)"
                   maxLength={160}
+                  minHeight={48}
                   autoCapitalize="sentences"
                   autoCorrect={true}
                   returnKeyType="done"
+                  showCharacterCount={false}
                 />
               </View>
             </View>
@@ -328,7 +338,7 @@ export const EditProfileScreen = () => {
               textColor={Colors.background}
               isLoading={isLoading}
               isDisabled={isLoading || !hasChanges}
-              height={48}
+              height={52}
             />
           </Animated.View>
         </View>
@@ -359,13 +369,29 @@ const styles = StyleSheet.create({
   avatarSection: {
     alignItems: 'center',
     marginBottom: 32,
+    marginTop: 12,
+  },
+  avatarWrapper: {
+    position: 'relative',
+    alignItems: 'center',
+    justifyContent: 'center',
+    width: 160,
+    height: 160,
+  },
+  uploadButtonOverlay: {
+    position: 'absolute',
+    right: 8,
+    bottom: 8,
+    zIndex: 2,
   },
   formSection: {
-    gap: 20,
+    gap: 18,
+    marginTop: 8,
   },
   buttonContainer: {
     position: 'absolute',
     left: 20,
     right: 20,
+    bottom: 32,
   },
 }); 

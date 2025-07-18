@@ -21,6 +21,7 @@ export const useSpotifyAuth = () => {
         options: {
           redirectTo: redirectUri,
           scopes: 'user-read-email user-top-read user-read-recently-played playlist-read-private playlist-read-collaborative',
+          queryParams: { prompt: 'login', show_dialog: 'true' },
         }
       });
 

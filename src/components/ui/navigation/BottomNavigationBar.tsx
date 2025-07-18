@@ -311,7 +311,7 @@ const styles = StyleSheet.create({
     width: 32,
     height: 32,
     borderRadius: 16,
-    backgroundColor: Colors.white,
+    backgroundColor: Colors.background,
     justifyContent: 'center',
     alignItems: 'center',
     overflow: 'hidden',

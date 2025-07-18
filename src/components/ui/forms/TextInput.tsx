@@ -79,7 +79,8 @@ export const TextInput = forwardRef<RNTextInput, CustomTextInputProps>(({
           style={[
             styles.inputContainer, 
             { 
-              backgroundColor: isFocused ? 'rgba(255, 255, 255, 0.12)' : 'rgba(255, 255, 255, 0.07)',
+              backgroundColor: '#232323',
+              borderRadius: 16,
             },
             multiline && { height: 'auto', minHeight: 52, paddingVertical: 10 },
           ]}
@@ -102,7 +103,7 @@ export const TextInput = forwardRef<RNTextInput, CustomTextInputProps>(({
               multiline && { minHeight: 52, textAlignVertical: 'top', paddingTop: 10, paddingBottom: 10 },
               customStyle
             ]}
-            placeholderTextColor={Colors.gray[400]}
+            placeholderTextColor={'#bdbdbd'}
             onFocus={handleFocus}
             onBlur={handleBlur}
             selectionColor={Colors.gray[300]}

@@ -23,7 +23,7 @@ export const TextArea = forwardRef<RNTextInput, TextAreaProps>(({
   error,
   isValid,
   helperText,
-  minHeight = 100,
+  minHeight = 40,
   maxHeight = 200,
   showCharacterCount = false,
   onFocus,
@@ -83,7 +83,8 @@ export const TextArea = forwardRef<RNTextInput, TextAreaProps>(({
           style={[
             styles.inputContainer,
             { 
-              backgroundColor: isFocused ? 'rgba(255, 255, 255, 0.12)' : 'rgba(255, 255, 255, 0.07)',
+              backgroundColor: '#232323',
+              borderRadius: 16,
               height: textHeight,
             }
           ]}
@@ -100,7 +101,7 @@ export const TextArea = forwardRef<RNTextInput, TextAreaProps>(({
               (error || isValid) && { paddingRight: 45 }, // Espacio para el icono
               customStyle
             ]}
-            placeholderTextColor={Colors.gray[400]}
+            placeholderTextColor={'#bdbdbd'}
             onFocus={handleFocus}
             onBlur={handleBlur}
             onContentSizeChange={handleContentSizeChange}
