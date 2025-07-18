@@ -1,6 +1,7 @@
 import React from 'react';
-import { StyleSheet, Switch, View } from 'react-native';
+import { StyleSheet, View } from 'react-native';
 import { Icon } from 'react-native-paper';
+import { Switch } from 'react-native-switch';
 import { Colors } from '../../../constants/Colors';
 import { PlatformTouchable } from '../buttons/PlatformTouchable';
 import { AppText } from '../Text/AppText';
@@ -98,15 +99,24 @@ export const SettingsItem: React.FC<SettingsItemProps> = ({
         
         <View style={styles.rightSection}>
           {hasSwitch ? (
-            <View style={{ transform: [{ scale: 0.8 }] }}>
+            
               <Switch
                 value={switchValue}
                 onValueChange={onSwitchChange}
-                trackColor={{ false: Colors.gray[700], true: Colors.secondaryGreenDark }}
-                thumbColor={switchValue ? Colors.secondaryGreen : Colors.gray[300]}
-                
+                circleBorderWidth={0}
+                backgroundActive={Colors.secondaryGreenDark}
+                backgroundInactive={Colors.gray[700]}
+                circleActiveColor={Colors.secondaryGreen}
+                circleInActiveColor={Colors.gray[300]}
+                renderActiveText={false}
+                renderInActiveText={false}
+                switchRightPx={2}
+                switchLeftPx={2}
+                circleSize={20}
+                barHeight={30}
+                switchWidthMultiplier={2.5}
               />
-            </View>
+            
           ) : (
             showChevron && (
               <Icon source="chevron-right" size={20} color={Colors.gray[500]} />

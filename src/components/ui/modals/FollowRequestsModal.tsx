@@ -1,6 +1,6 @@
-import DeleteUserIcon from '@assets/icons/delete-user.svg';
 import React from 'react';
 import { FlatList, Modal, StyleSheet, View } from 'react-native';
+import DeleteUserIcon from '../../../../assets/icons/delete-user.svg';
 import { Colors } from '../../../constants/Colors';
 import { FollowRequest } from '../../../utils/mockData';
 import { AppText } from '../Text/AppText';

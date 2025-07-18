@@ -3,13 +3,13 @@ import { StyleSheet, View } from 'react-native';
 import { Colors } from '../../../constants/Colors';
 
 // Importar los iconos SVG
-import AddFilledIcon from '@assets/icons/add_filled.svg';
-import HeartIcon from '@assets/icons/heart.svg';
-import HeartFilledIcon from '@assets/icons/heart_filled.svg';
-import HouseIcon from '@assets/icons/house.svg';
-import HouseFilledIcon from '@assets/icons/house_filled.svg';
-import SearchIcon from '@assets/icons/search.svg';
-import SearchFilledIcon from '@assets/icons/search_filled.svg';
+import AddFilledIcon from '../../../../assets/icons/add_filled.svg';
+import HeartIcon from '../../../../assets/icons/heart.svg';
+import HeartFilledIcon from '../../../../assets/icons/heart_filled.svg';
+import HouseIcon from '../../../../assets/icons/house.svg';
+import HouseFilledIcon from '../../../../assets/icons/house_filled.svg';
+import SearchIcon from '../../../../assets/icons/search.svg';
+import SearchFilledIcon from '../../../../assets/icons/search_filled.svg';
 
 interface TabBarIconProps {
   routeName: string;

@@ -1,6 +1,6 @@
-import AddImage from '@assets/icons/add-image.svg';
 import React from 'react';
 import { StyleSheet, View } from 'react-native';
+import AddImage from '../../../../assets/icons/add-image.svg';
 import { Colors } from '../../../constants/Colors';
 import { ResizingButtonCircular } from '../buttons/ResizingButtonCircular';
 

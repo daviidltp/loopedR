@@ -1,8 +1,8 @@
-import { textStyles } from '@/src/constants';
-import SearchIcon from '@assets/icons/search.svg';
 import React, { forwardRef, useImperativeHandle, useRef, useState } from 'react';
 import { StyleSheet, TextInput, TouchableOpacity, View } from 'react-native';
 import { IconButton } from 'react-native-paper';
+import SearchIcon from '../../../../assets/icons/search.svg';
+import { textStyles } from '../../../constants';
 import { Colors } from '../../../constants/Colors';
 
 interface SearchBarProps {

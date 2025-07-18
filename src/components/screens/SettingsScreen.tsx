@@ -27,9 +27,10 @@ import {
 } from '../ui/sections';
 
 // Importar iconos personalizados
-import DocumentIcon from '@assets/icons/document.svg';
-import LanguageIcon from '@assets/icons/language.svg';
-import UserLockIcon from '@assets/icons/user-lock.svg';
+import DocumentIcon from '../../../assets/icons/document.svg';
+import LanguageIcon from '../../../assets/icons/language.svg';
+import UserLockIcon from '../../../assets/icons/user-lock.svg';
+import verifiedBlue from '../../../assets/icons/verified_blue.png';
 
 type SettingsScreenNavigationProp = StackNavigationProp<RootStackParamList, 'Settings'>;
 
@@ -210,7 +211,7 @@ export const SettingsScreen = () => {
             <SettingsItem
               customIcon={
                 <Image 
-                  source={require('@assets/icons/verified_blue.png')} 
+                  source={verifiedBlue} 
                   style={[styles.verifiedIcon, { tintColor: Colors.mutedWhite }]}
                 />
               }

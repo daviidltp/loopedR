@@ -10,6 +10,7 @@ import { AuthProvider } from './src/contexts/AuthContext';
 import { useFonts } from './src/hooks/useFonts';
 import { AppNavigator } from './src/navigation/AppNavigator';
 
+
 // Habilitar react-native-screens para mejor rendimiento
 enableScreens();
 

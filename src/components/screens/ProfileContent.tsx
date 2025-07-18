@@ -141,7 +141,7 @@ export const ProfileContent: React.FC<ProfileContentProps> = ({
                         numberOfLines={1}
                         ellipsizeMode="tail"
                       >
-                        {followingCount === 1 ? ' seguido' : ' seguidos'}
+                        {' siguiendo'}
                       </AppText>
                       </AppText>   
                     </View>

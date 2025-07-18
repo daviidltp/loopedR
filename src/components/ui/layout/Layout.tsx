@@ -14,7 +14,7 @@ interface LayoutProps {
 export const Layout: React.FC<LayoutProps> = ({ children, style, excludeBottomSafeArea = false}) => {
   const insets = useSafeAreaInsets();
   SystemNavigationBar.navigationShow();
-  SystemNavigationBar.setNavigationColor(Colors.appleRed);
+  SystemNavigationBar.setNavigationColor(Colors.background);
 
   const bottomPadding = excludeBottomSafeArea 
     ? 0 

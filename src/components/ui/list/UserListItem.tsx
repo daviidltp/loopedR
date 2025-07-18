@@ -1,5 +1,6 @@
 import React from 'react';
 import { Image, StyleSheet, View } from 'react-native';
+import verifiedBlue from '../../../../assets/icons/verified_blue.png';
 import { Colors } from '../../../constants/Colors';
 import { User, currentUser, mockUserRelations } from '../../../utils/mockData';
 import { PlatformTouchable } from '../buttons/PlatformTouchable';
@@ -70,7 +71,7 @@ export const UserListItem: React.FC<UserListItemProps> = ({
           </AppText>
           {user.isVerified && (
             <Image 
-              source={require('@assets/icons/verified_blue.png')} 
+              source={verifiedBlue} 
               style={styles.verifiedIcon}
             />
           )}

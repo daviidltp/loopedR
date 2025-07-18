@@ -1,6 +1,6 @@
-import { textStyles } from '@/src/constants';
 import React, { forwardRef, useState } from 'react';
 import { Animated, TextInput as RNTextInput, StyleSheet, TextInputProps, View } from 'react-native';
+import { textStyles } from '../../../constants';
 import { Colors } from '../../../constants/Colors';
 import { CheckIcon } from '../../icons/CheckIcon';
 import { CrossIcon } from '../../icons/CrossIcon';
@@ -49,7 +49,7 @@ export const TextArea = forwardRef<RNTextInput, TextAreaProps>(({
 
   const handleContentSizeChange = (event: any) => {
     const { height } = event.nativeEvent.contentSize;
-    const newHeight = Math.max(minHeight, Math.min(maxHeight, height + 32)); // +32 para padding
+    const newHeight = Math.max(minHeight, Math.min(maxHeight, height + 16)); // +32 para padding
     setTextHeight(newHeight);
   };
 

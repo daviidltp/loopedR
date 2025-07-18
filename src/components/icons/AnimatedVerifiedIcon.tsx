@@ -1,5 +1,7 @@
 import React, { useEffect, useRef } from 'react';
 import { Animated, Easing, Image, StyleSheet, View } from 'react-native';
+import quaver from '../../../assets/icons/quaver.png';
+import verifiedBackground from '../../../assets/icons/verified_background.png';
 import { Colors } from '../../constants/Colors';
 
 interface AnimatedVerifiedIconProps {
@@ -44,7 +46,7 @@ export const AnimatedVerifiedIcon: React.FC<AnimatedVerifiedIconProps> = ({ size
     <View style={[styles.container, { width: size, height: size }]}>
       {/* Background que rota */}
       <Animated.Image
-        source={require('@assets/icons/verified_background.png')}
+        source={verifiedBackground}
         style={[
           styles.background,
           {
@@ -57,7 +59,7 @@ export const AnimatedVerifiedIcon: React.FC<AnimatedVerifiedIconProps> = ({ size
       
       {/* Foreground estático centrado */}
       <Image
-        source={require('@assets/icons/quaver.png')}
+        source={quaver}
         style={[
           styles.foreground,
           {

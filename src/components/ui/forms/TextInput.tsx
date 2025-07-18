@@ -1,6 +1,6 @@
-import { textStyles } from '@/src/constants';
 import React, { forwardRef, useRef, useState } from 'react';
 import { Animated, TextInput as RNTextInput, StyleSheet, TextInputProps, View } from 'react-native';
+import { textStyles } from '../../../constants';
 import { Colors } from '../../../constants/Colors';
 import { CheckIcon } from '../../icons/CheckIcon';
 import { CrossIcon } from '../../icons/CrossIcon';
@@ -15,9 +15,11 @@ interface CustomTextInputProps extends TextInputProps {
   showFixedAtSymbol?: boolean;
   helperText?: string;
   textTransform?: 'none' | 'capitalize' | 'uppercase' | 'lowercase';
+  showCharacterCount?: boolean; // Nueva prop
+  maxLength?: number; // Para el contador
 }
 
-export const TextInput = forwardRef<RNTextInput, CustomTextInputProps>(({
+export const TextInput = forwardRef<RNTextInput, CustomTextInputProps>(({ 
   label,
   description,
   error,
@@ -28,9 +30,13 @@ export const TextInput = forwardRef<RNTextInput, CustomTextInputProps>(({
   textTransform,
   onFocus,
   onBlur,
-  value,
+  value = '',
   onChangeText,
   style: customStyle,
+  showCharacterCount = false,
+  maxLength,
+  multiline,
+  numberOfLines,
   ...props
 }, ref) => {
   const [isFocused, setIsFocused] = useState(false);
@@ -75,7 +81,7 @@ export const TextInput = forwardRef<RNTextInput, CustomTextInputProps>(({
             { 
               backgroundColor: isFocused ? 'rgba(255, 255, 255, 0.12)' : 'rgba(255, 255, 255, 0.07)',
             },
-            props.multiline && { height: 'auto', minHeight: 52 } // Ajuste dinámico para multiline
+            multiline && { height: 'auto', minHeight: 52, paddingVertical: 10 },
           ]}
         >
           {showFixedAtSymbol && (
@@ -91,18 +97,19 @@ export const TextInput = forwardRef<RNTextInput, CustomTextInputProps>(({
               styles.input,
               showUserPrefix && { paddingLeft: shouldShowPrefixUp ? 18 : 35 },
               showFixedAtSymbol && { paddingLeft: 35 },
-              (error || isValid) && { paddingRight: 45 }, // Espacio para el icono
+              (error || isValid) && { paddingRight: 45 },
               textTransform && { textTransform },
-              customStyle // Aplicar estilos personalizados
+              multiline && { minHeight: 52, textAlignVertical: 'top', paddingTop: 10, paddingBottom: 10 },
+              customStyle
             ]}
             placeholderTextColor={Colors.gray[400]}
             onFocus={handleFocus}
             onBlur={handleBlur}
             selectionColor={Colors.gray[300]}
-            //autoCapitalize={'characters'}
-            
+            multiline={multiline}
+            numberOfLines={numberOfLines}
+            maxLength={maxLength}
           />
-          
           {/* Icono de validación */}
           {(error || isValid) && (
             <View style={styles.validationIcon}>
@@ -114,6 +121,14 @@ export const TextInput = forwardRef<RNTextInput, CustomTextInputProps>(({
             </View>
           )}
         </Animated.View>
+        {/* Contador de caracteres */}
+        {showCharacterCount && maxLength && (
+          <View style={{ alignItems: 'flex-end', marginRight: 4, marginTop: 2 }}>
+            <AppText style={{ color: Colors.mutedWhite, fontSize: 12 }}>
+              {value.length}/{maxLength}
+            </AppText>
+          </View>
+        )}
         <AppText 
           variant='bodySmall' 
           style={[

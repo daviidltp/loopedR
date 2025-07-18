@@ -3,6 +3,7 @@ import React, { useCallback, useEffect, useRef, useState } from 'react';
 import {
   BackHandler,
   Keyboard,
+  KeyboardAvoidingView,
   Platform,
   ScrollView,
   StyleSheet,
@@ -21,7 +22,6 @@ import { DefaultAvatar } from '../ui/Avatar/DefaultAvatar';
 import { UploadButton } from '../ui/Avatar/UploadButton';
 import { PlatformTouchable } from '../ui/buttons/PlatformTouchable';
 import { ResizingButton } from '../ui/buttons/ResizingButton';
-import { TextArea } from '../ui/forms/TextArea';
 import { TextInput } from '../ui/forms/TextInput';
 import { DefaultHeader } from '../ui/headers/DefaultHeader';
 import { Layout } from '../ui/layout/Layout';
@@ -221,6 +221,11 @@ export const EditProfileScreen = () => {
             onBackPress={handleBackPress}
           />
           
+          <KeyboardAvoidingView
+            behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+            style={styles.container}
+            keyboardVerticalOffset={Platform.OS === 'ios' ? 100 : 40}
+          >
           {/* ScrollView con manejo automático del teclado */}
           <ScrollView
             style={styles.scrollView}
@@ -279,15 +284,13 @@ export const EditProfileScreen = () => {
                   textTransform="lowercase"
                 />
 
-                <TextArea
+                <TextInput
                   ref={bioInputRef}
                   description="Biografía"
                   value={bio}
                   onChangeText={handleBioChange}
                   placeholder="Cuéntanos sobre ti..."
                   maxLength={150}
-                  minHeight={80}
-                  maxHeight={140}
                   autoCapitalize="sentences"
                   autoCorrect={true}
                   showCharacterCount={true}
@@ -297,6 +300,7 @@ export const EditProfileScreen = () => {
               {/* Espacio adicional para evitar que el botón tape el contenido */}
               <View style={{ height: 30 }} />
             </ScrollView>
+            </KeyboardAvoidingView>
             
             {/* Botón guardar */}
             <Animated.View style={[styles.buttonContainer, buttonAnimatedStyle]}>

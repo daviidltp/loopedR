@@ -5,7 +5,7 @@ import { Icon, IconButton } from 'react-native-paper';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Colors } from '../../../constants/Colors';
 import { AnimatedVerifiedIcon } from '../../icons/AnimatedVerifiedIcon';
-import { PlatformTouchable } from '../buttons/PlatformTouchable';
+import { PlatformIconButton } from '../buttons';
 import { AppText } from '../Text/AppText';
 
 interface ProfileHeaderProps {
@@ -85,17 +85,13 @@ export const ProfileHeader: React.FC<ProfileHeaderProps> = ({
     <View style={[styles.container]}>
       <View style={styles.leftSection}>
         {showBackButton && (
-          <PlatformTouchable
-            style={styles.backButton}
+          <PlatformIconButton
+            icon="arrow-left"
+            size={26}
+            iconColor={Colors.white}
             onPress={handleLeftButtonPress}
-            rippleColor={Colors.backgroundSoft}
-          >
-            <Icon
-              source="arrow-left"
-              size={26}
-              color={Colors.white}
-            />
-          </PlatformTouchable>
+            style={styles.backButton}
+          />
         )}
 
         {showPrivacyIndicator && (
@@ -158,7 +154,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'space-between',
     paddingHorizontal:20,
-    minHeight: 100, // Asegurar altura mínima consistente
+    minHeight: 54, // Asegurar altura mínima consistente
   },
   leftSection: {
     flexDirection: 'row',
@@ -167,18 +163,12 @@ const styles = StyleSheet.create({
     minHeight: 40, // Altura mínima para alineamiento
   },
   backButton: {
-    width: 40,
-    height: 40,
-    borderRadius: 20,
-    justifyContent: 'center',
-    alignItems: 'center',
-    marginRight: 8,
+    margin: 0,
   },
   usernameContainer: {
     flexDirection: 'row',
     alignItems: 'center',
     flex: 1,
-    minHeight: 40, // Misma altura que los botones
   },
   usernameText: {
     includeFontPadding: false, // Eliminar padding interno del font

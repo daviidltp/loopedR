@@ -89,7 +89,7 @@ export const RippleButton = ({
             style={[styles.container, dynamicContainerStyle]}
             onPress={onPress}
             disabled={isDisabled || isLoading}
-            rippleColor={Colors.white}
+            rippleColor={rippleColor}
             borderless={borderless}
         >
             <View style={styles.contentGroup}>

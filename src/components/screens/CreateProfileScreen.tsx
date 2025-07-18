@@ -18,6 +18,11 @@ import Animated, {
   useSharedValue,
   withTiming
 } from 'react-native-reanimated';
+import profileicon1 from '../../../assets/images/profilePics/profileicon1.png';
+import profileicon2 from '../../../assets/images/profilePics/profileicon2.png';
+import profileicon4 from '../../../assets/images/profilePics/profileicon4.png';
+import profileicon5 from '../../../assets/images/profilePics/profileicon5.png';
+import profileicon6 from '../../../assets/images/profilePics/profileicon6.png';
 import { Colors } from '../../constants/Colors';
 import { useAuth } from '../../contexts/AuthContext';
 import { RootStackParamList } from '../../navigation/AppNavigator';
@@ -38,11 +43,11 @@ const PresetAvatarGrid = lazy(() =>
 
 // Array actualizado con el nuevo orden (sin profileicon3, profileicon6 movido a posición 3)
 const PRESET_AVATARS = [
-  require('@assets/images/profilePics/profileicon1.png'),
-  require('@assets/images/profilePics/profileicon2.png'),
-  require('@assets/images/profilePics/profileicon6.png'), // Movido de posición 6 a 3
-  require('@assets/images/profilePics/profileicon4.png'),
-  require('@assets/images/profilePics/profileicon5.png'),
+  profileicon1,
+  profileicon2,
+  profileicon6, // Movido de posición 6 a 3
+  profileicon4,
+  profileicon5,
 ];
 
 // ===========================

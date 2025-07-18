@@ -1,5 +1,6 @@
 import React from 'react';
 import { Image, StyleSheet, View } from 'react-native';
+import verifiedBlue from '../../../../assets/icons/verified_blue.png';
 import { Colors } from '../../../constants/Colors';
 import { AppText } from '../Text/AppText';
 import { ResizingButton } from '../buttons/ResizingButton';
@@ -38,7 +39,7 @@ export const UserCard: React.FC<UserCardProps> = ({
           </AppText>
           {user.isVerified && (
             <Image 
-              source={require('@assets/icons/verified_blue.png')} 
+              source={verifiedBlue} 
               style={styles.verifiedIcon}
             />
           )}

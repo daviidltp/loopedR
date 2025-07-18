@@ -6,9 +6,8 @@ import Constants from 'expo-constants';
  * Supabase client configuration for React Native
  * Uses AsyncStorage for session persistence across app restarts
  */
-
-const supabaseUrl = process.env.EXPO_PUBLIC_SUPABASE_URL!;
-const supabaseAnonKey = process.env.EXPO_PUBLIC_SUPABASE_KEY!;
+const supabaseUrl = 'https://vdiuponydezwqnhxbtfc.supabase.co';
+const supabaseAnonKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InZkaXVwb255ZGV6d3FuaHhidGZjIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTI2OTM3NjYsImV4cCI6MjA2ODI2OTc2Nn0.DYgk-91uD3Sejqw-Ozhz_aXcYckB24kPc-hylGVHCqs';
 
 if (!supabaseUrl || !supabaseAnonKey) {
   throw new Error('Missing Supabase environment variables. Please check EXPO_PUBLIC_SUPABASE_URL and EXPO_PUBLIC_SUPABASE_KEY');

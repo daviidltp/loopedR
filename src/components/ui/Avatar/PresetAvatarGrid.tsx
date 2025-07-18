@@ -1,5 +1,11 @@
 import React, { memo } from 'react';
 import { Pressable, StyleSheet, View } from 'react-native';
+import profileicon1 from '../../../../assets/images/profilePics/profileicon1.png';
+import profileicon2 from '../../../../assets/images/profilePics/profileicon2.png';
+import profileicon4 from '../../../../assets/images/profilePics/profileicon4.png';
+import profileicon5 from '../../../../assets/images/profilePics/profileicon5.png';
+import profileicon6 from '../../../../assets/images/profilePics/profileicon6.png';
+
 import { Colors } from '../../../constants/Colors';
 import { PresetAvatar } from './PresetAvatar';
 
@@ -14,11 +20,11 @@ interface PresetAvatarGridProps {
 }
 
 const PRESET_AVATARS = [
-  require('@assets/images/profilePics/profileicon1.png'),
-  require('@assets/images/profilePics/profileicon2.png'),
-  require('@assets/images/profilePics/profileicon6.png'), // Movido de posición 6 a 3
-  require('@assets/images/profilePics/profileicon4.png'),
-  require('@assets/images/profilePics/profileicon5.png'),
+  profileicon1,
+  profileicon2,
+  profileicon6, // Movido de posición 6 a 3
+  profileicon4,
+  profileicon5,
 ];
 
 // Identificador especial para el DefaultAvatar

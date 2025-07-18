@@ -1,4 +1,3 @@
-import { Ionicons } from '@expo/vector-icons';
 import { CardStyleInterpolators, createStackNavigator } from '@react-navigation/stack';
 import React, { useEffect } from 'react';
 import { ActivityIndicator, Easing, View } from 'react-native';
@@ -6,7 +5,6 @@ import { CreateProfileScreen, WelcomeScreen } from '../components';
 import { EditProfileScreen } from '../components/screens/EditProfileScreen';
 import { SettingsScreen } from '../components/screens/SettingsScreen';
 import { UserProfileScreen } from '../components/screens/UserProfileScreen';
-import { PlatformTouchable } from '../components/ui/buttons/PlatformTouchable';
 import { BottomNavigationBar } from '../components/ui/navigation/BottomNavigationBar';
 import { Colors } from '../constants/Colors';
 import { useAuth } from '../contexts/AuthContext';
@@ -22,28 +20,7 @@ export type RootStackParamList = {
 
 const Stack = createStackNavigator<RootStackParamList>();
 
-// Componente del botón de header optimizado
-const HeaderBackButton: React.FC<{ onPress: () => void }> = React.memo(({ onPress }) => {
-  const button = (
-    <View style={{
-      width: 48,
-      height: 48,
-      borderRadius: 24,
-      justifyContent: 'center',
-      alignItems: 'center',
-      marginLeft: 8, // Más padding por la izquierda
-    }}>
-      <Ionicons name="arrow-back" size={28} color={Colors.white} />
-    </View>
-  );
 
-
-  return (
-    <PlatformTouchable onPress={onPress}>
-      {button}
-    </PlatformTouchable>
-  );
-});
 
 // Pantalla de carga mientras se determina el estado de autenticación
 const LoadingScreen = () => (
@@ -167,9 +144,6 @@ export const AppNavigator = () => {
           headerShown: false,
           headerTitle: 'Settings',
           headerTitleAlign: 'left',
-          headerLeft: () => (
-            <HeaderBackButton onPress={() => navigation.goBack()} />
-          ),
           headerLeftContainerStyle: {
             paddingLeft: 8,
           },
@@ -196,7 +170,7 @@ export const AppNavigator = () => {
         options={({ navigation }) => ({
           headerShown: false,
           cardStyle: { backgroundColor: Colors.background },
-          cardStyleInterpolator: CardStyleInterpolators.forVerticalIOS,
+          cardStyleInterpolator: CardStyleInterpolators.forHorizontalIOS,
           gestureEnabled: true,
           gestureDirection: 'horizontal',
         })}

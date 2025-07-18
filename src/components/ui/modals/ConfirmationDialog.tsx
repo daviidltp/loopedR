@@ -75,6 +75,7 @@ export const ConfirmationDialog: React.FC<ConfirmationDialogProps> = ({
               textColor={Colors.white}
               borderColor={Colors.backgroundUltraSoft}
               height={48}
+              rippleColor='#ffffff22'
             />
           </View>
           
@@ -86,7 +87,7 @@ export const ConfirmationDialog: React.FC<ConfirmationDialogProps> = ({
               textColor={Colors.white}
               borderColor={Colors.appleRed}
               height={48}
-              rippleColor={Colors.appleRed}
+              rippleColor='#ffffff22'
             />
           </View>
         </View>

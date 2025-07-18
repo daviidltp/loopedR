@@ -1,6 +1,7 @@
 import React from 'react';
 import { Image, StyleSheet, View } from 'react-native';
 import { IconButton } from 'react-native-paper';
+import verifiedBlue from '../../../../assets/icons/verified_blue.png';
 import { Colors } from '../../../constants/Colors';
 import { FollowRequest, getUserById } from '../../../utils/mockData';
 import { AppText } from '../Text/AppText';
@@ -63,7 +64,7 @@ export const FollowRequestCard: React.FC<FollowRequestCardProps> = ({
           </AppText>
           {user.isVerified && (
             <Image 
-              source={require('@assets/icons/verified_blue.png')} 
+              source={verifiedBlue} 
               style={styles.verifiedIcon}
             />
           )}
