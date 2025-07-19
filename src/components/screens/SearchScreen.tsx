@@ -118,6 +118,5 @@ const styles = StyleSheet.create({
   },
   userListContainer: {
     flex: 1,
-    paddingHorizontal: 20,
   },
 }); 

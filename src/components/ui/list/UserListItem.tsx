@@ -124,7 +124,7 @@ const styles = StyleSheet.create({
   container: {
     flexDirection: 'row',
     paddingVertical: 12,
-    paddingHorizontal: 0,
+    paddingHorizontal: 20,
     alignItems: 'center',
   },
   avatarContainer: {
