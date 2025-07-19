@@ -1,7 +1,7 @@
 import { useNavigation } from '@react-navigation/native';
 import { StackNavigationProp } from '@react-navigation/stack';
 import * as WebBrowser from 'expo-web-browser';
-import React, { useEffect, useRef, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import {
 	BackHandler,
 	Image,
@@ -13,7 +13,7 @@ import { Icon } from 'react-native-paper';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Colors } from '../../constants/Colors';
 import { useAuth } from '../../contexts/AuthContext';
-import { useCurrentUser } from '../../hooks/useCurrentUser';
+import { useProfile } from '../../contexts/ProfileContext';
 import { RootStackParamList } from '../../navigation/AppNavigator';
 import { handleDeleteAccount, handleLogout } from '../../utils/userActions';
 import { ResizingButton } from '../ui/buttons';
@@ -39,7 +39,7 @@ export const SettingsScreen = () => {
   const insets = useSafeAreaInsets();
   const navigation = useNavigation<SettingsScreenNavigationProp>();
   const { user, session } = useAuth();
-  const { currentUser } = useCurrentUser();
+  const { profile: currentUser } = useProfile();
   
   // Toggle switch state management
   const [notificationsEnabled, setNotificationsEnabled] = useState(true);
@@ -59,9 +59,9 @@ export const SettingsScreen = () => {
 
   // Obtener datos del usuario autenticado desde Supabase
   const userData = {
-    displayName: currentUser?.displayName || 'Usuario',
+    displayName: currentUser?.display_name || 'Usuario',
     username: currentUser?.username || 'usuario',
-    avatarUrl: currentUser?.avatarUrl || undefined,
+    avatarUrl: currentUser?.avatar_url || undefined,
   };
 
   // Configuration options for bottom sheet modals

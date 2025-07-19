@@ -1,25 +1,24 @@
 import { useNavigation } from '@react-navigation/native';
 import React, { useCallback, useEffect, useRef, useState } from 'react';
 import {
-  ActivityIndicator,
-  Alert,
-  BackHandler,
-  Keyboard,
-  Platform,
-  ScrollView,
-  StyleSheet,
-  TouchableWithoutFeedback,
-  View
+	ActivityIndicator,
+	Alert,
+	BackHandler,
+	Keyboard,
+	Platform,
+	ScrollView,
+	StyleSheet,
+	TouchableWithoutFeedback,
+	View
 } from 'react-native';
 import Animated, {
-  Easing,
-  useAnimatedStyle,
-  useSharedValue,
-  withTiming
+	Easing,
+	useAnimatedStyle,
+	useSharedValue,
+	withTiming
 } from 'react-native-reanimated';
 import { Colors } from '../../constants/Colors';
-import { useAuth } from '../../contexts/AuthContext';
-import { useCurrentUser } from '../../hooks/useCurrentUser';
+import { useProfile } from '../../contexts/ProfileContext';
 import { DefaultAvatar } from '../ui/Avatar/DefaultAvatar';
 import { UploadButton } from '../ui/Avatar/UploadButton';
 import { ResizingButton } from '../ui/buttons/ResizingButton';
@@ -28,11 +27,10 @@ import { TextInput } from '../ui/forms/TextInput';
 import { DefaultHeader } from '../ui/headers/DefaultHeader';
 import { Layout } from '../ui/layout/Layout';
 
-export const EditProfileScreen = () => {
+export const EditProfileScreen: React.FC = () => {
   const navigation = useNavigation();
   const bioInputRef = useRef(null);
-  const { currentUser, isLoading: userLoading } = useCurrentUser();
-  const { setUserProfileData } = useAuth();
+  const { profile, isLoading: userLoading, updateProfile } = useProfile();
   
   // Estados del formulario
   const [name, setName] = useState('');
@@ -53,12 +51,12 @@ export const EditProfileScreen = () => {
 
   // Inicializar datos cuando se carga el usuario
   useEffect(() => {
-    if (currentUser) {
-      setName(currentUser.displayName);
-      setUsername(currentUser.username);
-      setBio(currentUser.bio || '');
-      // Transformar avatarUrl de Supabase a valor compatible con el selector
-      const avatarUrl = currentUser.avatarUrl;
+    if (profile) {
+      setName(profile.display_name);
+      setUsername(profile.username);
+      setBio(profile.bio || '');
+      // Transformar avatar_url de Supabase a valor compatible con el selector
+      const avatarUrl = profile.avatar_url;
       const getSelectedAvatar = (avatarUrl: string) => {
         if (!avatarUrl || avatarUrl === 'default_avatar') return 'default_avatar';
         const avatarFileNames = [
@@ -85,7 +83,7 @@ export const EditProfileScreen = () => {
       };
       setSelectedAvatar(getSelectedAvatar(avatarUrl));
     }
-  }, [currentUser]);
+  }, [profile]);
 
   // Animaciones
   const buttonBottom = useSharedValue(20);
@@ -153,7 +151,7 @@ export const EditProfileScreen = () => {
   }, [usernameError, validateUsername]);
 
   const handleSave = useCallback(async () => {
-    if (!currentUser) return;
+    if (!profile) return;
 
     const isNameValid = validateName(name);
     const isUsernameValid = validateUsername(username);
@@ -165,12 +163,47 @@ export const EditProfileScreen = () => {
     setIsLoading(true);
 
     try {
-      await setUserProfileData(
-        username.trim(),
-        name.trim(),
-        selectedAvatar,
-        bio
-      );
+      // Convertir el avatar seleccionado a un URL guardable
+      const getAvatarUrl = (selectedAvatar: any): string | null => {
+        // Si es el avatar por defecto (con iniciales)
+        if (selectedAvatar === 'default_avatar') {
+          return 'default_avatar';
+        }
+        
+        // Si es uno de los avatares preset, obtener su índice
+        const presetAvatars = [
+          require('@assets/images/profilePics/profileicon1.png'),
+          require('@assets/images/profilePics/profileicon2.png'),
+          require('@assets/images/profilePics/profileicon6.png'),
+          require('@assets/images/profilePics/profileicon4.png'),
+          require('@assets/images/profilePics/profileicon5.png'),
+        ];
+        
+        const avatarIndex = presetAvatars.findIndex(presetAvatar => presetAvatar === selectedAvatar);
+        if (avatarIndex !== -1) {
+          // Mapear índice a nombre de archivo
+          const avatarFileNames = [
+            'profileicon1.png',
+            'profileicon2.png', 
+            'profileicon6.png',
+            'profileicon4.png',
+            'profileicon5.png'
+          ];
+          return avatarFileNames[avatarIndex];
+        }
+        
+        // Si no se reconoce el avatar, usar default
+        return 'default_avatar';
+      };
+
+      const avatarUrl = getAvatarUrl(selectedAvatar);
+
+      await updateProfile({
+        username: username.trim(),
+        display_name: name.trim(),
+        avatar_url: avatarUrl || undefined,
+        bio: bio,
+      });
 
       console.log('[EditProfile] Perfil actualizado correctamente');
       navigation.goBack();
@@ -185,7 +218,7 @@ export const EditProfileScreen = () => {
     } finally {
       setIsLoading(false);
     }
-  }, [currentUser, name, username, selectedAvatar, bio, setUserProfileData, navigation, validateName, validateUsername]);
+  }, [profile, name, username, selectedAvatar, bio, updateProfile, navigation, validateName, validateUsername]);
 
   const handleBackPress = useCallback(() => {
     navigation.goBack();
@@ -241,7 +274,7 @@ export const EditProfileScreen = () => {
   });
 
   // Mostrar loading mientras se cargan los datos del usuario
-  if (userLoading || !currentUser) {
+  if (userLoading || !profile) {
     return (
       <Layout>
         <View style={[styles.container, styles.loadingContainer]}>
@@ -254,10 +287,10 @@ export const EditProfileScreen = () => {
 
   // Verificar si hubo cambios
   const hasChanges = 
-    name !== currentUser.displayName ||
-    username !== currentUser.username ||
-    bio !== (currentUser.bio || '') ||
-    selectedAvatar !== currentUser.avatarUrl;
+    name !== profile.display_name ||
+    username !== profile.username ||
+    bio !== (profile.bio || '') ||
+    selectedAvatar !== profile.avatar_url;
 
   return (
     <Layout>

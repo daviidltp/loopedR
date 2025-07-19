@@ -4,10 +4,12 @@ import { StackNavigationProp } from '@react-navigation/stack';
 import React, { useRef, useState } from 'react';
 import { StyleSheet, View } from 'react-native';
 import { Colors } from '../../constants/Colors';
-import { useCurrentUser } from '../../hooks/useCurrentUser';
+import { useProfile } from '../../contexts/ProfileContext';
 import { RootStackParamList } from '../../navigation/AppNavigator';
 import { mockUsers } from '../../utils/mockData';
-import { Layout, SearchBar, UserList } from '../ui';
+import { SearchBar } from '../ui/forms/SearchBar';
+import { Layout } from '../ui/layout/Layout';
+import { UserList } from '../ui/list/UserList';
 import type { BottomNavigationParamList } from '../ui/navigation/BottomNavigationBar';
 
 type SearchScreenProps = BottomTabScreenProps<BottomNavigationParamList, 'Search'>;
@@ -20,7 +22,7 @@ export const SearchScreen: React.FC = () => {
   const stackNavigation = useNavigation<MainStackNavigationProp>();
   const [searchText, setSearchText] = useState('');
   const searchBarRef = useRef<any>(null);
-  const { currentUser } = useCurrentUser();
+  const { profile: currentUser } = useProfile();
   
   // Verificar si viene de la animación del SearchBar
   const fromSearchAnimation = route.params?.fromSearchAnimation || false;
@@ -36,7 +38,6 @@ export const SearchScreen: React.FC = () => {
         user.username.toLowerCase().startsWith(searchText.toLowerCase())
       );
 
-  
   // Hacer focus solo si viene de HomeScreen, sin animación
   useFocusEffect(
     React.useCallback(() => {

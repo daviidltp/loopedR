@@ -27,32 +27,6 @@ export const WelcomeScreen: React.FC<WelcomeScreenProps> = ({ navigation }) => {
   const { session, user, isLoading, profileCompletionStep, setProfileCompletionStep } = useAuth();
   const { signInWithSpotify, loading } = useSpotifyAuth();
 
-  // Consulta de prueba al cargar la pantalla
-  useEffect(() => {
-    const testSupabaseQuery = async () => {
-      try {
-        console.log('[WelcomeScreen] Iniciando consulta de prueba a Supabase...');
-        const { data, error } = await supabase
-          .from('profiles')
-          .select('id, username, display_name, email, avatar_url, bio, is_verified, is_public')
-          .eq('id', '51b4ce83-5fef-4e29-a2e0-26806745c942')
-          .single();
-        
-        console.log('[WelcomeScreen] Respuesta de prueba de Supabase:', { data, error });
-        
-        if (error) {
-          console.error('[WelcomeScreen] Error en consulta de prueba:', error);
-        } else {
-          console.log('[WelcomeScreen] Datos obtenidos correctamente:', data);
-        }
-      } catch (error) {
-        console.error('[WelcomeScreen] Error en consulta de prueba:', error);
-      }
-    };
-
-    testSupabaseQuery();
-  }, []);
-
   // Verificar perfil del usuario cuando se autentica
   const checkUserProfile = async (userId: string) => {
     try {

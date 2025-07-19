@@ -1,11 +1,11 @@
 import { BottomTabBarButtonProps, createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import { LinearGradient } from 'expo-linear-gradient';
-import React, { useEffect, useRef } from 'react';
+import { useEffect, useRef } from 'react';
 import { BackHandler, Dimensions, Image, Pressable, StyleSheet, View } from 'react-native';
 import Animated, { interpolate, useAnimatedStyle, useSharedValue, withTiming } from 'react-native-reanimated';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Colors } from '../../../constants/Colors';
-import { useCurrentUser } from '../../../hooks/useCurrentUser';
+import { useProfile } from '../../../contexts/ProfileContext';
 import { HomeScreen } from '../../screens/HomeScreen';
 import { InboxScreen } from '../../screens/InboxScreen';
 import { ProfileScreen } from '../../screens/ProfileScreen';
@@ -38,7 +38,7 @@ const { width: screenWidth } = Dimensions.get('window');
 
 // Componente CircleAvatar para el perfil actualizado
 const CircleAvatar = ({ focused }: { focused: boolean }) => {
-  const { currentUser } = useCurrentUser();
+  const { profile: currentUser } = useProfile();
 
   const getInitials = (name: string): string => {
     const words = name.trim().split(/\s+/);
@@ -63,8 +63,8 @@ const CircleAvatar = ({ focused }: { focused: boolean }) => {
   };
 
   const opacity = focused ? 1 : 0.6;
-  const avatarUrl = currentUser?.avatarUrl;
-  const displayName = currentUser?.displayName || '';
+  const avatarUrl = currentUser?.avatar_url;
+  const displayName = currentUser?.display_name || '';
   const imageSource = avatarUrl ? getImageSource(avatarUrl) : null;
 
   return (

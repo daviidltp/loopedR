@@ -3,7 +3,7 @@ import { StackNavigationProp } from '@react-navigation/stack';
 import React from 'react';
 import { ActivityIndicator, StyleSheet, View } from 'react-native';
 import { Colors } from '../../constants/Colors';
-import { useCurrentUser } from '../../hooks/useCurrentUser';
+import { useProfile } from '../../contexts/ProfileContext';
 import { RootStackParamList } from '../../navigation/AppNavigator';
 import { getUserFollowers, getUserFollowing } from '../../utils/mockData';
 import { ResizingButton } from '../ui/buttons/ResizingButton';
@@ -14,7 +14,7 @@ type ProfileScreenNavigationProp = StackNavigationProp<RootStackParamList>;
 
 export const ProfileScreen: React.FC = () => {
   const navigation = useNavigation<ProfileScreenNavigationProp>();
-  const { currentUser, isLoading } = useCurrentUser();
+  const { profile, isLoading } = useProfile();
 
   const openSettings = () => {
     navigation.navigate('Settings');
@@ -25,7 +25,7 @@ export const ProfileScreen: React.FC = () => {
   };
 
   // Mostrar loading mientras se cargan los datos
-  if (isLoading || !currentUser) {
+  if (isLoading || !profile) {
     return (
       <View style={[styles.container, styles.loadingContainer]}>
         <ProfileHeader 
@@ -39,18 +39,30 @@ export const ProfileScreen: React.FC = () => {
   }
   
   // Obtener datos de seguidores/seguidos desde mockData
-  const followers = getUserFollowers(currentUser.id);
-  const following = getUserFollowing(currentUser.id);
+  const followers = getUserFollowers(profile.id);
+  const following = getUserFollowing(profile.id);
   const followersCount = followers.length;
   const followingCount = following.length;
+
+  // Convertir profile a formato compatible con ProfileContent
+  const userData = {
+    id: profile.id,
+    username: profile.username,
+    displayName: profile.display_name,
+    email: profile.email,
+    avatarUrl: profile.avatar_url,
+    bio: profile.bio,
+    isVerified: profile.is_verified,
+    isPublic: profile.is_public,
+  };
 
   // Header para mi perfil
   const headerComponent = (
     <ProfileHeader 
-      username={currentUser.username}
+      username={profile.username}
       onMenuPress={openSettings}
-      isVerified={currentUser.isVerified}
-      isPublicProfile={currentUser.isPublic}
+      isVerified={profile.is_verified}
+      isPublicProfile={profile.is_public}
       showPrivacyIndicator={true} // Solo mostrar en mi perfil
     />
   );
@@ -68,7 +80,7 @@ export const ProfileScreen: React.FC = () => {
 
   return (
     <ProfileContent
-      userData={currentUser}
+      userData={userData}
       followersCount={followersCount}
       followingCount={followingCount}
       headerComponent={headerComponent}

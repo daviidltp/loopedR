@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
+import { useProfile } from '../contexts/ProfileContext';
 import { mockUsers } from '../utils/mockData';
-import { useCurrentUser } from './useCurrentUser';
 
 // Interfaz unificada que combina User de mockData con CurrentUser de Supabase
 export interface UnifiedUser {
@@ -15,7 +15,7 @@ export interface UnifiedUser {
 }
 
 export const useUser = (userId: string) => {
-  const { currentUser, isLoading: currentUserLoading } = useCurrentUser();
+  const { profile: currentUser, isLoading: currentUserLoading } = useProfile();
   const [user, setUser] = useState<UnifiedUser | null>(null);
   const [isLoading, setIsLoading] = useState(true);
 
@@ -23,16 +23,16 @@ export const useUser = (userId: string) => {
     const fetchUser = () => {
       setIsLoading(true);
 
-      // Si es el usuario actual y tenemos datos de Supabase
+      // Si es el usuario actual, usar los datos del contexto
       if (currentUser && currentUser.id === userId) {
         const unifiedUser: UnifiedUser = {
           id: currentUser.id,
           username: currentUser.username,
-          displayName: currentUser.displayName,
+          displayName: currentUser.display_name,
           bio: currentUser.bio,
-          avatarUrl: currentUser.avatarUrl,
-          isVerified: currentUser.isVerified,
-          isPublic: currentUser.isPublic,
+          avatarUrl: currentUser.avatar_url,
+          isVerified: currentUser.is_verified,
+          isPublic: currentUser.is_public,
           email: currentUser.email,
         };
         setUser(unifiedUser);

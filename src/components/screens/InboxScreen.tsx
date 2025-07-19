@@ -1,7 +1,7 @@
 import { useNavigation } from '@react-navigation/native';
 import React, { useState } from 'react';
 import { StyleSheet, View } from 'react-native';
-import { useCurrentUser } from '../../hooks/useCurrentUser';
+import { useProfile } from '../../contexts/ProfileContext';
 import {
 	getFollowRequestsForUser
 } from '../../utils/mockData';
@@ -12,7 +12,7 @@ import { FollowRequestsModal } from '../ui/modals/FollowRequestsModal';
 
 export const InboxScreen: React.FC = () => {
   const navigation = useNavigation();
-  const { currentUser } = useCurrentUser();
+  const { profile: currentUser } = useProfile();
   const [isModalVisible, setIsModalVisible] = useState(false);
 
   // Obtener solicitudes de seguimiento del usuario actual

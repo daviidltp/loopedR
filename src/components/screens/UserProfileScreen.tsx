@@ -4,7 +4,7 @@ import React from 'react';
 import { ActivityIndicator, BackHandler, StyleSheet, View } from 'react-native';
 import { Icon } from 'react-native-paper';
 import { Colors } from '../../constants/Colors';
-import { useCurrentUser } from '../../hooks/useCurrentUser';
+import { useProfile } from '../../contexts/ProfileContext';
 import { useUser } from '../../hooks/useUser';
 import { RootStackParamList } from '../../navigation/AppNavigator';
 import { getUserFollowers, getUserFollowing, isUserFollowing } from '../../utils/mockData';
@@ -25,7 +25,7 @@ export const UserProfileScreen: React.FC = () => {
   
   // Usar el nuevo hook para obtener datos del usuario
   const { user: userData, isLoading } = useUser(userId);
-  const { currentUser } = useCurrentUser();
+  const { profile: currentUser } = useProfile();
   
   // Manejar botón físico de Android para volver atrás
   useFocusEffect(

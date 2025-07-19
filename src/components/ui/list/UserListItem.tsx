@@ -2,7 +2,7 @@ import React from 'react';
 import { Image, StyleSheet, View } from 'react-native';
 import verifiedBlue from '../../../../assets/icons/verified_blue.png';
 import { Colors } from '../../../constants/Colors';
-import { useCurrentUser } from '../../../hooks/useCurrentUser';
+import { useProfile } from '../../../contexts/ProfileContext';
 import { User, mockUserRelations } from '../../../utils/mockData';
 import { PlatformTouchable } from '../buttons/PlatformTouchable';
 import { AppText } from '../Text/AppText';
@@ -24,7 +24,7 @@ export const UserListItem: React.FC<UserListItemProps> = ({
   user,
   onPress,
 }) => {
-  const { currentUser } = useCurrentUser();
+  const { profile: currentUser } = useProfile();
 
   const getInitials = (name: string): string => {
     const words = name.trim().split(/\s+/);
