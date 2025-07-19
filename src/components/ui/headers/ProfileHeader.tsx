@@ -112,6 +112,7 @@ export const ProfileHeader: React.FC<ProfileHeaderProps> = ({
             color={Colors.white}
             style={styles.usernameText}
             lineHeight={20}
+            numberOfLines={1}
           >
             {username}
           </AppText>

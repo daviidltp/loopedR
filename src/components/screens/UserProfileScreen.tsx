@@ -61,15 +61,47 @@ export const UserProfileScreen: React.FC = () => {
 
   // Mostrar loading mientras se cargan los datos
   if (isLoading) {
+    const loadingHeaderComponent = (
+      <ProfileHeader 
+        username=""
+        onBackPress={handleBackPress}
+        showBackButton={true}
+      />
+    );
+
+    const loadingActionButton = (
+      <ResizingButton
+        title=""
+        onPress={() => {}}
+        backgroundColor={Colors.backgroundUltraSoft}
+        textColor={Colors.white}
+        height={42}
+      />
+    );
+
     return (
-      <View style={[styles.container, styles.loadingContainer]}>
-        <ProfileHeader 
-          username=""
-          onBackPress={handleBackPress}
-          showBackButton={true}
-        />
-        <ActivityIndicator size="large" color={Colors.white} />
-      </View>
+      <ProfileContent
+        userData={{
+          id: '',
+          username: '',
+          displayName: '',
+          avatarUrl: '',
+          isVerified: false,
+          isPublic: true
+        }}
+        followersCount={0}
+        followingCount={0}
+        headerComponent={loadingHeaderComponent}
+        actionButton={loadingActionButton}
+        scrollViewProps={{
+          scrollEnabled: false,
+          bounces: false,
+        }}
+      >
+        <View style={[styles.postsSection, { opacity: 0.5 }]}>
+          <ActivityIndicator size="large" color={Colors.white} />
+        </View>
+      </ProfileContent>
     );
   }
 

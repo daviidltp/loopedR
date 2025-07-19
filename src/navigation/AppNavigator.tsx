@@ -1,5 +1,4 @@
 import { CardStyleInterpolators, createStackNavigator } from '@react-navigation/stack';
-import React from 'react';
 import { ActivityIndicator, Easing, View } from 'react-native';
 import { CreateProfileScreen, WelcomeScreen } from '../components';
 import { EditProfileScreen } from '../components/screens/EditProfileScreen';
