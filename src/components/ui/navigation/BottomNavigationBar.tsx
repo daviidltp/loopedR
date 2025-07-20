@@ -48,7 +48,7 @@ const ProfileAvatar = ({ focused }: { focused: boolean }) => {
     <View style={{ opacity }}>
       <DefaultAvatar
         name={displayName}
-        size={32}
+        size={28}
         avatarUrl={avatarUrl}
         backgroundColor={Colors.backgroundUltraSoft}
         showUploadButton={false}

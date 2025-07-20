@@ -68,7 +68,7 @@ export const UserListItem: React.FC<UserListItemProps> = ({
       {/* Avatar circular */}
       <DefaultAvatar
         name={user.displayName}
-        size={52}
+        size={56}
         avatarUrl={user.avatarUrl}
         showUploadButton={false}
       />
