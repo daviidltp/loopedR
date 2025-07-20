@@ -1,31 +1,30 @@
 import { useNavigation } from '@react-navigation/native';
-import React, { useCallback, useEffect, useRef, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import {
-	ActivityIndicator,
-	Alert,
-	BackHandler,
-	Keyboard,
-	Platform,
-	ScrollView,
-	StyleSheet,
-	TouchableWithoutFeedback,
-	View
+  ActivityIndicator,
+  Alert,
+  BackHandler,
+  Keyboard,
+  Platform,
+  ScrollView,
+  StyleSheet,
+  TouchableWithoutFeedback,
+  View
 } from 'react-native';
 import Animated, {
-	Easing,
-	useAnimatedStyle,
-	useSharedValue,
-	withTiming
+  Easing,
+  useAnimatedStyle,
+  useSharedValue,
+  withTiming
 } from 'react-native-reanimated';
 import { Colors } from '../../constants/Colors';
 import { useProfile } from '../../contexts/ProfileContext';
 import { DefaultAvatar } from '../ui/Avatar/DefaultAvatar';
-import { UploadButton } from '../ui/Avatar/UploadButton';
 import { ResizingButton } from '../ui/buttons/ResizingButton';
-import { TextArea } from '../ui/forms/TextArea';
 import { TextInput } from '../ui/forms/TextInput';
-import { DefaultHeader } from '../ui/headers/DefaultHeader';
+import { GlobalHeader } from '../ui/headers/GlobalHeader';
 import { Layout } from '../ui/layout/Layout';
+import { AppText } from '../ui/Text/AppText';
 
 export const EditProfileScreen: React.FC = () => {
   const navigation = useNavigation();
@@ -47,50 +46,7 @@ export const EditProfileScreen: React.FC = () => {
   const [isKeyboardVisible, setIsKeyboardVisible] = useState(false);
 
   // Avatar states
-  const [selectedAvatar, setSelectedAvatar] = useState<any>(null);
-
-  // Inicializar datos cuando se carga el usuario
-  useEffect(() => {
-    if (profile) {
-      setName(profile.display_name || '');
-      setUsername(profile.username || '');
-      setBio(profile.bio || '');
-      
-      // Manejar avatar_url que puede ser null
-      const avatarUrl = profile.avatar_url;
-      if (avatarUrl && avatarUrl !== 'default_avatar') {
-        // Convertir el nombre del archivo a la imagen real
-        const getAvatarImage = (avatarFileName: string) => {
-          const avatarFileNames = [
-            'profileicon1.png',
-            'profileicon2.png', 
-            'profileicon6.png',
-            'profileicon4.png',
-            'profileicon5.png'
-          ];
-          
-          const avatarIndex = avatarFileNames.indexOf(avatarFileName);
-          if (avatarIndex !== -1) {
-            const presetAvatars = [
-              require('@assets/images/profilePics/profileicon1.png'),
-              require('@assets/images/profilePics/profileicon2.png'),
-              require('@assets/images/profilePics/profileicon6.png'),
-              require('@assets/images/profilePics/profileicon4.png'),
-              require('@assets/images/profilePics/profileicon5.png'),
-            ];
-            return presetAvatars[avatarIndex];
-          }
-          
-          // Si no se reconoce, usar default
-          return 'default_avatar';
-        };
-        
-        setSelectedAvatar(getAvatarImage(avatarUrl));
-      } else {
-        setSelectedAvatar('default_avatar');
-      }
-    }
-  }, [profile]);
+  const [selectedAvatar, setSelectedAvatar] = useState<string>('default_avatar');
 
   // Animaciones
   const buttonBottom = useSharedValue(20);
@@ -177,26 +133,22 @@ export const EditProfileScreen: React.FC = () => {
           return 'default_avatar';
         }
         
-        // Si es uno de los avatares preset, obtener su índice
-        const presetAvatars = [
-          require('@assets/images/profilePics/profileicon1.png'),
-          require('@assets/images/profilePics/profileicon2.png'),
-          require('@assets/images/profilePics/profileicon6.png'),
-          require('@assets/images/profilePics/profileicon4.png'),
-          require('@assets/images/profilePics/profileicon5.png'),
+        // Si es una URL válida, devolverla tal cual
+        if (typeof selectedAvatar === 'string' && (selectedAvatar.startsWith('http://') || selectedAvatar.startsWith('https://'))) {
+          return selectedAvatar;
+        }
+        
+        // Si es un nombre de archivo de avatar predefinido, devolverlo tal cual
+        const presetAvatarNames = [
+          'profileicon1.png',
+          'profileicon2.png',
+          'profileicon6.png',
+          'profileicon4.png',
+          'profileicon5.png'
         ];
         
-        const avatarIndex = presetAvatars.findIndex(presetAvatar => presetAvatar === selectedAvatar);
-        if (avatarIndex !== -1) {
-          // Mapear índice a nombre de archivo
-          const avatarFileNames = [
-            'profileicon1.png',
-            'profileicon2.png', 
-            'profileicon6.png',
-            'profileicon4.png',
-            'profileicon5.png'
-          ];
-          return avatarFileNames[avatarIndex];
+        if (presetAvatarNames.includes(selectedAvatar)) {
+          return selectedAvatar;
         }
         
         // Si no se reconoce el avatar, usar default
@@ -263,6 +215,16 @@ export const EditProfileScreen: React.FC = () => {
     };
   }, [buttonBottom]);
 
+  // Cargar datos del perfil desde el contexto
+  useEffect(() => {
+    if (profile) {
+      setName(profile.display_name || '');
+      setUsername(profile.username || '');
+      setBio(profile.bio || '');
+      setSelectedAvatar(profile.avatar_url || 'default_avatar');
+    }
+  }, [profile]);
+
   // Efecto para manejar botón atrás de Android
   useEffect(() => {
     const backHandler = BackHandler.addEventListener('hardwareBackPress', () => {
@@ -285,7 +247,10 @@ export const EditProfileScreen: React.FC = () => {
     return (
       <Layout>
         <View style={[styles.container, styles.loadingContainer]}>
-          <DefaultHeader title="Editar perfil" onBackPress={handleBackPress} />
+          <GlobalHeader 
+          goBack={true} onLeftIconPress={handleBackPress} 
+          centerContent={<AppText variant='h4' fontFamily='raleway' fontWeight='bold' color="#fff">Editar perfil</AppText>} 
+          />
           <ActivityIndicator size="large" color={Colors.white} />
         </View>
       </Layout>
@@ -298,25 +263,22 @@ export const EditProfileScreen: React.FC = () => {
       return 'default_avatar';
     }
     
-    // Si es una imagen real, convertir a nombre de archivo
-    const presetAvatars = [
-      require('@assets/images/profilePics/profileicon1.png'),
-      require('@assets/images/profilePics/profileicon2.png'),
-      require('@assets/images/profilePics/profileicon6.png'),
-      require('@assets/images/profilePics/profileicon4.png'),
-      require('@assets/images/profilePics/profileicon5.png'),
+    // Si es una URL válida, devolverla tal cual
+    if (typeof selectedAvatar === 'string' && (selectedAvatar.startsWith('http://') || selectedAvatar.startsWith('https://'))) {
+      return selectedAvatar;
+    }
+    
+    // Si es un nombre de archivo de avatar predefinido, devolverlo tal cual
+    const presetAvatarNames = [
+      'profileicon1.png',
+      'profileicon2.png', 
+      'profileicon6.png',
+      'profileicon4.png',
+      'profileicon5.png'
     ];
     
-    const avatarIndex = presetAvatars.findIndex(presetAvatar => presetAvatar === selectedAvatar);
-    if (avatarIndex !== -1) {
-      const avatarFileNames = [
-        'profileicon1.png',
-        'profileicon2.png', 
-        'profileicon6.png',
-        'profileicon4.png',
-        'profileicon5.png'
-      ];
-      return avatarFileNames[avatarIndex];
+    if (presetAvatarNames.includes(selectedAvatar)) {
+      return selectedAvatar;
     }
     
     return 'default_avatar';
@@ -332,7 +294,9 @@ export const EditProfileScreen: React.FC = () => {
     <Layout>
       <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
         <View style={styles.container}>
-          <DefaultHeader title="Editar perfil" onBackPress={handleBackPress} />
+          <GlobalHeader goBack={true} onLeftIconPress={handleBackPress} 
+          centerContent={<AppText variant='h4' fontFamily='raleway' fontWeight='bold' color="#fff">Editar perfil</AppText>} 
+          />
           
           <ScrollView 
             style={styles.scrollView}
@@ -343,17 +307,14 @@ export const EditProfileScreen: React.FC = () => {
             <View style={styles.content}>
               {/* Avatar Section */}
               <View style={styles.avatarSection}>
-                <View style={styles.avatarWrapper}>
-                  <DefaultAvatar
-                    name={name}
-                    size={140}
-                    selectedImage={selectedAvatar === 'default_avatar' ? undefined : selectedAvatar}
-                    backgroundColor="#232323"
-                  />
-                  <View style={styles.uploadButtonOverlay}>
-                    <UploadButton size={44} />
-                  </View>
-                </View>
+                <DefaultAvatar
+                  name={name}
+                  size={150}
+                  avatarUrl={selectedAvatar}
+                  showUploadButton={true}
+                  uploadButtonSize={30}
+                  onUploadPress={() => { console.log('upload') }}
+                />
               </View>
 
               {/* Form Section */}
@@ -382,17 +343,16 @@ export const EditProfileScreen: React.FC = () => {
                   maxLength={30}
                 />
 
-                <TextArea
+                <TextInput
                   label="Biografía"
                   value={bio}
                   onChangeText={setBio}
                   placeholder="Biografía (opcional)"
                   maxLength={160}
-                  minHeight={48}
                   autoCapitalize="sentences"
                   autoCorrect={true}
                   returnKeyType="done"
-                  showCharacterCount={false}
+                  showCharacterCount={true}
                 />
               </View>
             </View>
@@ -440,13 +400,6 @@ const styles = StyleSheet.create({
     marginBottom: 32,
     marginTop: 12,
   },
-  avatarWrapper: {
-    position: 'relative',
-    alignItems: 'center',
-    justifyContent: 'center',
-    width: 160,
-    height: 160,
-  },
   uploadButtonOverlay: {
     position: 'absolute',
     right: 8,
@@ -454,7 +407,7 @@ const styles = StyleSheet.create({
     zIndex: 2,
   },
   formSection: {
-    gap: 18,
+    gap: 0,
     marginTop: 8,
   },
   buttonContainer: {

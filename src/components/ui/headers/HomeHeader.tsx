@@ -4,7 +4,7 @@ import { Colors } from '../../../constants/Colors';
 import { AnimatedVerifiedIcon } from '../../icons/AnimatedVerifiedIcon';
 import { AppText } from '../Text/AppText';
 
-export const Header: React.FC = () => {
+export const HomeHeader: React.FC = () => {
   const handlePremiumPress = () => {
     console.log('Premium button pressed');
     // TODO: Implementar funcionalidad premium

@@ -31,7 +31,6 @@ export const ProfileScreen: React.FC = () => {
         <ProfileHeader 
           username=""
           isPublicProfile={true}
-          showPrivacyIndicator={false}
         />
         <ActivityIndicator size="large" color={Colors.white} />
       </View>
@@ -63,7 +62,7 @@ export const ProfileScreen: React.FC = () => {
       onMenuPress={openSettings}
       isVerified={profile.is_verified || false}
       isPublicProfile={profile.is_public || true}
-      showPrivacyIndicator={true} // Solo mostrar en mi perfil
+      isMyProfile={true}
     />
   );
 

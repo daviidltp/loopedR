@@ -65,7 +65,8 @@ export const UserProfileScreen: React.FC = () => {
       <ProfileHeader 
         username=""
         onBackPress={handleBackPress}
-        showBackButton={true}
+        isMyProfile={false}
+        isVerified={false}
       />
     );
 
@@ -130,8 +131,7 @@ export const UserProfileScreen: React.FC = () => {
       onBackPress={handleBackPress}
       onMorePress={!isOwnProfile ? handleMorePress : undefined}
       isVerified={userData.isVerified}
-      showBackButton={true}
-      showPrivacyIndicator={false}
+      isMyProfile={false}
     />
   );
 

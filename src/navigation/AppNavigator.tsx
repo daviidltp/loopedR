@@ -115,9 +115,11 @@ export const AppNavigator = () => {
         cardStyleInterpolator: CardStyleInterpolators.forHorizontalIOS,
         // Prevenir flash blanco
         cardStyle: { backgroundColor: Colors.background },
-        // Optimizaciones para react-native-screens
+        // Optimizaciones para react-native-screens - consistencia para evitar jitter
         detachPreviousScreen: false,
-        freezeOnBlur: true,
+        freezeOnBlur: false,
+        // Optimización adicional para transiciones suaves
+        presentation: 'card',
       }}
     >
       <Stack.Screen 
@@ -156,6 +158,9 @@ export const AppNavigator = () => {
           cardStyleInterpolator: CardStyleInterpolators.forHorizontalIOS,
           gestureEnabled: true,
           gestureDirection: 'horizontal',
+          // Consistencia para evitar jitter
+          detachPreviousScreen: false,
+          freezeOnBlur: false,
         })}
       />
       <Stack.Screen 
@@ -164,9 +169,12 @@ export const AppNavigator = () => {
         options={({ navigation }) => ({
           headerShown: false,
           cardStyle: { backgroundColor: Colors.background },
-          cardStyleInterpolator: CardStyleInterpolators.forHorizontalIOS,
+          cardStyleInterpolator: CardStyleInterpolators.forFadeFromRightAndroid,
           gestureEnabled: true,
           gestureDirection: 'horizontal',
+          // Optimización para evitar jitter en navegación desde tabs
+          detachPreviousScreen: false,
+          freezeOnBlur: false,
         })}
       />
       <Stack.Screen 
@@ -180,6 +188,9 @@ export const AppNavigator = () => {
           gestureDirection: 'horizontal',
           // Optimización para área de gesto
           gestureResponseDistance: 50, // Área sensible al gesto desde el borde
+          // Consistencia para evitar jitter
+          detachPreviousScreen: false,
+          freezeOnBlur: false,
         })}
       />
     </Stack.Navigator>

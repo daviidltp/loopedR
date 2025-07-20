@@ -1,22 +1,20 @@
 import React from 'react';
-import { StyleSheet, View } from 'react-native';
+import { View } from 'react-native';
 import { Notifier } from 'react-native-notifier';
-import { Icon, IconButton } from 'react-native-paper';
-import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { Icon } from 'react-native-paper';
 import { Colors } from '../../../constants/Colors';
 import { AnimatedVerifiedIcon } from '../../icons/AnimatedVerifiedIcon';
-import { PlatformIconButton } from '../buttons';
 import { AppText } from '../Text/AppText';
+import { GlobalHeader } from './GlobalHeader';
 
 interface ProfileHeaderProps {
   username: string;
   onMenuPress?: () => void;
   onBackPress?: () => void;
-  onMorePress?: () => void; // Para el botón de 3 puntos
+  onMorePress?: () => void;
   isVerified?: boolean;
-  showBackButton?: boolean; // true = mostrar flecha atrás, false = mostrar menú
-  isPublicProfile?: boolean; // true = público (mundo), false = privado (candado)
-  showPrivacyIndicator?: boolean; // Solo mostrar en mi perfil
+  isMyProfile?: boolean;
+  isPublicProfile?: boolean;
 }
 
 export const ProfileHeader: React.FC<ProfileHeaderProps> = ({ 
@@ -25,26 +23,9 @@ export const ProfileHeader: React.FC<ProfileHeaderProps> = ({
   onBackPress,
   onMorePress,
   isVerified = true,
-  showBackButton = false,
+  isMyProfile = false,
   isPublicProfile = true,
-  showPrivacyIndicator = false
 }) => {
-  const insets = useSafeAreaInsets();
-  
-  const handleLeftButtonPress = () => {
-    if (showBackButton && onBackPress) {
-      onBackPress();
-    }
-  };
-
-  const handleRightButtonPress = () => {
-    if (showBackButton && onMorePress) {
-      onMorePress();
-    } else if (!showBackButton && onMenuPress) {
-      onMenuPress();
-    }
-  };
-
   const handleBookmarkPress = () => {
     Notifier.showNotification({
       title: 'Próximamente en looped... 🤫',
@@ -80,119 +61,71 @@ export const ProfileHeader: React.FC<ProfileHeaderProps> = ({
       },
     });
   };
-  
-  return (
-    <View style={[styles.container]}>
-      <View style={styles.leftSection}>
-        {showBackButton && (
-          <PlatformIconButton
-            icon="arrow-left"
-            size={26}
-            iconColor={Colors.white}
-            onPress={handleLeftButtonPress}
-            style={styles.backButton}
+
+  const handleRightButtonPress = () => {
+    if (!isMyProfile && onMorePress) {
+      onMorePress();
+    } else if (isMyProfile && onMenuPress) {
+      onMenuPress();
+    }
+  };
+
+  // Contenido central con username, icono de privacidad y verificación
+  const centerContent = (
+    <View style={{ flexDirection: 'row', alignItems: 'center', flex: 1 }}>
+      {isMyProfile && !isPublicProfile && (
+        <View style={{ marginRight: 8 }}>
+          <Icon
+            source="lock"
+            size={20}
+            color={Colors.gray[400]}
           />
-        )}
-
-        {showPrivacyIndicator && (
-            <View style={styles.privacyIcon}>
-              <Icon
-                source={isPublicProfile ? "earth" : "lock"}
-                size={20}
-                color={Colors.gray[400]}
-              />
-            </View>
-          )}
-        
-        <View style={styles.usernameContainer}>
-          <AppText 
-            fontSize={20} 
-            fontFamily="inter" 
-            fontWeight="semiBold" 
-            color={Colors.white}
-            style={styles.usernameText}
-            lineHeight={20}
-            numberOfLines={1}
-          >
-            {username}
-          </AppText>
-          {isVerified && (
-            <View style={styles.verifiedIcon}>
-              <AnimatedVerifiedIcon size={20} />
-            </View>
-          )}
-
         </View>
-      </View>
+      )}
       
-      <View style={styles.rightButtonContainer}>
-        {!showBackButton && (
-          <IconButton
-            icon="bookmark-outline"
-            size={22}
-            iconColor={Colors.white}
-            onPress={handleBookmarkPress}
-            style={styles.iconButton}
-            rippleColor="rgba(255, 255, 255, 0.2)"
-          />
-        )}
-        <IconButton
-          icon={showBackButton ? "dots-vertical" : "menu"}
-          size={22}
-          iconColor={Colors.white}
-          onPress={handleRightButtonPress}
-          style={styles.iconButton}
-          rippleColor="rgba(255, 255, 255, 0.2)"
-        />
-      </View>
+      <AppText 
+        variant={isMyProfile ? 'h3' : 'h4'}
+        fontFamily="inter" 
+        fontWeight="semiBold" 
+        color={Colors.white}
+        style={{
+          includeFontPadding: false,
+          textAlignVertical: 'top',
+          marginRight: 6,
+          marginBottom: 2,
+        }}
+        numberOfLines={1}
+        lineHeight={isMyProfile ? 32 : 28}
+      >
+        {username}
+      </AppText>
+      
+      {isVerified && (
+        <AnimatedVerifiedIcon size={20} />
+      )}
     </View>
   );
-};
 
-const styles = StyleSheet.create({
-  container: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    paddingHorizontal:20,
-    minHeight: 54, // Asegurar altura mínima consistente
-  },
-  leftSection: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    flex: 1,
-    minHeight: 40, // Altura mínima para alineamiento
-  },
-  backButton: {
-    margin: 0,
-  },
-  usernameContainer: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    flex: 1,
-  },
-  usernameText: {
-    includeFontPadding: false, // Eliminar padding interno del font
-    textAlignVertical: 'center', // Centrar verticalmente
-    marginLeft: 8,
-    marginRight: 6,
-  },
-  verifiedIcon: {
-    alignSelf: 'center', // Centrar el icono
-  },
-  privacyIcon: {
-    alignSelf: 'center', // Centrar el icono
-  },
-  rightButtonContainer: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 8,
-    justifyContent: 'flex-end',
-  },
-  iconButton: {
-    width: 40,
-    height: 40,
-    borderRadius: 20,
-    margin: 0,
-  },
-}); 
+  // Botones de acción
+  const actionButtons = [
+    ...(isMyProfile ? [{
+      id: 'bookmark',
+      icon: <Icon source="bookmark-outline" size={22} color={Colors.white} />,
+      onPress: handleBookmarkPress,
+    }] : []),
+    {
+      id: 'menu',
+      icon: <Icon source={!isMyProfile ? "dots-vertical" : "menu"} size={22} color={Colors.white} />,
+      onPress: handleRightButtonPress,
+    }
+  ];
+
+  return (
+    <GlobalHeader
+      goBack={!isMyProfile}
+      onGoBack={onBackPress}
+      centerContent={centerContent}
+      actionButtons={actionButtons}
+    />
+  );
+}; 

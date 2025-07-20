@@ -2,36 +2,30 @@ import { RouteProp } from '@react-navigation/native';
 import { StackNavigationProp } from '@react-navigation/stack';
 import React, { Suspense, lazy, useCallback, useEffect, useRef, useState } from 'react';
 import {
-	ActivityIndicator,
-	Alert,
-	BackHandler,
-	InteractionManager,
-	Keyboard,
-	Platform,
-	TextInput as RNTextInput,
-	StyleSheet,
-	TouchableWithoutFeedback,
-	View
+  ActivityIndicator,
+  Alert,
+  BackHandler,
+  InteractionManager,
+  Keyboard,
+  Platform,
+  TextInput as RNTextInput,
+  StyleSheet,
+  TouchableWithoutFeedback,
+  View
 } from 'react-native';
 import Animated, {
-	Easing,
-	useAnimatedStyle,
-	useSharedValue,
-	withTiming
+  Easing,
+  useAnimatedStyle,
+  useSharedValue,
+  withTiming
 } from 'react-native-reanimated';
-import profileicon1 from '../../../assets/images/profilePics/profileicon1.png';
-import profileicon2 from '../../../assets/images/profilePics/profileicon2.png';
-import profileicon4 from '../../../assets/images/profilePics/profileicon4.png';
-import profileicon5 from '../../../assets/images/profilePics/profileicon5.png';
-import profileicon6 from '../../../assets/images/profilePics/profileicon6.png';
 import { Colors } from '../../constants/Colors';
 import { useAuth } from '../../contexts/AuthContext';
 import { useProfile } from '../../contexts/ProfileContext';
 import { RootStackParamList } from '../../navigation/AppNavigator';
 import { supabase } from '../../utils/supabase';
 import { DefaultAvatar } from '../ui/Avatar/DefaultAvatar';
-import { DEFAULT_AVATAR_ID, DEFAULT_BACKGROUNDS, SELECTABLE_COLORS } from '../ui/Avatar/PresetAvatarGrid';
-import { UploadButton } from '../ui/Avatar/UploadButton';
+import { DEFAULT_AVATAR_ID, DEFAULT_BACKGROUNDS } from '../ui/Avatar/PresetAvatarGrid';
 import { ResizingButton } from '../ui/buttons/ResizingButton';
 import { TextInput } from '../ui/forms/TextInput';
 import { Layout } from '../ui/layout/Layout';
@@ -43,15 +37,6 @@ const PresetAvatarGrid = lazy(() =>
     default: module.PresetAvatarGrid
   }))
 );
-
-// Array actualizado con el nuevo orden (sin profileicon3, profileicon6 movido a posición 3)
-const PRESET_AVATARS = [
-  profileicon1,
-  profileicon2,
-  profileicon6, // Movido de posición 6 a 3
-  profileicon4,
-  profileicon5,
-];
 
 // ===========================
 // TYPES & INTERFACES
@@ -159,32 +144,7 @@ export const CreateProfileScreen: React.FC<CreateProfileScreenProps> = ({ naviga
           
           // Convertir avatar_url de vuelta a selectedAvatar
           if (data.avatar_url) {
-            const getSelectedAvatar = (avatarUrl: string) => {
-              // Si es el avatar por defecto
-              if (avatarUrl === 'default_avatar') {
-                return DEFAULT_AVATAR_ID;
-              }
-              
-              // Si es uno de los avatares preset
-              const avatarFileNames = [
-                'profileicon1.png',
-                'profileicon2.png', 
-                'profileicon6.png',
-                'profileicon4.png',
-                'profileicon5.png'
-              ];
-              
-              const avatarIndex = avatarFileNames.indexOf(avatarUrl);
-              if (avatarIndex !== -1) {
-                return PRESET_AVATARS[avatarIndex];
-              }
-              
-              // Si no se reconoce, usar default
-              return DEFAULT_AVATAR_ID;
-            };
-            
-            const selectedAvatarFromDB = getSelectedAvatar(data.avatar_url);
-            setSelectedAvatar(selectedAvatarFromDB);
+            setSelectedAvatar(data.avatar_url);
           }
           if (data.bio !== undefined && data.bio !== null) {
             setBio(data.bio);
@@ -550,24 +510,22 @@ export const CreateProfileScreen: React.FC<CreateProfileScreenProps> = ({ naviga
             return 'default_avatar';
           }
           
-          const presetAvatars = [
-            require('@assets/images/profilePics/profileicon1.png'),
-            require('@assets/images/profilePics/profileicon2.png'),
-            require('@assets/images/profilePics/profileicon6.png'),
-            require('@assets/images/profilePics/profileicon4.png'),
-            require('@assets/images/profilePics/profileicon5.png'),
+          // Si es una URL válida, devolverla tal cual
+          if (typeof selectedAvatar === 'string' && (selectedAvatar.startsWith('http://') || selectedAvatar.startsWith('https://'))) {
+            return selectedAvatar;
+          }
+          
+          // Si es un nombre de archivo de avatar predefinido, devolverlo tal cual
+          const presetAvatarNames = [
+            'profileicon1.png',
+            'profileicon2.png', 
+            'profileicon6.png',
+            'profileicon4.png',
+            'profileicon5.png'
           ];
           
-          const avatarIndex = presetAvatars.findIndex(presetAvatar => presetAvatar === selectedAvatar);
-          if (avatarIndex !== -1) {
-            const avatarFileNames = [
-              'profileicon1.png',
-              'profileicon2.png', 
-              'profileicon6.png',
-              'profileicon4.png',
-              'profileicon5.png'
-            ];
-            return avatarFileNames[avatarIndex];
+          if (presetAvatarNames.includes(selectedAvatar)) {
+            return selectedAvatar;
           }
           
           return 'default_avatar';
@@ -758,23 +716,13 @@ export const CreateProfileScreen: React.FC<CreateProfileScreenProps> = ({ naviga
                     <DefaultAvatar 
                       name={name} 
                       size={200}
-                      borderStyle='dashed'
-                      selectedImage={selectedAvatar === DEFAULT_AVATAR_ID ? undefined : selectedAvatar}
-                      backgroundColor={
-                        selectedAvatar 
-                          ? selectedAvatar === DEFAULT_AVATAR_ID
-                            ? avatarBackgrounds[5] // DefaultAvatar siempre en posición 5
-                            : avatarBackgrounds[PRESET_AVATARS.findIndex((avatar: any) => avatar === selectedAvatar)]
-                          : selectedColorIndex !== undefined 
-                            ? SELECTABLE_COLORS[selectedColorIndex] 
-                            : avatarBackgrounds[5] // Por defecto usar el color del DefaultAvatar
-                      }
+                      borderStyle='solid'
+                      avatarUrl={selectedAvatar}
+                      backgroundColor={Colors.backgroundSoft}
+                      showUploadButton={true}
+                      uploadButtonSize={35}
+                      onUploadPress={handleUploadAvatar}
                     />
-                    <View style={styles.uploadButtonContainer}>
-                      <UploadButton 
-                        size={40}
-                      />
-                    </View>
                   </View>
 
                   <View style={styles.separatorContainer}>
@@ -858,15 +806,6 @@ const styles = StyleSheet.create({
   },
   defaultAvatarContainer: {
     position: 'relative',
-  },
-  uploadButtonContainer: {
-    position: 'absolute',
-    right: '5%',
-    bottom: '3%',
-    transform: [
-      { translateX: 0 }, // Radio / 2
-      { translateY: 0 }, // Radio / 2
-    ],
   },
   presetAvatarsContainer: {
     width: '100%',
