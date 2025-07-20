@@ -1,21 +1,21 @@
 import { useNavigation } from '@react-navigation/native';
 import { useCallback, useEffect, useRef, useState } from 'react';
 import {
-  ActivityIndicator,
-  Alert,
-  BackHandler,
-  Keyboard,
-  Platform,
-  ScrollView,
-  StyleSheet,
-  TouchableWithoutFeedback,
-  View
+	ActivityIndicator,
+	Alert,
+	BackHandler,
+	Keyboard,
+	Platform,
+	ScrollView,
+	StyleSheet,
+	TouchableWithoutFeedback,
+	View
 } from 'react-native';
 import Animated, {
-  Easing,
-  useAnimatedStyle,
-  useSharedValue,
-  withTiming
+	Easing,
+	useAnimatedStyle,
+	useSharedValue,
+	withTiming
 } from 'react-native-reanimated';
 import { Colors } from '../../constants/Colors';
 import { useProfile } from '../../contexts/ProfileContext';
@@ -101,7 +101,7 @@ export const EditProfileScreen: React.FC = () => {
   const handleNameChange = useCallback((value: string) => {
     setName(value);
     if (nameError) {
-      validateName(value);
+    validateName(value);
     }
   }, [nameError, validateName]);
 
@@ -298,7 +298,7 @@ export const EditProfileScreen: React.FC = () => {
           centerContent={<AppText variant='h4' fontFamily='raleway' fontWeight='bold' color="#fff">Editar perfil</AppText>} 
           />
           
-          <ScrollView 
+          <ScrollView
             style={styles.scrollView}
             contentContainerStyle={styles.scrollContent}
             showsVerticalScrollIndicator={false}
@@ -307,8 +307,8 @@ export const EditProfileScreen: React.FC = () => {
             <View style={styles.content}>
               {/* Avatar Section */}
               <View style={styles.avatarSection}>
-                <DefaultAvatar
-                  name={name}
+                    <DefaultAvatar 
+                      name={name} 
                   size={150}
                   avatarUrl={selectedAvatar}
                   showUploadButton={true}
@@ -356,20 +356,20 @@ export const EditProfileScreen: React.FC = () => {
                 />
               </View>
             </View>
-          </ScrollView>
-
+            </ScrollView>
+            
           {/* Save Button */}
-          <Animated.View style={[styles.buttonContainer, buttonAnimatedStyle]}>
-            <ResizingButton
-              title="Guardar cambios"
+            <Animated.View style={[styles.buttonContainer, buttonAnimatedStyle]}>
+              <ResizingButton
+                title="Guardar cambios"
               onPress={handleSave}
-              backgroundColor={Colors.white}
-              textColor={Colors.background}
-              isLoading={isLoading}
+                backgroundColor={Colors.white}
+                textColor={Colors.background}
+                isLoading={isLoading}
               isDisabled={isLoading || !hasChanges}
               height={52}
-            />
-          </Animated.View>
+              />
+            </Animated.View>
         </View>
       </TouchableWithoutFeedback>
     </Layout>

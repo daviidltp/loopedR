@@ -41,6 +41,15 @@ export const UserProfileScreen: React.FC = () => {
     }, [navigation])
   );
 
+  // Navegar atrás si no se encuentra el usuario
+  useFocusEffect(
+    React.useCallback(() => {
+      if (!isLoading && !userData) {
+        navigation.goBack();
+      }
+    }, [isLoading, userData, navigation])
+  );
+
   const handleBackPress = () => {
     navigation.goBack();
   };
@@ -106,11 +115,8 @@ export const UserProfileScreen: React.FC = () => {
     );
   }
 
-  // Si no se encuentra el usuario, mostrar error o navegar atrás
+  // Si no se encuentra el usuario, mostrar null (la navegación se maneja en useFocusEffect)
   if (!userData) {
-    React.useEffect(() => {
-      navigation.goBack();
-    }, [navigation]);
     return null;
   }
 

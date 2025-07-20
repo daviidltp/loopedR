@@ -3,11 +3,11 @@ import { StackNavigationProp } from '@react-navigation/stack';
 import * as WebBrowser from 'expo-web-browser';
 import { useEffect, useRef, useState } from 'react';
 import {
-  BackHandler,
-  Image,
-  ScrollView,
-  StyleSheet,
-  View
+	BackHandler,
+	Image,
+	ScrollView,
+	StyleSheet,
+	View
 } from 'react-native';
 import { Icon } from 'react-native-paper';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
@@ -15,16 +15,15 @@ import { Colors } from '../../constants/Colors';
 import { useAuth } from '../../contexts/AuthContext';
 import { useProfile } from '../../contexts/ProfileContext';
 import { RootStackParamList } from '../../navigation/AppNavigator';
-import { handleDeleteAccount, handleLogout } from '../../utils/userActions';
 import { ResizingButton } from '../ui/buttons';
 import { GlobalHeader } from '../ui/headers/GlobalHeader';
 import { Layout } from '../ui/layout/Layout';
 import { OptionsBottomSheetRef } from '../ui/modals';
 import { ConfirmationDialog } from '../ui/modals/ConfirmationDialog';
 import {
-  SettingsItem,
-  SettingsProfileSection,
-  SettingsSectionTitle
+	SettingsItem,
+	SettingsProfileSection,
+	SettingsSectionTitle
 } from '../ui/sections';
 
 // Importar iconos personalizados
@@ -39,7 +38,7 @@ type SettingsScreenNavigationProp = StackNavigationProp<RootStackParamList, 'Set
 export const SettingsScreen = () => {
   const insets = useSafeAreaInsets();
   const navigation = useNavigation<SettingsScreenNavigationProp>();
-  const { user, session } = useAuth();
+  const { user, session, logout } = useAuth();
   const { profile: currentUser } = useProfile();
   
   // Toggle switch state management
@@ -167,6 +166,16 @@ export const SettingsScreen = () => {
     }
   };
 
+  const handleLogoutPress = async () => {
+    try {
+      await logout();
+      // Aquí puedes navegar a la pantalla de login si es necesario
+    } catch (error) {
+      // Maneja el error si lo necesitas
+      console.error('Error al cerrar sesión:', error);
+    }
+  };
+
   return (
     <Layout excludeBottomSafeArea>
       <View style={styles.container}>
@@ -227,7 +236,10 @@ export const SettingsScreen = () => {
             <SettingsItem
               icon="account-remove"
               title="Eliminar cuenta"
-              onPress={handleDeleteAccount}
+              onPress={() => {
+                // No action for now, as handleDeleteAccount is removed
+                console.log('Eliminar cuenta presionado');
+              }}
               isLast={true}
             />
           </View>
@@ -290,7 +302,7 @@ export const SettingsScreen = () => {
         onCancel={() => setShowLogoutDialog(false)}
         onConfirm={async () => {
           setShowLogoutDialog(false);
-          await handleLogout(isLoggingOut, setIsLoggingOut);
+          await handleLogoutPress();
         }}
         confirmText="Cerrar sesión"
         cancelText="Cancelar"

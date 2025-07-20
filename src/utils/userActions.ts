@@ -1,39 +1,117 @@
-import { deleteUserAccount, signOutUser } from './supabase';
+import { supabase } from './supabase';
+
+export interface SupabaseUser {
+  id: string;
+  username: string;
+  display_name: string;
+  bio: string | null;
+  avatar_url: string | null;
+  
+  updated_at: string;
+}
 
 /**
- * Lógica modular para cerrar sesión, con control de estado y feedback visual.
- * Recibe un setter para el estado de loading.
+ * Obtiene todos los usuarios de Supabase (excluyendo al usuario actual)
  */
-export const handleLogout = async (
-  isLoggingOut: boolean,
-  setIsLoggingOut: (val: boolean) => void
-) => {
-  if (isLoggingOut) {
-    console.log('Logout already in progress, ignoring duplicate request');
-    return;
-  }
+export const getSupabaseUsers = async (currentUserId?: string): Promise<SupabaseUser[]> => {
   try {
-    setIsLoggingOut(true);
-    console.log('Initiating logout sequence');
-    await signOutUser();
-    console.log('Logout sequence completed successfully');
+    let query = supabase
+      .from('profiles')
+      .select('id, username, display_name, bio, avatar_url, updated_at')
+      .order('updated_at', { ascending: false });
+
+    // Si hay un usuario actual, excluirlo de los resultados
+    if (currentUserId) {
+      query = query.neq('id', currentUserId);
+    }
+
+    const { data, error } = await query;
+
+    if (error) {
+      console.error('[getSupabaseUsers] Error al obtener usuarios:', error);
+      throw error;
+    }
+
+    return data || [];
   } catch (error) {
-    console.error('Error during logout sequence:', error);
-  } finally {
-    setTimeout(() => {
-      setIsLoggingOut(false);
-    }, 1000);
+    console.error('[getSupabaseUsers] Error:', error);
+    return [];
   }
 };
 
 /**
- * Lógica modular para eliminar la cuenta del usuario.
+ * Busca usuarios por nombre de usuario o display_name
  */
-export const handleDeleteAccount = async () => {
+export const searchSupabaseUsers = async (
+  searchText: string, 
+  currentUserId?: string
+): Promise<SupabaseUser[]> => {
   try {
-    await deleteUserAccount();
-    console.log('Cuenta eliminada correctamente');
+    if (!searchText.trim()) {
+      return await getSupabaseUsers(currentUserId);
+    }
+
+    const searchTerm = searchText.toLowerCase();
+
+    let query = supabase
+      .from('profiles')
+      .select('id, username, display_name, bio, avatar_url, updated_at')
+      .or(`username.ilike.%${searchTerm}%,display_name.ilike.%${searchTerm}%`)
+      .order('updated_at', { ascending: false });
+
+    // Si hay un usuario actual, excluirlo de los resultados
+    if (currentUserId) {
+      query = query.neq('id', currentUserId);
+    }
+
+    const { data, error } = await query;
+
+    if (error) {
+      console.error('[searchSupabaseUsers] Error al buscar usuarios:', error);
+      throw error;
+    }
+
+    return data || [];
   } catch (error) {
-    console.error('Error al eliminar la cuenta:', error);
+    console.error('[searchSupabaseUsers] Error:', error);
+    return [];
   }
+};
+
+/**
+ * Obtiene un usuario específico por ID
+ */
+export const getSupabaseUserById = async (userId: string): Promise<SupabaseUser | null> => {
+  try {
+    const { data, error } = await supabase
+      .from('profiles')
+      .select('id, username, display_name, bio, avatar_url, updated_at')
+      .eq('id', userId)
+      .single();
+
+    if (error) {
+      console.error('[getSupabaseUserById] Error al obtener usuario:', error);
+      return null;
+    }
+
+    return data;
+  } catch (error) {
+    console.error('[getSupabaseUserById] Error:', error);
+    return null;
+  }
+};
+
+/**
+ * Convierte un usuario de Supabase al formato compatible con la interfaz User
+ */
+export const convertSupabaseUserToUser = (supabaseUser: SupabaseUser) => {
+  return {
+    id: supabaseUser.id,
+    username: supabaseUser.username,
+    displayName: supabaseUser.display_name,
+    bio: supabaseUser.bio || '',
+    avatarUrl: supabaseUser.avatar_url || 'default_avatar',
+    isVerified: false, // Por ahora todos los usuarios son no verificados
+    isPublic: true, // Por ahora todos los perfiles son públicos
+  };
 }; 

@@ -20,6 +20,35 @@ const isFollowing = (currentUserId: string | undefined, userId: string): boolean
   );
 };
 
+// Función para obtener la imagen del avatar
+const getAvatarImage = (avatarUrl: string) => {
+  // Si es null, undefined o vacío, usar avatar por defecto
+  if (!avatarUrl || avatarUrl === 'default_avatar') {
+    return null;
+  }
+
+  // Si es una URL externa, usar directamente
+  if (avatarUrl.startsWith('http')) {
+    return { uri: avatarUrl };
+  }
+
+  // Si es un avatar preset, cargar desde assets locales
+  const presetAvatars: Record<string, any> = {
+    'profileicon1.png': require('@assets/images/profilePics/profileicon1.png'),
+    'profileicon2.png': require('@assets/images/profilePics/profileicon2.png'),
+    'profileicon6.png': require('@assets/images/profilePics/profileicon6.png'),
+    'profileicon4.png': require('@assets/images/profilePics/profileicon4.png'),
+    'profileicon5.png': require('@assets/images/profilePics/profileicon5.png'),
+  };
+
+  if (presetAvatars[avatarUrl]) {
+    return presetAvatars[avatarUrl];
+  }
+
+  // Si no se reconoce, usar avatar por defecto
+  return null;
+};
+
 export const UserListItem: React.FC<UserListItemProps> = ({
   user,
   onPress,
@@ -38,12 +67,15 @@ export const UserListItem: React.FC<UserListItemProps> = ({
 
   const siguiendo = isFollowing(currentUser?.id, user.id);
 
+  // Obtener la imagen del avatar
+  const avatarImage = getAvatarImage(user.avatarUrl);
+
   const content = (
     <View style={styles.container}>
       {/* Avatar circular */}
       <View style={styles.avatarContainer}>
-        {user.avatarUrl ? (
-          <Image source={{ uri: user.avatarUrl }} style={styles.avatar} />
+        {avatarImage ? (
+          <Image source={avatarImage} style={styles.avatar} />
         ) : (
           <View style={styles.defaultAvatar}>
             <AppText 
