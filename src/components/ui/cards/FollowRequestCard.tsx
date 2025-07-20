@@ -4,6 +4,7 @@ import { IconButton } from 'react-native-paper';
 import verifiedBlue from '../../../../assets/icons/verified_blue.png';
 import { Colors } from '../../../constants/Colors';
 import { FollowRequest, getUserById } from '../../../utils/mockData';
+import { DefaultAvatar } from '../Avatar/DefaultAvatar';
 import { AppText } from '../Text/AppText';
 import { ResizingButton } from '../buttons/ResizingButton';
 
@@ -22,33 +23,15 @@ export const FollowRequestCard: React.FC<FollowRequestCardProps> = ({
 
   if (!user) return null;
 
-  const getInitials = (name: string): string => {
-    const words = name.trim().split(/\s+/);
-    if (words.length >= 2) {
-      return (words[0][0] + words[1][0]).toUpperCase();
-    }
-    return (words[0][0] + (words[0][1] || '')).toUpperCase();
-  };
-
   const content = (
     <View style={styles.container}>
       {/* Avatar circular */}
-      <View style={styles.avatarContainer}>
-        {user.avatarUrl ? (
-          <Image source={{ uri: user.avatarUrl }} style={styles.avatar} />
-        ) : (
-          <View style={styles.defaultAvatar}>
-            <AppText 
-              variant='body'
-              fontFamily="inter" 
-              fontWeight="semiBold" 
-              color={Colors.white}
-            >
-              {getInitials(user.displayName)}
-            </AppText>
-          </View>
-        )}
-      </View>
+      <DefaultAvatar
+        name={user.displayName}
+        size={52}
+        avatarUrl={user.avatarUrl}
+        showUploadButton={false}
+      />
 
       {/* Información del usuario */}
       <View style={styles.userInfo}>
@@ -120,22 +103,7 @@ const styles = StyleSheet.create({
     minHeight: 80, // Altura mínima para dar más espacio
     justifyContent: 'space-between',
   },
-  avatarContainer: {
-    marginRight: 12,
-  },
-  avatar: {
-    width: 52,
-    height: 52,
-    borderRadius: 26,
-  },
-  defaultAvatar: {
-    width: 52,
-    height: 52,
-    borderRadius: 26,
-    backgroundColor: Colors.backgroundSoft,
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
+
   userInfo: {
     flex: 1,
     justifyContent: 'center',

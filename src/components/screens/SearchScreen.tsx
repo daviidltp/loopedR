@@ -137,7 +137,7 @@ export const SearchScreen: React.FC = () => {
           ref={searchBarRef}
           value={searchText}
           onChangeText={setSearchText}
-          placeholder="Buscar usuarios..."
+          placeholder="Buscar"
           autoFocus={fromSearchAnimation}
         />
       </View>
@@ -169,8 +169,8 @@ const styles = StyleSheet.create({
     backgroundColor: Colors.background,
   },
   searchContainer: {
-    paddingHorizontal: 20,
-    paddingTop: 8,
+    paddingHorizontal: 12,
+    paddingTop: 16,
     paddingBottom: 16,
     backgroundColor: Colors.background,
   },

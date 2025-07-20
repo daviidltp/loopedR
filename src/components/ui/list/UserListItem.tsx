@@ -4,6 +4,7 @@ import verifiedBlue from '../../../../assets/icons/verified_blue.png';
 import { Colors } from '../../../constants/Colors';
 import { useProfile } from '../../../contexts/ProfileContext';
 import { User, mockUserRelations } from '../../../utils/mockData';
+import { DefaultAvatar } from '../Avatar/DefaultAvatar';
 import { PlatformTouchable } from '../buttons/PlatformTouchable';
 import { AppText } from '../Text/AppText';
 
@@ -55,14 +56,6 @@ export const UserListItem: React.FC<UserListItemProps> = ({
 }) => {
   const { profile: currentUser } = useProfile();
 
-  const getInitials = (name: string): string => {
-    const words = name.trim().split(/\s+/);
-    if (words.length >= 2) {
-      return (words[0][0] + words[1][0]).toUpperCase();
-    }
-    return (words[0][0] + (words[0][1] || '')).toUpperCase();
-  };
-
   const handlePress = () => onPress?.(user.id);
 
   const siguiendo = isFollowing(currentUser?.id, user.id);
@@ -73,23 +66,12 @@ export const UserListItem: React.FC<UserListItemProps> = ({
   const content = (
     <View style={styles.container}>
       {/* Avatar circular */}
-      <View style={styles.avatarContainer}>
-        {avatarImage ? (
-          <Image source={avatarImage} style={styles.avatar} />
-        ) : (
-          <View style={styles.defaultAvatar}>
-            <AppText 
-              variant='body'
-              fontFamily="inter" 
-              fontWeight="semiBold" 
-              color={Colors.white}
-              numberOfLines={1}
-            >
-              {getInitials(user.displayName)}
-            </AppText>
-          </View>
-        )}
-      </View>
+      <DefaultAvatar
+        name={user.displayName}
+        size={52}
+        avatarUrl={user.avatarUrl}
+        showUploadButton={false}
+      />
 
       {/* Información del usuario */}
       <View style={styles.userInfo}>
@@ -158,26 +140,7 @@ const styles = StyleSheet.create({
     paddingVertical: 12,
     paddingHorizontal: 20,
     alignItems: 'center',
-  },
-  avatarContainer: {
-    marginRight: 12,
-    borderRadius: 40,
-    overflow: 'hidden',
-    width: 48,
-    height: 48,
-  },
-  avatar: {
-    width: 48,
-    height: 48,
-    borderRadius: 24,
-  },
-  defaultAvatar: {
-    width: 48,
-    height: 48,
-    borderRadius: 24,
-    backgroundColor: '#333',
-    justifyContent: 'center',
-    alignItems: 'center',
+    gap: 12,
   },
   userInfo: {
     flex: 1,

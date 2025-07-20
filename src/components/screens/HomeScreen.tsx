@@ -43,7 +43,7 @@ export const HomeScreen: React.FC = () => {
                     Empieza añadiendo a un amigo
                   </AppText>
                   <SearchBar
-                    placeholder="Buscar usuarios"
+                    placeholder="Buscar amigos"
                     onSearchPress={() => navigation.navigate('Search', { fromSearchAnimation: true })}
                   />
                 </View>
