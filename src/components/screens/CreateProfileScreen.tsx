@@ -114,7 +114,7 @@ export const CreateProfileScreen: React.FC<CreateProfileScreenProps> = ({ naviga
   // CONTEXT & HOOKS
   // ===========================
   
-  const { session, setProfileCompletionStep } = useAuth();
+  const { session, setProfileCompletionStep, markOnboardingCompleted } = useAuth();
   const { updateProfile, refetch } = useProfile();
 
   // ===========================
@@ -549,13 +549,16 @@ export const CreateProfileScreen: React.FC<CreateProfileScreenProps> = ({ naviga
         // Actualizar el completion step para que AppNavigator navegue automáticamente
         setProfileCompletionStep(2);
         
+        // Marcar el onboarding como completado
+        await markOnboardingCompleted();
+        
       } catch (error) {
         Alert.alert('Error', 'No se pudo crear el perfil. Inténtalo de nuevo.');
       } finally {
         setIsLoading(false);
       }
     }
-  }, [isButtonEnabled, currentStep, name, username, selectedAvatar, bio, updateProfile, refetch, setProfileCompletionStep, animateStepTransition, animateToAvatarStep]);
+  }, [isButtonEnabled, currentStep, name, username, selectedAvatar, bio, updateProfile, refetch, setProfileCompletionStep, markOnboardingCompleted, animateStepTransition, animateToAvatarStep]);
 
   // ===========================
   // ANIMATED STYLES

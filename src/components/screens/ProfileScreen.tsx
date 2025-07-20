@@ -61,7 +61,7 @@ export const ProfileScreen: React.FC = () => {
       username={profile.username || ''}
       onMenuPress={openSettings}
       isVerified={profile.is_verified || false}
-      isPublicProfile={profile.is_public || true}
+      isPublicProfile={profile.is_public}
       isMyProfile={true}
     />
   );

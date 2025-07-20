@@ -1,7 +1,8 @@
 import React from 'react';
-import { Image, StyleSheet, View } from 'react-native';
+import { StyleSheet, View } from 'react-native';
 import { Colors } from '../../../constants/Colors';
 import { FollowRequest, getUserById } from '../../../utils/mockData';
+import { DefaultAvatar } from '../Avatar/DefaultAvatar';
 import { PlatformTouchable } from '../buttons/PlatformTouchable';
 import { AppText } from '../Text/AppText';
 
@@ -22,14 +23,6 @@ export const FollowRequestSection: React.FC<FollowRequestSectionProps> = ({
 
   if (!mostRecentUser) return null;
 
-  const getInitials = (name: string): string => {
-    const words = name.trim().split(/\s+/);
-    if (words.length >= 2) {
-      return (words[0][0] + words[1][0]).toUpperCase();
-    }
-    return (words[0][0] + (words[0][1] || '')).toUpperCase();
-  };
-
   return (
     <PlatformTouchable 
       onPress={onPress}
@@ -37,22 +30,12 @@ export const FollowRequestSection: React.FC<FollowRequestSectionProps> = ({
     >
       <View style={{flexDirection: 'row', alignItems: 'center', flex: 1}}>
         {/* Avatar circular */}
-        <View style={styles.avatarContainer}>
-          {mostRecentUser.avatarUrl ? (
-            <Image source={{ uri: mostRecentUser.avatarUrl }} style={styles.avatar} />
-          ) : (
-            <View style={styles.defaultAvatar}>
-              <AppText 
-                variant='body'
-                fontFamily="inter" 
-                fontWeight="semiBold" 
-                color={Colors.white}
-              >
-                {getInitials(mostRecentUser.displayName)}
-              </AppText>
-            </View>
-          )}
-        </View>
+        <DefaultAvatar
+          name={mostRecentUser.displayName}
+          size={52}
+          avatarUrl={mostRecentUser.avatarUrl}
+          showUploadButton={false}
+        />
 
         {/* Información de la sección */}
         <View style={styles.sectionInfo}>
@@ -101,22 +84,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: 24,
     // backgroundColor: Colors.background, // <-- Eliminar esta línea
   },
-  avatarContainer: {
-    marginRight: 12,
-  },
-  avatar: {
-    width: 52,
-    height: 52,
-    borderRadius: 24,
-  },
-  defaultAvatar: {
-    width: 52,
-    height: 52,
-    borderRadius: 24,
-    backgroundColor: Colors.gray[700],
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
+
   sectionInfo: {
     flex: 1,
     justifyContent: 'center',

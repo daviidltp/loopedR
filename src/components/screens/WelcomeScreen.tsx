@@ -24,25 +24,20 @@ export const WelcomeScreen: React.FC<WelcomeScreenProps> = ({ navigation }) => {
   const [showSkipAlert, setShowSkipAlert] = useState(false);
   const hasNavigated = useRef(false);
   
-  const { session, user, isLoading, profileCompletionStep, setProfileCompletionStep } = useAuth();
+  const { session, user, isLoading, profileCompletionStep, setProfileCompletionStep, markOnboardingCompleted, isOnboardingCompleted } = useAuth();
   const { signInWithSpotify, loading } = useSpotifyAuth();
 
   // Verificar perfil del usuario cuando se autentica
   const checkUserProfile = async (userId: string) => {
     try {
-      console.log('[WelcomeScreen] Verificando perfil para usuario:', userId);
-      
       const { data, error } = await supabase
         .from('profiles')
         .select('username, display_name, avatar_url')
         .eq('id', userId)
         .single();
-      
-      console.log('[WelcomeScreen] Respuesta de verificación:', { data, error });
 
       if (error) {
         if (error.code === 'PGRST116') {
-          console.log('[WelcomeScreen] Usuario no encontrado en profiles');
           return 0; // Sin perfil
         } else {
           console.error('[WelcomeScreen] Error al verificar perfil:', error);
@@ -51,20 +46,14 @@ export const WelcomeScreen: React.FC<WelcomeScreenProps> = ({ navigation }) => {
       }
 
       if (data) {
-        console.log('[WelcomeScreen] Datos de perfil encontrados:', data);
-        
         if (data.username && data.display_name && data.avatar_url) {
-          console.log('[WelcomeScreen] Perfil completo detectado');
           return 2; // Perfil completo
         } else if (data.display_name) {
-          console.log('[WelcomeScreen] Perfil parcial detectado');
           return 1; // Perfil parcial
         } else {
-          console.log('[WelcomeScreen] Perfil incompleto detectado');
           return 0; // Perfil incompleto
         }
       } else {
-        console.log('[WelcomeScreen] No hay datos de perfil');
         return 0; // Sin perfil
       }
     } catch (error) {
@@ -75,23 +64,26 @@ export const WelcomeScreen: React.FC<WelcomeScreenProps> = ({ navigation }) => {
 
   // Detectar cuando el usuario se autentica exitosamente
   useEffect(() => {
-    if (session && user && !hasNavigated.current && !isLoading) {
-      console.log('[WelcomeScreen] Usuario autenticado, verificando perfil...');
+          if (session && user && !hasNavigated.current && !isLoading) {
       
       const handleAuthentication = async () => {
+        // Si el onboarding ya está completado, no verificar perfil
+        if (isOnboardingCompleted === true) {
+          hasNavigated.current = true;
+          return;
+        }
+        
         const profileStep = await checkUserProfile(user.id);
-        console.log('[WelcomeScreen] Profile step detectado:', profileStep);
         
         // Actualizar el contexto con el step detectado
         setProfileCompletionStep(profileStep);
         
         if (profileStep === 2) {
-          // Usuario con perfil completo - no navegar, dejar que AppNavigator maneje
-          console.log('[WelcomeScreen] Usuario con perfil completo, no navegando');
+          // Usuario con perfil completo - marcar onboarding como completado y no navegar
+          await markOnboardingCompleted();
           hasNavigated.current = true;
         } else {
           // Usuario sin perfil completo - navegar a CreateProfile
-          console.log('[WelcomeScreen] Usuario sin perfil completo, navegando a CreateProfile...');
           hasNavigated.current = true;
           
           setTimeout(() => {
@@ -102,7 +94,7 @@ export const WelcomeScreen: React.FC<WelcomeScreenProps> = ({ navigation }) => {
 
       handleAuthentication();
     }
-  }, [session, user, isLoading, navigation]);
+  }, [session, user, isLoading, navigation, isOnboardingCompleted, markOnboardingCompleted, setProfileCompletionStep]);
 
   // Textos que se van alternando
   const texts = [
@@ -167,6 +159,8 @@ export const WelcomeScreen: React.FC<WelcomeScreenProps> = ({ navigation }) => {
     setShowSkipAlert(false);
   }, []);
 
+
+
   return (
     <>
       <Layout>
@@ -199,6 +193,7 @@ export const WelcomeScreen: React.FC<WelcomeScreenProps> = ({ navigation }) => {
               isDisabled={loading || isLoading}
               icon={<SpotifyIcon size={28} color={Colors.background} />}
             />
+
           </View>
         </View>
       </Layout>

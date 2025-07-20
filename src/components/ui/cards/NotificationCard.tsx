@@ -5,6 +5,7 @@ import HeartIcon from '../../../../assets/icons/heart.svg';
 import verifiedBlue from '../../../../assets/icons/verified_blue.png';
 import { Colors } from '../../../constants/Colors';
 import { Notification, getCommentById, getUserById } from '../../../utils/mockData';
+import { DefaultAvatar } from '../Avatar/DefaultAvatar';
 import { PlatformTouchable } from '../buttons/PlatformTouchable';
 import { AppText } from '../Text/AppText';
 
@@ -20,14 +21,6 @@ export const NotificationCard: React.FC<NotificationCardProps> = ({
   const user = getUserById(notification.fromUserId);
 
   if (!user) return null;
-
-  const getInitials = (name: string): string => {
-    const words = name.trim().split(/\s+/);
-    if (words.length >= 2) {
-      return (words[0][0] + words[1][0]).toUpperCase();
-    }
-    return (words[0][0] + (words[0][1] || '')).toUpperCase();
-  };
 
   const getTimeAgo = (timestamp: number): string => {
     const now = Date.now();
@@ -109,22 +102,12 @@ export const NotificationCard: React.FC<NotificationCardProps> = ({
           </View>
 
           {/* Avatar circular */}
-          <View style={styles.avatarContainer}>
-            {user.avatarUrl ? (
-              <Image source={{ uri: user.avatarUrl }} style={styles.avatar} />
-            ) : (
-              <View style={styles.defaultAvatar}>
-                <AppText 
-                  fontSize={14} 
-                  fontFamily="roboto" 
-                  fontWeight="semiBold" 
-                  color={Colors.white}
-                >
-                  {getInitials(user.displayName)}
-                </AppText>
-              </View>
-            )}
-          </View>
+          <DefaultAvatar
+            name={user.displayName}
+            size={52}
+            avatarUrl={user.avatarUrl}
+            showUploadButton={false}
+          />
 
           {/* Contenido de la notificación */}
           <View style={styles.notificationContent}>
@@ -160,22 +143,6 @@ const styles = StyleSheet.create({
     backgroundColor: 'transparent',
     borderWidth: 1,
     borderColor: Colors.backgroundUltraSoft,
-  },
-  avatarContainer: {
-    marginRight: 12,
-  },
-  avatar: {
-    width: 50,
-    height: 50,
-    borderRadius: 26,
-  },
-  defaultAvatar: {
-    width: 40,
-    height: 40,
-    borderRadius: 20,
-    backgroundColor: Colors.gray[700],
-    justifyContent: 'center',
-    alignItems: 'center',
   },
   notificationContent: {
     flex: 1,

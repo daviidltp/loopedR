@@ -1,6 +1,7 @@
 import { Session } from '@supabase/supabase-js';
 import React, { createContext, useContext, useEffect, useState } from 'react';
 import { Alert, AppState } from 'react-native';
+import { useOnboardingStatus } from '../hooks/useOnboardingStatus';
 import { supabase } from '../utils/supabase';
 
 // Polyfill para structuredClone
@@ -22,9 +23,12 @@ interface AuthContextType {
   user: any;
   isLoading: boolean;
   profileCompletionStep: number; // 0: sin datos, 1: solo display_name, 2: completo
+  isOnboardingCompleted: boolean | null;
+  onboardingLoading: boolean;
   logout: () => Promise<void>;
   setUserProfileData: (username: string, displayName: string, avatar?: any, bio?: string, avatarBackgrounds?: string[]) => Promise<void>;
   setProfileCompletionStep: (step: number) => void; // Agregar setter
+  markOnboardingCompleted: () => Promise<void>;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -33,6 +37,16 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const [session, setSession] = useState<Session | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [profileCompletionStep, setProfileCompletionStep] = useState(0);
+  
+  // Hook para manejar el estado de onboarding
+  const { 
+    isOnboardingCompleted, 
+    isLoading: onboardingLoading, 
+    markOnboardingCompleted, 
+    resetOnboardingStatus 
+  } = useOnboardingStatus();
+
+
 
   useEffect(() => {
     console.log('[Auth] Iniciando AuthProvider');
@@ -48,6 +62,8 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         } else {
           console.log('[onAuthStateChange] No hay sesión');
           setProfileCompletionStep(0);
+          // Resetear estado de onboarding cuando no hay sesión
+          await resetOnboardingStatus();
         }
         
         setSession(session);
@@ -64,7 +80,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       console.log('[onAuthStateChange] Limpiando AuthProvider');
       subscription.unsubscribe();
     };
-  }, []);
+  }, []); // Remover resetOnboardingStatus de las dependencias
 
   const logout = async () => {
     try {
@@ -72,6 +88,9 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       
       setSession(null);
       setProfileCompletionStep(0);
+      
+      // Resetear estado de onboarding al cerrar sesión
+      await resetOnboardingStatus();
       
       const { error } = await supabase.auth.signOut();
       
@@ -143,9 +162,12 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     user: session?.user || null,
     isLoading,
     profileCompletionStep,
+    isOnboardingCompleted,
+    onboardingLoading,
     logout,
     setUserProfileData,
     setProfileCompletionStep, // Exponer el setter
+    markOnboardingCompleted,
   };
 
   return (

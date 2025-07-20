@@ -1,9 +1,11 @@
-import React, { forwardRef, useImperativeHandle, useRef, useState } from 'react';
+import { forwardRef, useImperativeHandle, useRef, useState } from 'react';
 import { StyleSheet, TextInput, TouchableOpacity, View } from 'react-native';
 import { IconButton } from 'react-native-paper';
 import SearchIcon from '../../../../assets/icons/search.svg';
 import { textStyles } from '../../../constants';
 import { Colors } from '../../../constants/Colors';
+import { ArrowLeftIcon } from '../../icons/ArrowLeftIcon';
+import { PlatformIconButton } from '../buttons';
 
 interface SearchBarProps {
   placeholder?: string;
@@ -17,7 +19,7 @@ interface SearchBarProps {
 }
 
 export const SearchBar = forwardRef<any, SearchBarProps>(({
-  placeholder = "Buscar amigos",
+  placeholder = "Buscar",
   value,
   onChangeText,
   onSearchPress,
@@ -36,6 +38,11 @@ export const SearchBar = forwardRef<any, SearchBarProps>(({
     },
     blur: () => {
       inputRef.current?.blur();
+    },
+    clear: () => {
+      if (onChangeText) {
+        onChangeText('');
+      }
     }
   }));
 
@@ -56,10 +63,18 @@ export const SearchBar = forwardRef<any, SearchBarProps>(({
     }
   };
 
+  const handleBlur = () => {
+    setIsFocused(false);
+  };
+
   const handleClearText = () => {
     if (onChangeText) {
       onChangeText('');
     }
+  };
+
+  const handleArrowPress = () => {
+    inputRef.current?.blur();
   };
 
   // Determinar el color de fondo
@@ -87,7 +102,7 @@ export const SearchBar = forwardRef<any, SearchBarProps>(({
         value={value}
         onChangeText={onChangeText}
         onFocus={handleFocus}
-        onBlur={() => setIsFocused(false)}
+        onBlur={handleBlur}
         selectionColor={Colors.mutedWhite}
         editable={!isReadOnly}
         pointerEvents={isReadOnly ? 'none' : 'auto'}
@@ -104,7 +119,23 @@ export const SearchBar = forwardRef<any, SearchBarProps>(({
 
   return (
     <View style={styles.container}>
-      <View style={styles.inputWrapper}>
+      {/* ArrowLeftIcon que aparece cuando está enfocado */}
+      {isFocused && (
+        <PlatformIconButton 
+          onPress={handleArrowPress}
+          icon={<ArrowLeftIcon 
+            size={24} 
+            color={Colors.white} 
+            weight={2}
+          />}
+          size={20}
+        />
+      )}
+      
+      <View style={[
+        styles.inputWrapper,
+        isFocused && styles.inputWrapperFocused
+      ]}>
         {isReadOnly ? (
           <TouchableOpacity 
             style={styles.clickableContainer}
@@ -123,16 +154,22 @@ export const SearchBar = forwardRef<any, SearchBarProps>(({
 
 const styles = StyleSheet.create({
   container: {
-    // Sin marginHorizontal para que ocupe todo el ancho disponible
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 6,
   },
   inputWrapper: {
     position: 'relative',
+    flex: 1,
+  },
+  inputWrapperFocused: {
+    flex: 1,
   },
   clickableContainer: {
     // Container para hacer clickeable todo el SearchBar
   },
   inputContainer: {
-    height: 52,
+    height: 44,
     borderRadius: 16,
     position: 'relative',
     flexDirection: 'row',
