@@ -1,7 +1,7 @@
 import React from 'react';
 import { ScrollView, StyleSheet, View } from 'react-native';
 import { Colors } from '../../constants/Colors';
-import { UserAvatar } from '../ui/Avatar/UserAvatar';
+import { DefaultAvatar } from '../ui/Avatar/DefaultAvatar';
 import { Layout } from '../ui/layout/Layout';
 import { AppText } from '../ui/Text/AppText';
 
@@ -77,13 +77,14 @@ export const ProfileContent: React.FC<ProfileContentProps> = ({
             {/* === ROW: Avatar + DisplayName + Stats === */}
             <View style={styles.profileRow}>
               {/* Avatar */}
-              <View style={styles.avatarContainer}>
-                <UserAvatar
-                  avatarUrl={userData.avatarUrl}
-                  displayName={userData.displayName}
+              <DefaultAvatar
+                  name={userData.displayName}
                   size={88}
+                  avatarUrl={userData.avatarUrl}
+                  showUploadButton={false}
+                  uploadButtonSize={30}
+                  onUploadPress={() => { console.log('upload') }}
                 />
-              </View>
               {/* Contenedor: DisplayName + Stats */}
               <View style={styles.profileInfoContainer}>
                 <AppText 
@@ -194,14 +195,8 @@ const styles = StyleSheet.create({
   profileRow: {
     flexDirection: 'row',
     alignItems: 'center',
-    paddingTop: 24,
-    gap: 16,
-  },
-  avatarContainer: {
-    width: 88,
-    height: 88,
-    borderRadius: 44,
-    overflow: 'hidden',
+    paddingTop: 12,
+    gap: 20,
   },
   // Nuevo contenedor para displayName y stats
   profileInfoContainer: {

@@ -8,6 +8,7 @@ export { Post, PostComments, PostDescription, PostHeader, SpotifyWrappedContent 
 
 // Icons
 export { AppleMusicIcon } from './icons/AppleMusicIcon';
+export { ArrowLeftIcon } from './icons/ArrowLeftIcon';
 export { CheckIcon } from './icons/CheckIcon';
 export { CrossIcon } from './icons/CrossIcon';
 export { SpotifyIcon } from './icons/SpotifyIcon';

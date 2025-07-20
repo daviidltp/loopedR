@@ -5,7 +5,7 @@ import { Colors } from '../../../constants/Colors';
 import { FollowRequest } from '../../../utils/mockData';
 import { AppText } from '../Text/AppText';
 import { FollowRequestCard } from '../cards/FollowRequestCard';
-import { DefaultHeader } from '../headers/DefaultHeader';
+import { GlobalHeader } from '../headers/GlobalHeader';
 
 interface FollowRequestsModalProps {
   visible: boolean;
@@ -31,9 +31,10 @@ export const FollowRequestsModal: React.FC<FollowRequestsModalProps> = ({
     >
       <View style={styles.container}>
         {/* Header */}
-        <DefaultHeader
-          title="Solicitudes de seguimiento"
-          onBackPress={onClose}
+        <GlobalHeader
+          goBack={true}
+          onLeftIconPress={onClose}
+          centerContent={<AppText variant='h2' fontFamily='raleway' fontWeight='bold' color="#fff">Solicitudes de seguimiento</AppText>}
         />
 
         {/* Lista de solicitudes */}

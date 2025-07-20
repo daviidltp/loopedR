@@ -1,7 +1,7 @@
 import { BottomTabBarButtonProps, createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import { LinearGradient } from 'expo-linear-gradient';
-import React, { useEffect, useRef } from 'react';
-import { BackHandler, Dimensions, Image, Pressable, StyleSheet, View } from 'react-native';
+import { useEffect, useRef } from 'react';
+import { BackHandler, Dimensions, Pressable, StyleSheet, View } from 'react-native';
 import Animated, { interpolate, useAnimatedStyle, useSharedValue, withTiming } from 'react-native-reanimated';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Colors } from '../../../constants/Colors';
@@ -11,7 +11,7 @@ import { InboxScreen } from '../../screens/InboxScreen';
 import { ProfileScreen } from '../../screens/ProfileScreen';
 import { SearchScreen } from '../../screens/SearchScreen';
 import { UploadScreen } from '../../screens/UploadScreen';
-import { AppText } from '../Text/AppText';
+import { DefaultAvatar } from '../Avatar/DefaultAvatar';
 
 // Importar los iconos como imágenes
 
@@ -36,60 +36,24 @@ const Tab = createBottomTabNavigator<BottomNavigationParamList>();
 // Obtener el ancho de la pantalla
 const { width: screenWidth } = Dimensions.get('window');
 
-// Componente CircleAvatar para el perfil actualizado
-const CircleAvatar = ({ focused }: { focused: boolean }) => {
+// Componente ProfileAvatar usando DefaultAvatar
+const ProfileAvatar = ({ focused }: { focused: boolean }) => {
   const { currentUser } = useCurrentUser();
-
-  const getInitials = (name: string): string => {
-    const words = name.trim().split(/\s+/);
-    if (words.length >= 2) {
-      return (words[0][0] + words[1][0]).toUpperCase();
-    }
-    return (words[0][0] + (words[0][1] || '')).toUpperCase();
-  };
-
-  const getImageSource = (avatarUrl: string) => {
-    if (!avatarUrl || avatarUrl === 'default_avatar') return null;
-    const presetAvatars: Record<string, any> = {
-      'profileicon1.png': require('@assets/images/profilePics/profileicon1.png'),
-      'profileicon2.png': require('@assets/images/profilePics/profileicon2.png'),
-      'profileicon6.png': require('@assets/images/profilePics/profileicon6.png'),
-      'profileicon4.png': require('@assets/images/profilePics/profileicon4.png'),
-      'profileicon5.png': require('@assets/images/profilePics/profileicon5.png'),
-    };
-    if (presetAvatars[avatarUrl]) return presetAvatars[avatarUrl];
-    if (avatarUrl.startsWith('http')) return { uri: avatarUrl };
-    return null;
-  };
 
   const opacity = focused ? 1 : 0.6;
   const avatarUrl = currentUser?.avatarUrl;
-  const displayName = currentUser?.displayName || '';
-  const imageSource = avatarUrl ? getImageSource(avatarUrl) : null;
+  const displayName = currentUser?.displayName || 'Usuario';
 
   return (
-    <View style={[
-      styles.avatarContainer,
-      { opacity }
-    ]}>
-      {imageSource ? (
-        <Image
-          source={imageSource}
-          style={styles.avatarImage}
-          resizeMode="cover"
-        />
-      ) : displayName ? (
-        <AppText
-          variant="body"
-          fontFamily="raleway"
-          fontWeight="bold"
-          style={styles.avatarText}
-        >
-          {getInitials(displayName)}
-        </AppText>
-      ) : (
-        <View style={styles.avatarInner} />
-      )}
+    <View style={{ opacity }}>
+      <DefaultAvatar
+        name={displayName}
+        size={32}
+        avatarUrl={avatarUrl}
+        backgroundColor={Colors.backgroundUltraSoft}
+        showUploadButton={false}
+        disabled={true}
+      />
     </View>
   );
 };
@@ -211,7 +175,7 @@ export const BottomNavigationBar = ({ onUploadPress }: { onUploadPress?: () => v
                 IconComponent = focused ? HeartFilledIcon : HeartIcon;
                 break;
               case 'Profile':
-                return <CircleAvatar focused={focused} />;
+                return <ProfileAvatar focused={focused} />;
             }
 
             return (
@@ -307,29 +271,7 @@ const styles = StyleSheet.create({
     height: 56,
     borderRadius: 32,
   },
-  avatarContainer: {
-    width: 32,
-    height: 32,
-    borderRadius: 16,
-    backgroundColor: Colors.background,
-    justifyContent: 'center',
-    alignItems: 'center',
-    overflow: 'hidden',
-  },
-  avatarImage: {
-    width: 20,
-    height: 20,
-  },
-  avatarText: {
-    fontSize: 12,
-    includeFontPadding: false,
-    textAlignVertical: 'center',
-  },
-  avatarInner: {
-    width: 28,
-    height: 28,
-    borderRadius: 14,
-  },
+
   blurContainer: {
     position: 'absolute',
     top: 0,

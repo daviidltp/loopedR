@@ -1,5 +1,5 @@
 import { useNavigation } from '@react-navigation/native';
-import React, { useCallback, useEffect, useRef, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import {
   ActivityIndicator,
   Alert,
@@ -20,13 +20,13 @@ import Animated, {
 import { Colors } from '../../constants/Colors';
 import { useAuth } from '../../contexts/AuthContext';
 import { useCurrentUser } from '../../hooks/useCurrentUser';
+import { ArrowLeftIcon } from '../icons/ArrowLeftIcon';
 import { DefaultAvatar } from '../ui/Avatar/DefaultAvatar';
-import { UploadButton } from '../ui/Avatar/UploadButton';
 import { ResizingButton } from '../ui/buttons/ResizingButton';
-import { TextArea } from '../ui/forms/TextArea';
 import { TextInput } from '../ui/forms/TextInput';
-import { DefaultHeader } from '../ui/headers/DefaultHeader';
+import { GlobalHeader } from '../ui/headers/GlobalHeader';
 import { Layout } from '../ui/layout/Layout';
+import { AppText } from '../ui/Text/AppText';
 
 export const EditProfileScreen = () => {
   const navigation = useNavigation();
@@ -49,7 +49,7 @@ export const EditProfileScreen = () => {
   const [isKeyboardVisible, setIsKeyboardVisible] = useState(false);
 
   // Avatar states
-  const [selectedAvatar, setSelectedAvatar] = useState<any>(null);
+  const [selectedAvatar, setSelectedAvatar] = useState<string>('default_avatar');
 
   // Inicializar datos cuando se carga el usuario
   useEffect(() => {
@@ -57,33 +57,7 @@ export const EditProfileScreen = () => {
       setName(currentUser.displayName);
       setUsername(currentUser.username);
       setBio(currentUser.bio || '');
-      // Transformar avatarUrl de Supabase a valor compatible con el selector
-      const avatarUrl = currentUser.avatarUrl;
-      const getSelectedAvatar = (avatarUrl: string) => {
-        if (!avatarUrl || avatarUrl === 'default_avatar') return 'default_avatar';
-        const avatarFileNames = [
-          'profileicon1.png',
-          'profileicon2.png',
-          'profileicon6.png',
-          'profileicon4.png',
-          'profileicon5.png',
-        ];
-        const presetAvatars = [
-          require('@assets/images/profilePics/profileicon1.png'),
-          require('@assets/images/profilePics/profileicon2.png'),
-          require('@assets/images/profilePics/profileicon6.png'),
-          require('@assets/images/profilePics/profileicon4.png'),
-          require('@assets/images/profilePics/profileicon5.png'),
-        ];
-        const avatarIndex = avatarFileNames.indexOf(avatarUrl);
-        if (avatarIndex !== -1) {
-          return presetAvatars[avatarIndex];
-        }
-        // Si es una url remota, devolver el string
-        if (avatarUrl.startsWith('http')) return avatarUrl;
-        return 'default_avatar';
-      };
-      setSelectedAvatar(getSelectedAvatar(avatarUrl));
+      setSelectedAvatar(currentUser.avatarUrl || 'default_avatar');
     }
   }, [currentUser]);
 
@@ -245,7 +219,7 @@ export const EditProfileScreen = () => {
     return (
       <Layout>
         <View style={[styles.container, styles.loadingContainer]}>
-          <DefaultHeader title="Editar perfil" onBackPress={handleBackPress} />
+          <GlobalHeader leftIcon={<ArrowLeftIcon size={28} color={Colors.white} />} onLeftIconPress={handleBackPress} centerContent={<AppText variant='h2' fontFamily='raleway' fontWeight='bold' color="#fff">looped</AppText>} />
           <ActivityIndicator size="large" color={Colors.white} />
         </View>
       </Layout>
@@ -263,7 +237,9 @@ export const EditProfileScreen = () => {
     <Layout>
       <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
         <View style={styles.container}>
-          <DefaultHeader title="Editar perfil" onBackPress={handleBackPress} />
+          <GlobalHeader goBack={true} onLeftIconPress={handleBackPress} 
+          centerContent={<AppText variant='h4' fontFamily='raleway' fontWeight='bold' color="#fff">Editar perfil</AppText>} 
+          />
           
           <ScrollView 
             style={styles.scrollView}
@@ -274,17 +250,14 @@ export const EditProfileScreen = () => {
             <View style={styles.content}>
               {/* Avatar Section */}
               <View style={styles.avatarSection}>
-                <View style={styles.avatarWrapper}>
-                  <DefaultAvatar
-                    name={name}
-                    size={140}
-                    selectedImage={selectedAvatar === 'default_avatar' ? undefined : selectedAvatar}
-                    backgroundColor="#232323"
-                  />
-                  <View style={styles.uploadButtonOverlay}>
-                    <UploadButton size={44} />
-                  </View>
-                </View>
+                <DefaultAvatar
+                  name={name}
+                  size={150}
+                  avatarUrl={selectedAvatar}
+                  showUploadButton={true}
+                  uploadButtonSize={30}
+                  onUploadPress={() => { console.log('upload') }}
+                />
               </View>
 
               {/* Form Section */}
@@ -313,17 +286,16 @@ export const EditProfileScreen = () => {
                   maxLength={30}
                 />
 
-                <TextArea
+                <TextInput
                   label="Biografía"
                   value={bio}
                   onChangeText={setBio}
                   placeholder="Biografía (opcional)"
                   maxLength={160}
-                  minHeight={48}
                   autoCapitalize="sentences"
                   autoCorrect={true}
                   returnKeyType="done"
-                  showCharacterCount={false}
+                  showCharacterCount={true}
                 />
               </View>
             </View>
@@ -371,13 +343,6 @@ const styles = StyleSheet.create({
     marginBottom: 32,
     marginTop: 12,
   },
-  avatarWrapper: {
-    position: 'relative',
-    alignItems: 'center',
-    justifyContent: 'center',
-    width: 160,
-    height: 160,
-  },
   uploadButtonOverlay: {
     position: 'absolute',
     right: 8,
@@ -385,7 +350,7 @@ const styles = StyleSheet.create({
     zIndex: 2,
   },
   formSection: {
-    gap: 18,
+    gap: 0,
     marginTop: 8,
   },
   buttonContainer: {

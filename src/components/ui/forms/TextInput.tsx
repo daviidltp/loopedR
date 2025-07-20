@@ -1,4 +1,4 @@
-import React, { forwardRef, useRef, useState } from 'react';
+import { forwardRef, useRef, useState } from 'react';
 import { Animated, TextInput as RNTextInput, StyleSheet, TextInputProps, View } from 'react-native';
 import { textStyles } from '../../../constants';
 import { Colors } from '../../../constants/Colors';
@@ -15,8 +15,8 @@ interface CustomTextInputProps extends TextInputProps {
   showFixedAtSymbol?: boolean;
   helperText?: string;
   textTransform?: 'none' | 'capitalize' | 'uppercase' | 'lowercase';
-  showCharacterCount?: boolean; // Nueva prop
-  maxLength?: number; // Para el contador
+  showCharacterCount?: boolean;
+  maxLength?: number;
 }
 
 export const TextInput = forwardRef<RNTextInput, CustomTextInputProps>(({ 
@@ -72,15 +72,21 @@ export const TextInput = forwardRef<RNTextInput, CustomTextInputProps>(({
 
   return (
     <View style={styles.container}>
-      {label && <AppText variant='body' fontFamily='inter' color={Colors.white} style={styles.label}>{label}</AppText>}
+      <View style={styles.labelContainer}>
+        {label && <AppText variant='bodySmall' fontFamily='inter' color={Colors.white} style={styles.label}>{label}</AppText>}
+        {showCharacterCount && maxLength && (
+          <AppText style={styles.characterCount}>
+            {value.length}/{maxLength}
+          </AppText>
+        )}
+      </View>
       {description && <AppText variant='bodySmall' fontFamily='inter' color={Colors.mutedWhite} style={styles.description}>{description}</AppText>}
       <View style={styles.inputWrapper}>
         <Animated.View 
           style={[
             styles.inputContainer, 
             { 
-              backgroundColor: '#232323',
-              borderRadius: 16,
+              backgroundColor: isFocused ? 'rgba(255, 255, 255, 0.12)' : 'rgba(255, 255, 255, 0.07)',
             },
             multiline && { height: 'auto', minHeight: 52, paddingVertical: 10 },
           ]}
@@ -103,7 +109,7 @@ export const TextInput = forwardRef<RNTextInput, CustomTextInputProps>(({
               multiline && { minHeight: 52, textAlignVertical: 'top', paddingTop: 10, paddingBottom: 10 },
               customStyle
             ]}
-            placeholderTextColor={'#bdbdbd'}
+            placeholderTextColor={Colors.gray[400]}
             onFocus={handleFocus}
             onBlur={handleBlur}
             selectionColor={Colors.gray[300]}
@@ -122,23 +128,14 @@ export const TextInput = forwardRef<RNTextInput, CustomTextInputProps>(({
             </View>
           )}
         </Animated.View>
-        {/* Contador de caracteres */}
-        {showCharacterCount && maxLength && (
-          <View style={{ alignItems: 'flex-end', marginRight: 4, marginTop: 2 }}>
-            <AppText style={{ color: Colors.mutedWhite, fontSize: 12 }}>
-              {value.length}/{maxLength}
-            </AppText>
-          </View>
-        )}
-        <AppText 
-          variant='bodySmall' 
-          style={[
-            styles.helperText,
-            error && styles.errorText
-          ]}
-        >
-          {error || helperText}
-        </AppText>
+        <View style={styles.helperTextContainer}>
+          <AppText 
+            variant='bodySmall' 
+            color={error ? Colors.appleRed : Colors.mutedWhite}
+          >
+            {error || helperText}
+          </AppText>
+        </View>
       </View>
     </View>
   );
@@ -148,11 +145,22 @@ const styles = StyleSheet.create({
   container: {
     marginBottom: 0,
   },
-  label: {
+  labelContainer: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
     marginBottom: 8,
+    paddingHorizontal: 10,
+  },
+  label: {
+    marginBottom: 0,
+  },
+  characterCount: {
+    color: Colors.mutedWhite,
+    fontSize: 12,
   },
   description: {
-    marginBottom: 12,
+    marginBottom: 0,
   },
   inputWrapper: {
     position: 'relative',
@@ -167,7 +175,7 @@ const styles = StyleSheet.create({
   input: {
     flex: 1,
     paddingHorizontal: 18,
-    fontSize: textStyles.bodyLarge.fontSize, // bodyLarge, no queda de otra que poner esto porque no es un AppText propio
+    fontSize: textStyles.bodyLarge.fontSize,
     color: Colors.white,
     fontFamily: 'Inter-Regular',
     includeFontPadding: false,
@@ -185,12 +193,8 @@ const styles = StyleSheet.create({
     right: 18,
     zIndex: 1,
   },
-  helperText: {
+  helperTextContainer: {
     paddingTop: 20,
-    color: Colors.mutedWhite,
-  },
-  errorText: {
-    color: Colors.appleRed,
-    opacity: 1,
+    paddingHorizontal: 4,
   },
 }); 

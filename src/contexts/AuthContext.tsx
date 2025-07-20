@@ -95,31 +95,13 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       if (!session?.user) throw new Error('No hay usuario en la sesión');
 
       // Convertir el avatar seleccionado a un URL guardable
-      const getAvatarUrl = (selectedAvatar: any): string | null => {
-        if (selectedAvatar === 'default_avatar') {
-          return 'default_avatar';
+      const getAvatarUrl = (selectedAvatar: any): string => {
+        // Si ya es un string válido, devuélvelo tal cual
+        if (typeof selectedAvatar === 'string') {
+          return selectedAvatar;
         }
         
-        const presetAvatars = [
-          require('@assets/images/profilePics/profileicon1.png'),
-          require('@assets/images/profilePics/profileicon2.png'),
-          require('@assets/images/profilePics/profileicon6.png'),
-          require('@assets/images/profilePics/profileicon4.png'),
-          require('@assets/images/profilePics/profileicon5.png'),
-        ];
-        
-        const avatarIndex = presetAvatars.findIndex(presetAvatar => presetAvatar === selectedAvatar);
-        if (avatarIndex !== -1) {
-          const avatarFileNames = [
-            'profileicon1.png',
-            'profileicon2.png', 
-            'profileicon6.png',
-            'profileicon4.png',
-            'profileicon5.png'
-          ];
-          return avatarFileNames[avatarIndex];
-        }
-        
+        // Si no es string, asume que es default_avatar
         return 'default_avatar';
       };
 

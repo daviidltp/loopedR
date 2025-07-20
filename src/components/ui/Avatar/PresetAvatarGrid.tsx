@@ -19,13 +19,21 @@ interface PresetAvatarGridProps {
   userName?: string; // Nueva prop para el nombre del usuario
 }
 
-const PRESET_AVATARS = [
-  profileicon1,
-  profileicon2,
-  profileicon6, // Movido de posición 6 a 3
-  profileicon4,
-  profileicon5,
+const PRESET_AVATAR_FILENAMES = [
+  'profileicon1.png',
+  'profileicon2.png',
+  'profileicon6.png',
+  'profileicon4.png',
+  'profileicon5.png',
 ];
+
+const PRESET_AVATAR_IMAGES: Record<string, any> = {
+  'profileicon1.png': profileicon1,
+  'profileicon2.png': profileicon2,
+  'profileicon6.png': profileicon6,
+  'profileicon4.png': profileicon4,
+  'profileicon5.png': profileicon5,
+};
 
 // Identificador especial para el DefaultAvatar
 const DEFAULT_AVATAR_ID = 'default_avatar';
@@ -83,7 +91,7 @@ export const PresetAvatarGrid: React.FC<PresetAvatarGridProps> = memo(({
 }) => {
   const handleColorSelect = React.useCallback((colorIndex: number) => {
     onColorSelect(colorIndex);
-    let selectedAvatarIndex = PRESET_AVATARS.findIndex(avatar => avatar === selectedAvatar);
+    let selectedAvatarIndex = PRESET_AVATAR_FILENAMES.findIndex(avatar => avatar === selectedAvatar);
     
     // Si es el DefaultAvatar, su índice es 5 (posición 6)
     if (selectedAvatar === DEFAULT_AVATAR_ID) {
@@ -95,24 +103,27 @@ export const PresetAvatarGrid: React.FC<PresetAvatarGridProps> = memo(({
     }
   }, [onColorSelect, selectedAvatar, onBackgroundChange]);
 
-  // Crear array con los 5 avatares preestablecidos + el DefaultAvatar
-  const allAvatars = [...PRESET_AVATARS, DEFAULT_AVATAR_ID];
+  // Crear array con los 5 avatares preestablecidos (por nombre) + el DefaultAvatar
+  const allAvatars = [...PRESET_AVATAR_FILENAMES, DEFAULT_AVATAR_ID];
 
   return (
     <View style={styles.container}>
       <View style={styles.avatarsContainer}>
-        {allAvatars.map((avatar, index) => (
-          <PresetAvatar
-            key={index}
-            avatar={avatar}
-            avatarIndex={index}
-            backgroundColor={avatarBackgrounds[index]}
-            isSelected={selectedAvatar === avatar}
-            onPress={() => onSelectAvatar(avatar)}
-            userName={userName}
-            isDefaultAvatar={avatar === DEFAULT_AVATAR_ID}
-          />
-        ))}
+        {allAvatars.map((avatar, index) => {
+          // Si es default_avatar, no hay imagen
+          const image = avatar === DEFAULT_AVATAR_ID ? undefined : PRESET_AVATAR_IMAGES[avatar];
+          return (
+            <PresetAvatar
+              key={index}
+              avatarKey={avatar}
+              avatarIndex={index}
+              backgroundColor={avatarBackgrounds[index]}
+              isSelected={selectedAvatar === avatar}
+              onPress={() => onSelectAvatar(avatar)}
+              userName={userName}
+            />
+          );
+        })}
       </View>
       
       {/* <ColorSelector

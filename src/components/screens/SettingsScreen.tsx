@@ -1,13 +1,13 @@
 import { useNavigation } from '@react-navigation/native';
 import { StackNavigationProp } from '@react-navigation/stack';
 import * as WebBrowser from 'expo-web-browser';
-import React, { useEffect, useRef, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import {
-	BackHandler,
-	Image,
-	ScrollView,
-	StyleSheet,
-	View
+  BackHandler,
+  Image,
+  ScrollView,
+  StyleSheet,
+  View
 } from 'react-native';
 import { Icon } from 'react-native-paper';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
@@ -17,14 +17,14 @@ import { useCurrentUser } from '../../hooks/useCurrentUser';
 import { RootStackParamList } from '../../navigation/AppNavigator';
 import { handleDeleteAccount, handleLogout } from '../../utils/userActions';
 import { ResizingButton } from '../ui/buttons';
-import { DefaultHeader } from '../ui/headers/DefaultHeader';
+import { GlobalHeader } from '../ui/headers/GlobalHeader';
 import { Layout } from '../ui/layout/Layout';
 import { OptionsBottomSheetRef } from '../ui/modals';
 import { ConfirmationDialog } from '../ui/modals/ConfirmationDialog';
 import {
-	SettingsItem,
-	SettingsProfileSection,
-	SettingsSectionTitle
+  SettingsItem,
+  SettingsProfileSection,
+  SettingsSectionTitle
 } from '../ui/sections';
 
 // Importar iconos personalizados
@@ -32,6 +32,7 @@ import DocumentIcon from '../../../assets/icons/document.svg';
 import LanguageIcon from '../../../assets/icons/language.svg';
 import UserLockIcon from '../../../assets/icons/user-lock.svg';
 import verifiedBlue from '../../../assets/icons/verified_blue.png';
+import { AppText } from '../ui/Text/AppText';
 
 type SettingsScreenNavigationProp = StackNavigationProp<RootStackParamList, 'Settings'>;
 
@@ -169,7 +170,10 @@ export const SettingsScreen = () => {
   return (
     <Layout excludeBottomSafeArea>
       <View style={styles.container}>
-        <DefaultHeader title="Ajustes" onBackPress={handleBackPress} />
+        <GlobalHeader 
+        goBack={true} onLeftIconPress={handleBackPress} 
+        centerContent={<AppText variant='h4' fontFamily='raleway' fontWeight='bold' color="#fff">Ajustes</AppText>} 
+        />
         
         <ScrollView style={styles.scrollView} showsVerticalScrollIndicator={false}>
           {/* Sección de perfil */}

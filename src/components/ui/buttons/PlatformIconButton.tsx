@@ -1,10 +1,9 @@
-import React, { useState } from 'react';
-import { Platform, ViewStyle } from 'react-native';
-import { IconButton } from 'react-native-paper';
+import React from 'react';
+import { Platform, Pressable, View, ViewStyle } from 'react-native';
 import { Colors } from '../../../constants/Colors';
 
 interface PlatformIconButtonProps {
-  icon: string;
+  icon: React.ReactNode;
   size?: number;
   iconColor?: string;
   onPress?: () => void;
@@ -25,57 +24,37 @@ export const PlatformIconButton: React.FC<PlatformIconButtonProps> = ({
   onLongPress,
   disabled = false,
   style,
-  rippleColor = 'rgba(255, 255, 255, 0.2)',
+  rippleColor = Colors.foregroundSoft,
   accessibilityLabel,
   activeOpacity = 0.7,
   backgroundColor = 'transparent',
 }) => {
-  const [isPressed, setIsPressed] = useState(false);
-
-  if (Platform.OS === 'android') {
-    return (
-      <IconButton
-        icon={icon}
-        size={size}
-        iconColor={iconColor}
-        onPress={onPress}
-        disabled={disabled}
-        style={style}
-        rippleColor={rippleColor}
-        accessibilityLabel={accessibilityLabel}
-      />
-    );
-  }
-
-  // iOS: usa Pressable con Ionicons
-  const handlePressIn = () => {
-    setIsPressed(true);
-  };
-
-  const handlePressOut = () => {
-    setIsPressed(false);
-  };
-
   const defaultStyle: ViewStyle = {
-    backgroundColor: isPressed ? 'rgba(255, 255, 255, 0.1)' : backgroundColor,
-    borderRadius: 20,
-    width: 40,
-    height: 40,
+    backgroundColor: backgroundColor,
+    borderRadius: size * 2,
+    width: size * 2,
+    height: size * 2,
     justifyContent: 'center',
     alignItems: 'center',
-    opacity: disabled ? 0.5 : (isPressed ? activeOpacity : 1),
+    opacity: disabled ? 0.5 : 1,
   };
 
   return (
-    <IconButton
-      icon={icon}
-      size={size}
-      iconColor={iconColor}
+    <Pressable
       onPress={onPress}
+      onLongPress={onLongPress}
       disabled={disabled}
-      style={style}
-      rippleColor='transparent'
+      style={[defaultStyle, style]}
       accessibilityLabel={accessibilityLabel}
-    />
+      android_ripple={Platform.OS === 'android' ? {
+        color: rippleColor,
+        borderless: false,
+        radius: size
+      } : undefined}
+    >
+      <View>
+        {icon}
+      </View>
+    </Pressable>
   );
-}; 
+};

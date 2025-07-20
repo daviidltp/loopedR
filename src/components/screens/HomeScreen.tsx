@@ -6,7 +6,7 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Colors } from '../../constants/Colors';
 import { currentUser, hasAnyFollowing } from '../../utils/mockData';
 import { SearchBar } from '../ui/forms/SearchBar';
-import { Header } from '../ui/headers';
+import { HomeHeader } from '../ui/headers';
 import { Layout } from '../ui/layout';
 import type { BottomNavigationParamList } from '../ui/navigation/BottomNavigationBar';
 import { AppText } from '../ui/Text/AppText';
@@ -24,7 +24,7 @@ export const HomeScreen: React.FC = () => {
   return (
     <Layout>
       <View style={styles.container}>
-        <Header />
+        <HomeHeader />
 
         <ScrollView 
           style={styles.mainScrollView}

@@ -1,12 +1,12 @@
 import React, { memo } from 'react';
-import { Image, Pressable, StyleSheet, View } from 'react-native';
+import { Pressable, StyleSheet, View } from 'react-native';
 import Animated, {
-    cancelAnimation,
-    Easing,
-    useAnimatedStyle,
-    useSharedValue,
-    withRepeat,
-    withTiming
+  cancelAnimation,
+  Easing,
+  useAnimatedStyle,
+  useSharedValue,
+  withRepeat,
+  withTiming
 } from 'react-native-reanimated';
 import { Colors } from '../../../constants/Colors';
 import { DefaultAvatar } from './DefaultAvatar';
@@ -17,23 +17,21 @@ const PRESS_SCALE = 0.95;
 const SELECTED_SCALE = 0.9; // Zoom out para seleccionados
 
 interface PresetAvatarProps {
-  avatar: any;
+  avatarKey: string; // nombre del archivo o 'default_avatar'
   isSelected: boolean;
   onPress: () => void;
   avatarIndex: number;
   backgroundColor: string;
   userName?: string;
-  isDefaultAvatar?: boolean;
 }
 
 export const PresetAvatar: React.FC<PresetAvatarProps> = memo(({ 
-  avatar, 
+  avatarKey, 
   isSelected, 
   onPress, 
   avatarIndex, 
   backgroundColor, 
-  userName, 
-  isDefaultAvatar 
+  userName
 }) => {
   const selectionScale = useSharedValue(1);
   const selectionOpacity = useSharedValue(0);
@@ -90,20 +88,14 @@ export const PresetAvatar: React.FC<PresetAvatarProps> = memo(({
           <Animated.View style={[styles.rotatingBorder, borderStyle]} />
           
           <Animated.View style={[styles.imageContainer, animatedStyle, { backgroundColor }]}>
-            {isDefaultAvatar ? (
-              <DefaultAvatar
-                name={userName || 'Usuario'}
-                size={80} // Tamaño ajustado para que se vea bien en el grid
-                backgroundColor="transparent" // Usamos el backgroundColor del contenedor
-                disabled={true} // Deshabilitamos la funcionalidad de presionar del DefaultAvatar interno
-              />
-            ) : (
-              <Image
-                source={avatar}
-                style={styles.avatar}
-                resizeMode="contain"
-              />
-            )}
+            <DefaultAvatar
+              name={userName || 'Usuario'}
+              size={80}
+              avatarUrl={avatarKey === 'default_avatar' ? undefined : avatarKey}
+              backgroundColor="transparent"
+              disabled={false}
+              showUploadButton={false}
+            />
             
             <Animated.View style={[styles.selectionOverlay, overlayStyle]} />
           </Animated.View>
