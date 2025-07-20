@@ -3,6 +3,7 @@ import { CardStyleInterpolators, createStackNavigator } from '@react-navigation/
 import { ActivityIndicator, Easing, View } from 'react-native';
 import { CreateProfileScreen, WelcomeScreen } from '../components';
 import { EditProfileScreen } from '../components/screens/EditProfileScreen';
+import { EditProfileElement } from '../components/screens/EditProfileScreens/EditProfileElement';
 import { SettingsScreen } from '../components/screens/SettingsScreen';
 import { UserProfileScreen } from '../components/screens/UserProfileScreen';
 import { BottomNavigationBar } from '../components/ui/navigation/BottomNavigationBar';
@@ -15,6 +16,7 @@ export type RootStackParamList = {
   MainApp: undefined;
   Settings: undefined;
   EditProfile: undefined;
+  EditProfileElement: { field: 'name' | 'username' | 'bio'; currentValue: string; title: string };
   UserProfile: { userId: string };
 };
 
@@ -54,9 +56,9 @@ export const AppNavigator = () => {
           headerShown: false,
           gestureEnabled: true,
           gestureDirection: 'horizontal',
-          cardStyleInterpolator: CardStyleInterpolators.forHorizontalIOS,
           cardStyle: { backgroundColor: Colors.background },
           detachPreviousScreen: false,
+          animationTypeForReplace: 'push',
           freezeOnBlur: false,
           presentation: 'card',
         }}
@@ -96,6 +98,7 @@ export const AppNavigator = () => {
             cardStyleInterpolator: CardStyleInterpolators.forHorizontalIOS,
             gestureEnabled: true,
             gestureDirection: 'horizontal',
+
             detachPreviousScreen: false,
             freezeOnBlur: false,
           })}
@@ -107,6 +110,19 @@ export const AppNavigator = () => {
             headerShown: false,
             cardStyle: { backgroundColor: Colors.background },
             cardStyleInterpolator: CardStyleInterpolators.forFadeFromRightAndroid,
+            gestureEnabled: true,
+            gestureDirection: 'horizontal',
+            detachPreviousScreen: false,
+            freezeOnBlur: false,
+          })}
+        />
+        <Stack.Screen 
+          name="EditProfileElement" 
+          component={EditProfileElement}
+          options={({ navigation }) => ({
+            headerShown: false,
+            cardStyle: { backgroundColor: Colors.background },
+            cardStyleInterpolator: CardStyleInterpolators.forNoAnimation,
             gestureEnabled: true,
             gestureDirection: 'horizontal',
             detachPreviousScreen: false,
@@ -310,6 +326,19 @@ export const AppNavigator = () => {
           headerShown: false,
           cardStyle: { backgroundColor: Colors.background },
           cardStyleInterpolator: CardStyleInterpolators.forFadeFromRightAndroid,
+          gestureEnabled: true,
+          gestureDirection: 'horizontal',
+          detachPreviousScreen: false,
+          freezeOnBlur: false,
+        })}
+      />
+      <Stack.Screen 
+        name="EditProfileElement" 
+        component={EditProfileElement}
+        options={({ navigation }) => ({
+          headerShown: false,
+          cardStyle: { backgroundColor: Colors.background },
+          cardStyleInterpolator: CardStyleInterpolators.forHorizontalIOS,
           gestureEnabled: true,
           gestureDirection: 'horizontal',
           detachPreviousScreen: false,

@@ -71,8 +71,9 @@ export const ProfileScreen: React.FC = () => {
     <ResizingButton
       title="Editar perfil"
       onPress={handleEditProfile}
-      backgroundColor={Colors.backgroundUltraSoft}
+      backgroundColor={Colors.background}
       textColor={Colors.white}
+      borderColor={Colors.white}
       height={42}
     />
   );
@@ -84,6 +85,7 @@ export const ProfileScreen: React.FC = () => {
       followingCount={followingCount}
       headerComponent={headerComponent}
       actionButton={actionButton}
+      isPublic={userData.isPublic}
     />
   );
 };

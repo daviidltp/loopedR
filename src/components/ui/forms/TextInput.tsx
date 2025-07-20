@@ -1,5 +1,5 @@
 import { forwardRef, useRef, useState } from 'react';
-import { Animated, TextInput as RNTextInput, StyleSheet, TextInputProps, View } from 'react-native';
+import { Animated, TextInput as RNTextInput, StyleSheet, TextInputProps, TouchableOpacity, View } from 'react-native';
 import { textStyles } from '../../../constants';
 import { Colors } from '../../../constants/Colors';
 import { CheckIcon } from '../../icons/CheckIcon';
@@ -17,6 +17,9 @@ interface CustomTextInputProps extends TextInputProps {
   textTransform?: 'none' | 'capitalize' | 'uppercase' | 'lowercase';
   showCharacterCount?: boolean;
   maxLength?: number;
+  inputHeight?: number;
+  readOnly?: boolean;
+  onReadOnlyPress?: () => void;
 }
 
 export const TextInput = forwardRef<RNTextInput, CustomTextInputProps>(({ 
@@ -37,6 +40,9 @@ export const TextInput = forwardRef<RNTextInput, CustomTextInputProps>(({
   maxLength,
   multiline,
   numberOfLines,
+  inputHeight,
+  readOnly = false,
+  onReadOnlyPress,
   ...props
 }, ref) => {
   const [isFocused, setIsFocused] = useState(false);
@@ -45,6 +51,7 @@ export const TextInput = forwardRef<RNTextInput, CustomTextInputProps>(({
   const shouldShowPrefixUp = isFocused || (value && value.length > 0);
 
   const handleFocus = (e: any) => {
+    if (readOnly) return;
     setIsFocused(true);
     if (showUserPrefix) {
       Animated.spring(animatedValue, {
@@ -58,6 +65,7 @@ export const TextInput = forwardRef<RNTextInput, CustomTextInputProps>(({
   };
 
   const handleBlur = (e: any) => {
+    if (readOnly) return;
     setIsFocused(false);
     if (showUserPrefix && (!value || value.length === 0)) {
       Animated.spring(animatedValue, {
@@ -70,64 +78,75 @@ export const TextInput = forwardRef<RNTextInput, CustomTextInputProps>(({
     onBlur?.(e);
   };
 
-  return (
-    <View style={styles.container}>
-      <View style={styles.labelContainer}>
-        {label && <AppText variant='bodySmall' fontFamily='inter' color={Colors.white} style={styles.label}>{label}</AppText>}
-        {showCharacterCount && maxLength && (
-          <AppText style={styles.characterCount}>
-            {value.length}/{maxLength}
-          </AppText>
-        )}
-      </View>
-      {description && <AppText variant='bodySmall' fontFamily='inter' color={Colors.mutedWhite} style={styles.description}>{description}</AppText>}
-      <View style={styles.inputWrapper}>
-        <Animated.View 
-          style={[
-            styles.inputContainer, 
-            { 
-              backgroundColor: isFocused ? 'rgba(255, 255, 255, 0.12)' : 'rgba(255, 255, 255, 0.07)',
-            },
-            multiline && { height: 'auto', minHeight: 52, paddingVertical: 10 },
-          ]}
-        >
-          {showFixedAtSymbol && (
-            <AppText variant='body' fontFamily='inter' fontWeight='regular' style={styles.fixedAtSymbol} color={Colors.mutedWhite}>@</AppText>
-          )}
+  const handleReadOnlyPress = () => {
+    console.log(`Campo ${label} presionado`);
+    onReadOnlyPress?.();
+  };
 
-          <RNTextInput
-            {...props}
-            ref={ref}
-            value={value}
-            onChangeText={onChangeText}
-            style={[
-              styles.input,
-              showUserPrefix && { paddingLeft: shouldShowPrefixUp ? 18 : 35 },
-              showFixedAtSymbol && { paddingLeft: 35 },
-              (error || isValid) && { paddingRight: 45 },
-              textTransform && { textTransform },
-              multiline && { minHeight: 52, textAlignVertical: 'top', paddingTop: 10, paddingBottom: 10 },
-              customStyle
-            ]}
-            placeholderTextColor={Colors.gray[400]}
-            onFocus={handleFocus}
-            onBlur={handleBlur}
-            selectionColor={Colors.gray[300]}
-            multiline={multiline}
-            numberOfLines={numberOfLines}
-            maxLength={maxLength}
-          />
-          {/* Icono de validación */}
-          {(error || isValid) && (
-            <View style={styles.validationIcon}>
-              {error ? (
-                <CrossIcon size={20} color={Colors.appleRed} />
-              ) : isValid ? (
-                <CheckIcon size={20} color={Colors.spotifyGreen} />
-              ) : null}
-            </View>
-          )}
-        </Animated.View>
+  const inputContent = (
+    <View style={styles.inputWrapper}>
+      <Animated.View 
+        style={[
+          styles.inputContainer, 
+          { 
+            backgroundColor: readOnly ? 'rgba(255, 255, 255, 0.05)' : (isFocused ? 'rgba(255, 255, 255, 0.12)' : 'rgba(255, 255, 255, 0.07)'),
+            height: inputHeight || (multiline ? 'auto' : 52),
+            minHeight: inputHeight || (multiline ? 52 : 52),
+            justifyContent: inputHeight ? 'flex-start' : 'center',
+          },
+          multiline && { paddingVertical: 10 },
+        ]}
+      >
+        {showFixedAtSymbol && (
+          <AppText variant='body' fontFamily='inter' fontWeight='regular' style={styles.fixedAtSymbol} color={Colors.mutedWhite}>@</AppText>
+        )}
+
+        <RNTextInput
+          {...props}
+          ref={ref}
+          value={value}
+          onChangeText={readOnly ? undefined : onChangeText}
+          style={[
+            styles.input,
+            showUserPrefix && { paddingLeft: shouldShowPrefixUp ? 18 : 35 },
+            showFixedAtSymbol && { paddingLeft: 35 },
+            (error || isValid) && { paddingRight: 45 },
+            textTransform && { textTransform },
+            inputHeight !== undefined && { 
+              textAlignVertical: 'top', 
+              paddingTop: 16,
+              paddingBottom: 16
+            },
+            multiline && { 
+              minHeight: inputHeight || 52, 
+              textAlignVertical: 'top', 
+              paddingTop: 10, 
+              paddingBottom: 10 
+            },
+            readOnly && { color: Colors.mutedWhite },
+            customStyle
+          ]}
+          placeholderTextColor={Colors.gray[400]}
+          onFocus={handleFocus}
+          onBlur={handleBlur}
+          selectionColor={Colors.gray[300]}
+          multiline={multiline}
+          numberOfLines={numberOfLines}
+          maxLength={maxLength}
+          editable={!readOnly}
+        />
+        {/* Icono de validación */}
+        {(error || isValid) && !readOnly && (
+          <View style={styles.validationIcon}>
+            {error ? (
+              <CrossIcon size={20} color={Colors.appleRed} />
+            ) : isValid ? (
+              <CheckIcon size={20} color={Colors.spotifyGreen} />
+            ) : null}
+          </View>
+        )}
+      </Animated.View>
+      {!readOnly && (error || helperText) && (
         <View style={styles.helperTextContainer}>
           <AppText 
             variant='bodySmall' 
@@ -136,7 +155,29 @@ export const TextInput = forwardRef<RNTextInput, CustomTextInputProps>(({
             {error || helperText}
           </AppText>
         </View>
+      )}
+    </View>
+  );
+
+  return (
+    <View style={styles.container}>
+      <View style={styles.labelContainer}>
+        {label && <AppText variant='bodySmall' fontFamily='inter' color={Colors.white} style={styles.label}>{label}</AppText>}
+        {showCharacterCount && maxLength && !readOnly && (
+          <AppText style={[styles.characterCount, value.length === maxLength && { color: Colors.appleRed }]}>
+            {value.length}/{maxLength}
+          </AppText>
+        )}
       </View>
+      {description && <AppText variant='bodySmall' fontFamily='inter' color={Colors.mutedWhite} style={styles.description}>{description}</AppText>}
+      
+      {readOnly ? (
+        <TouchableOpacity onPress={handleReadOnlyPress} activeOpacity={0.7}>
+          {inputContent}
+        </TouchableOpacity>
+      ) : (
+        inputContent
+      )}
     </View>
   );
 });

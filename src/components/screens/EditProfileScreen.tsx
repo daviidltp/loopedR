@@ -1,24 +1,25 @@
-import { useNavigation } from '@react-navigation/native';
 import { useCallback, useEffect, useRef, useState } from 'react';
 import {
-	ActivityIndicator,
-	Alert,
-	BackHandler,
-	Keyboard,
-	Platform,
-	ScrollView,
-	StyleSheet,
-	TouchableWithoutFeedback,
-	View
+  ActivityIndicator,
+  Alert,
+  BackHandler,
+  Keyboard,
+  Platform,
+  ScrollView,
+  StyleSheet,
+  TouchableWithoutFeedback,
+  View
 } from 'react-native';
 import Animated, {
-	Easing,
-	useAnimatedStyle,
-	useSharedValue,
-	withTiming
+  Easing,
+  useAnimatedStyle,
+  useSharedValue,
+  withTiming
 } from 'react-native-reanimated';
 import { Colors } from '../../constants/Colors';
 import { useProfile } from '../../contexts/ProfileContext';
+import { useNavigation } from '../../navigation/useNavigation';
+import { updateUserProfile } from '../../utils/userActions';
 import { DefaultAvatar } from '../ui/Avatar/DefaultAvatar';
 import { ResizingButton } from '../ui/buttons/ResizingButton';
 import { TextInput } from '../ui/forms/TextInput';
@@ -29,7 +30,7 @@ import { AppText } from '../ui/Text/AppText';
 export const EditProfileScreen: React.FC = () => {
   const navigation = useNavigation();
   const bioInputRef = useRef(null);
-  const { profile, isLoading: userLoading, updateProfile } = useProfile();
+    const { profile, isLoading: userLoading, updateProfile, refetch } = useProfile();
   
   // Estados del formulario
   const [name, setName] = useState('');
@@ -126,43 +127,17 @@ export const EditProfileScreen: React.FC = () => {
     setIsLoading(true);
 
     try {
-      // Convertir el avatar seleccionado a un URL guardable
-      const getAvatarUrl = (selectedAvatar: any): string | null => {
-        // Si es el avatar por defecto (con iniciales)
-        if (selectedAvatar === 'default_avatar') {
-          return 'default_avatar';
-        }
-        
-        // Si es una URL válida, devolverla tal cual
-        if (typeof selectedAvatar === 'string' && (selectedAvatar.startsWith('http://') || selectedAvatar.startsWith('https://'))) {
-          return selectedAvatar;
-        }
-        
-        // Si es un nombre de archivo de avatar predefinido, devolverlo tal cual
-        const presetAvatarNames = [
-          'profileicon1.png',
-          'profileicon2.png',
-          'profileicon6.png',
-          'profileicon4.png',
-          'profileicon5.png'
-        ];
-        
-        if (presetAvatarNames.includes(selectedAvatar)) {
-          return selectedAvatar;
-        }
-        
-        // Si no se reconoce el avatar, usar default
-        return 'default_avatar';
-      };
 
-      const avatarUrl = getAvatarUrl(selectedAvatar);
-
-      await updateProfile({
+      // Usar la función de userActions
+      await updateUserProfile(profile.id, {
         username: username.trim(),
         display_name: name.trim(),
-        avatar_url: avatarUrl || undefined,
+       // avatar_url: avatarUrl || undefined,
         bio: bio,
       });
+
+      // Refetch del perfil para actualizar el contexto
+      await refetch();
 
       console.log('[EditProfile] Perfil actualizado correctamente');
       navigation.goBack();
@@ -177,7 +152,7 @@ export const EditProfileScreen: React.FC = () => {
     } finally {
       setIsLoading(false);
     }
-  }, [profile, name, username, selectedAvatar, bio, updateProfile, navigation, validateName, validateUsername]);
+  }, [profile, name, username, selectedAvatar, bio, navigation, validateName, validateUsername]);
 
   const handleBackPress = useCallback(() => {
     navigation.goBack();
@@ -329,6 +304,14 @@ export const EditProfileScreen: React.FC = () => {
                   returnKeyType="next"
                   error={nameError}
                   maxLength={50}
+                  readOnly={true}
+                  onReadOnlyPress={() => {
+                    navigation.navigate('EditProfileElement', {
+                      field: 'name',
+                      currentValue: name,
+                      title: 'Editar nombre'
+                    });
+                  }}
                 />
 
                 <TextInput
@@ -341,6 +324,14 @@ export const EditProfileScreen: React.FC = () => {
                   returnKeyType="next"
                   error={usernameError}
                   maxLength={30}
+                  readOnly={true}
+                  onReadOnlyPress={() => {
+                    navigation.navigate('EditProfileElement', {
+                      field: 'username',
+                      currentValue: username,
+                      title: 'Editar nombre de usuario'
+                    });
+                  }}
                 />
 
                 <TextInput
@@ -353,6 +344,16 @@ export const EditProfileScreen: React.FC = () => {
                   autoCorrect={true}
                   returnKeyType="done"
                   showCharacterCount={true}
+                  numberOfLines={4}
+                  inputHeight={112}
+                  readOnly={true}
+                  onReadOnlyPress={() => {
+                    navigation.navigate('EditProfileElement', {
+                      field: 'bio',
+                      currentValue: bio,
+                      title: 'Editar biografía'
+                    });
+                  }}
                 />
               </View>
             </View>
@@ -407,7 +408,7 @@ const styles = StyleSheet.create({
     zIndex: 2,
   },
   formSection: {
-    gap: 0,
+    gap: 20,
     marginTop: 8,
   },
   buttonContainer: {

@@ -2,6 +2,7 @@ import React from 'react';
 import { StyleSheet, View, ViewStyle } from 'react-native';
 import { Colors } from '../../../constants/Colors';
 import { ArrowLeftIcon } from '../../icons/ArrowLeftIcon';
+import { CloseIcon } from '../../icons/CloseIcon';
 import { PlatformIconButton } from '../buttons';
 
 interface ActionButton {
@@ -21,6 +22,7 @@ interface GlobalHeaderProps {
   containerStyle?: ViewStyle;
   goBack?: boolean;
   onGoBack?: () => void;
+  goBackIcon?: 'arrow' | 'close';
 }
 
 export const GlobalHeader: React.FC<GlobalHeaderProps> = ({ 
@@ -32,6 +34,7 @@ export const GlobalHeader: React.FC<GlobalHeaderProps> = ({
   containerStyle,
   goBack = false,
   onGoBack,
+  goBackIcon = 'arrow',
 }) => {
   const handleLeftIconPress = () => {
     if (goBack && onGoBack) {
@@ -43,6 +46,9 @@ export const GlobalHeader: React.FC<GlobalHeaderProps> = ({
 
   const renderLeftIcon = () => {
     if (goBack) {
+      if (goBackIcon === 'close') {
+        return <CloseIcon size={28} color={Colors.white} />;
+      }
       return <ArrowLeftIcon size={28} color={Colors.white} />;
     }
     return leftIcon;

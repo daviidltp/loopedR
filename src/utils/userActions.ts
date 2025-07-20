@@ -1,3 +1,4 @@
+import { ProfileUpdateFields } from '../contexts/ProfileContext';
 import { supabase } from './supabase';
 
 export interface SupabaseUser {
@@ -6,7 +7,8 @@ export interface SupabaseUser {
   display_name: string;
   bio: string | null;
   avatar_url: string | null;
-  
+  is_public: boolean;
+  is_verified: boolean;
   updated_at: string;
 }
 
@@ -17,7 +19,7 @@ export const getSupabaseUsers = async (currentUserId?: string): Promise<Supabase
   try {
     let query = supabase
       .from('profiles')
-      .select('id, username, display_name, bio, avatar_url, updated_at')
+      .select('id, username, display_name, bio, avatar_url, is_public, is_verified, updated_at')
       .order('updated_at', { ascending: false });
 
     // Si hay un usuario actual, excluirlo de los resultados
@@ -55,7 +57,7 @@ export const searchSupabaseUsers = async (
 
     let query = supabase
       .from('profiles')
-      .select('id, username, display_name, bio, avatar_url, updated_at')
+      .select('id, username, display_name, bio, avatar_url, is_public, is_verified, updated_at')
       .or(`username.ilike.%${searchTerm}%,display_name.ilike.%${searchTerm}%`)
       .order('updated_at', { ascending: false });
 
@@ -85,7 +87,7 @@ export const getSupabaseUserById = async (userId: string): Promise<SupabaseUser 
   try {
     const { data, error } = await supabase
       .from('profiles')
-      .select('id, username, display_name, bio, avatar_url, updated_at')
+      .select('id, username, display_name, bio, avatar_url, is_public, is_verified, updated_at')
       .eq('id', userId)
       .single();
 
@@ -111,7 +113,37 @@ export const convertSupabaseUserToUser = (supabaseUser: SupabaseUser) => {
     displayName: supabaseUser.display_name,
     bio: supabaseUser.bio || '',
     avatarUrl: supabaseUser.avatar_url || 'default_avatar',
-    isVerified: false, // Por ahora todos los usuarios son no verificados
-    isPublic: true, // Por ahora todos los perfiles son públicos
+    isVerified: supabaseUser.is_verified || false,
+    isPublic: supabaseUser.is_public !== undefined ? supabaseUser.is_public : true,
   };
+};
+
+/**
+ * Actualiza el perfil del usuario en Supabase
+ */
+export const updateUserProfile = async (
+  userId: string, 
+  updatedFields: ProfileUpdateFields
+): Promise<void> => {
+  try {
+    const updates = {
+      id: userId,
+      ...updatedFields,
+      updated_at: new Date().toISOString(),
+    };
+
+    const { error } = await supabase
+      .from('profiles')
+      .upsert(updates);
+
+    if (error) {
+      console.error('[updateUserProfile] Error al actualizar perfil:', error);
+      throw error;
+    }
+
+    console.log('[updateUserProfile] Perfil actualizado correctamente');
+  } catch (error) {
+    console.error('[updateUserProfile] Error:', error);
+    throw error;
+  }
 }; 

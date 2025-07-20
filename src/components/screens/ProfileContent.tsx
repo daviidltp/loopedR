@@ -48,6 +48,7 @@ interface ProfileContentProps {
   actionButton: React.ReactNode;
   children?: React.ReactNode; // Para contenido adicional (como posts, contenido privado, etc.)
   scrollViewProps?: any; // Props adicionales para el ScrollView
+  isPublic?: boolean; // true = público, false = privado
 }
 
 export const ProfileContent: React.FC<ProfileContentProps> = ({
@@ -57,7 +58,8 @@ export const ProfileContent: React.FC<ProfileContentProps> = ({
   headerComponent,
   actionButton,
   children,
-  scrollViewProps = {}
+  scrollViewProps = {},
+  isPublic = true
 }) => {
   return (
     <Layout>

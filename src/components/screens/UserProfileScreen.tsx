@@ -220,6 +220,7 @@ export const UserProfileScreen: React.FC = () => {
       followersCount={followers.length}
       followingCount={following.length}
       headerComponent={headerComponent}
+      isPublic={userData.isPublic}
       actionButton={actionButton}
       scrollViewProps={{
         scrollEnabled: true,
