@@ -24,29 +24,58 @@ export const ConfirmationDialog: React.FC<ConfirmationDialogProps> = ({
   cancelText = 'Cancelar',
 }) => {
   const fadeAnim = useRef(new Animated.Value(0)).current;
+  const translateYAnim = useRef(new Animated.Value(50)).current;
+  const [shouldRender, setShouldRender] = React.useState(false);
 
   useEffect(() => {
     if (visible) {
-      Animated.timing(fadeAnim, {
-        toValue: 1,
-        duration: 200,
-        useNativeDriver: true,
-      }).start();
-    } else {
-      Animated.timing(fadeAnim, {
-        toValue: 0,
-        duration: 150,
-        useNativeDriver: true,
-      }).start();
+      setShouldRender(true);
+      Animated.parallel([
+        Animated.timing(fadeAnim, {
+          toValue: 1,
+          duration: 150,
+          useNativeDriver: true,
+        }),
+        Animated.timing(translateYAnim, {
+          toValue: 0,
+          duration: 150,
+          useNativeDriver: true,
+        }),
+      ]).start();
+    } else if (shouldRender) {
+      Animated.parallel([
+        Animated.timing(fadeAnim, {
+          toValue: 0,
+          duration: 250,
+          useNativeDriver: true,
+        }),
+        Animated.timing(translateYAnim, {
+          toValue: 50,
+          duration: 250,
+          useNativeDriver: true,
+        }),
+      ]).start(() => {
+        setShouldRender(false);
+      });
     }
-  }, [visible, fadeAnim]);
+  }, [visible, shouldRender, fadeAnim, translateYAnim]);
 
-  if (!visible) return null;
+  if (!shouldRender) return null;
 
   return (
     <Animated.View style={[styles.overlay, { opacity: fadeAnim }]}>
-      <Pressable style={styles.backdrop} onPress={onCancel} />
-      <View style={styles.container}>
+      <Pressable 
+        style={styles.backdrop} 
+        onPress={onCancel}
+      />
+      <Animated.View 
+        style={[
+          styles.container, 
+          { 
+            transform: [{ translateY: translateYAnim }] 
+          }
+        ]}
+      >
         <AppText
           variant="h5"
           fontFamily="inter"
@@ -91,7 +120,7 @@ export const ConfirmationDialog: React.FC<ConfirmationDialogProps> = ({
             />
           </View>
         </View>
-      </View>
+      </Animated.View>
     </Animated.View>
   );
 };

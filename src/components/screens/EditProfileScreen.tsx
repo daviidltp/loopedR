@@ -10,18 +10,11 @@ import {
   TouchableWithoutFeedback,
   View
 } from 'react-native';
-import Animated, {
-  Easing,
-  useAnimatedStyle,
-  useSharedValue,
-  withTiming
-} from 'react-native-reanimated';
 import { Colors } from '../../constants/Colors';
 import { useProfile } from '../../contexts/ProfileContext';
 import { useNavigation } from '../../navigation/useNavigation';
 import { updateUserProfile } from '../../utils/userActions';
 import { DefaultAvatar } from '../ui/Avatar/DefaultAvatar';
-import { ResizingButton } from '../ui/buttons/ResizingButton';
 import { TextInput } from '../ui/forms/TextInput';
 import { GlobalHeader } from '../ui/headers/GlobalHeader';
 import { Layout } from '../ui/layout/Layout';
@@ -49,8 +42,6 @@ export const EditProfileScreen: React.FC = () => {
   // Avatar states
   const [selectedAvatar, setSelectedAvatar] = useState<string>('default_avatar');
 
-  // Animaciones
-  const buttonBottom = useSharedValue(20);
 
   // Validaciones
   const validateName = useCallback((value: string) => {
@@ -165,10 +156,6 @@ export const EditProfileScreen: React.FC = () => {
       (event) => {
         setIsKeyboardVisible(true);
         setKeyboardHeight(event.endCoordinates.height);
-        buttonBottom.value = withTiming(
-          event.endCoordinates.height + 20,
-          { duration: 250, easing: Easing.bezier(0.25, 0.1, 0.25, 1.0) }
-        );
       }
     );
 
@@ -177,10 +164,6 @@ export const EditProfileScreen: React.FC = () => {
       () => {
         setIsKeyboardVisible(false);
         setKeyboardHeight(0);
-        buttonBottom.value = withTiming(
-          20,
-          { duration: 250, easing: Easing.bezier(0.6, 0.5, 0.25, 0.5) }
-        );
       }
     );
 
@@ -188,7 +171,7 @@ export const EditProfileScreen: React.FC = () => {
       keyboardDidShowListener.remove();
       keyboardDidHideListener.remove();
     };
-  }, [buttonBottom]);
+  }, []);
 
   // Cargar datos del perfil desde el contexto
   useEffect(() => {
@@ -211,11 +194,6 @@ export const EditProfileScreen: React.FC = () => {
   }, [handleBackPress]);
 
   // Estilos animados
-  const buttonAnimatedStyle = useAnimatedStyle(() => {
-    return {
-      bottom: buttonBottom.value,
-    };
-  });
 
   // Mostrar loading mientras se cargan los datos del usuario
   if (userLoading || !profile) {
@@ -358,19 +336,6 @@ export const EditProfileScreen: React.FC = () => {
               </View>
             </View>
             </ScrollView>
-            
-          {/* Save Button */}
-            <Animated.View style={[styles.buttonContainer, buttonAnimatedStyle]}>
-              <ResizingButton
-                title="Guardar cambios"
-              onPress={handleSave}
-                backgroundColor={Colors.white}
-                textColor={Colors.background}
-                isLoading={isLoading}
-              isDisabled={isLoading || !hasChanges}
-              height={52}
-              />
-            </Animated.View>
         </View>
       </TouchableWithoutFeedback>
     </Layout>
@@ -410,11 +375,5 @@ const styles = StyleSheet.create({
   formSection: {
     gap: 20,
     marginTop: 8,
-  },
-  buttonContainer: {
-    position: 'absolute',
-    left: 20,
-    right: 20,
-    bottom: 32,
   },
 }); 

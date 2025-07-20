@@ -182,7 +182,10 @@ export const EditProfileElement: React.FC = () => {
 
   const handleConfirmDiscard = useCallback(() => {
     setShowDiscardDialog(false);
-    navigation.goBack();
+    // Usar setTimeout para esperar a que termine la animación del diálogo
+    setTimeout(() => {
+      navigation.goBack();
+    }, 300); // Duración de la animación de salida del diálogo
   }, [navigation]);
 
   const handleCancelDiscard = useCallback(() => {
