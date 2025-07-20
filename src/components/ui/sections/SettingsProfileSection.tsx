@@ -29,7 +29,7 @@ export const SettingsProfileSection: React.FC<SettingsProfileSectionProps> = ({
       'profileicon5.png': require('@assets/images/profilePics/profileicon5.png'),
     };
     if (presetAvatars[avatarUrl]) return presetAvatars[avatarUrl];
-    if (avatarUrl.startsWith('http')) return { uri: avatarUrl };
+    if (avatarUrl?.startsWith('http')) return { uri: avatarUrl };
     return null;
   };
 

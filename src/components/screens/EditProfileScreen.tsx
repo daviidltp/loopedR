@@ -52,36 +52,43 @@ export const EditProfileScreen: React.FC = () => {
   // Inicializar datos cuando se carga el usuario
   useEffect(() => {
     if (profile) {
-      setName(profile.display_name);
-      setUsername(profile.username);
+      setName(profile.display_name || '');
+      setUsername(profile.username || '');
       setBio(profile.bio || '');
-      // Transformar avatar_url de Supabase a valor compatible con el selector
+      
+      // Manejar avatar_url que puede ser null
       const avatarUrl = profile.avatar_url;
-      const getSelectedAvatar = (avatarUrl: string) => {
-        if (!avatarUrl || avatarUrl === 'default_avatar') return 'default_avatar';
-        const avatarFileNames = [
-          'profileicon1.png',
-          'profileicon2.png',
-          'profileicon6.png',
-          'profileicon4.png',
-          'profileicon5.png',
-        ];
-        const presetAvatars = [
-          require('@assets/images/profilePics/profileicon1.png'),
-          require('@assets/images/profilePics/profileicon2.png'),
-          require('@assets/images/profilePics/profileicon6.png'),
-          require('@assets/images/profilePics/profileicon4.png'),
-          require('@assets/images/profilePics/profileicon5.png'),
-        ];
-        const avatarIndex = avatarFileNames.indexOf(avatarUrl);
-        if (avatarIndex !== -1) {
-          return presetAvatars[avatarIndex];
-        }
-        // Si es una url remota, devolver el string
-        if (avatarUrl.startsWith('http')) return avatarUrl;
-        return 'default_avatar';
-      };
-      setSelectedAvatar(getSelectedAvatar(avatarUrl));
+      if (avatarUrl && avatarUrl !== 'default_avatar') {
+        // Convertir el nombre del archivo a la imagen real
+        const getAvatarImage = (avatarFileName: string) => {
+          const avatarFileNames = [
+            'profileicon1.png',
+            'profileicon2.png', 
+            'profileicon6.png',
+            'profileicon4.png',
+            'profileicon5.png'
+          ];
+          
+          const avatarIndex = avatarFileNames.indexOf(avatarFileName);
+          if (avatarIndex !== -1) {
+            const presetAvatars = [
+              require('@assets/images/profilePics/profileicon1.png'),
+              require('@assets/images/profilePics/profileicon2.png'),
+              require('@assets/images/profilePics/profileicon6.png'),
+              require('@assets/images/profilePics/profileicon4.png'),
+              require('@assets/images/profilePics/profileicon5.png'),
+            ];
+            return presetAvatars[avatarIndex];
+          }
+          
+          // Si no se reconoce, usar default
+          return 'default_avatar';
+        };
+        
+        setSelectedAvatar(getAvatarImage(avatarUrl));
+      } else {
+        setSelectedAvatar('default_avatar');
+      }
     }
   }, [profile]);
 
@@ -286,11 +293,40 @@ export const EditProfileScreen: React.FC = () => {
   }
 
   // Verificar si hubo cambios
+  const getCurrentAvatarUrl = () => {
+    if (selectedAvatar === 'default_avatar') {
+      return 'default_avatar';
+    }
+    
+    // Si es una imagen real, convertir a nombre de archivo
+    const presetAvatars = [
+      require('@assets/images/profilePics/profileicon1.png'),
+      require('@assets/images/profilePics/profileicon2.png'),
+      require('@assets/images/profilePics/profileicon6.png'),
+      require('@assets/images/profilePics/profileicon4.png'),
+      require('@assets/images/profilePics/profileicon5.png'),
+    ];
+    
+    const avatarIndex = presetAvatars.findIndex(presetAvatar => presetAvatar === selectedAvatar);
+    if (avatarIndex !== -1) {
+      const avatarFileNames = [
+        'profileicon1.png',
+        'profileicon2.png', 
+        'profileicon6.png',
+        'profileicon4.png',
+        'profileicon5.png'
+      ];
+      return avatarFileNames[avatarIndex];
+    }
+    
+    return 'default_avatar';
+  };
+
   const hasChanges = 
-    name !== profile.display_name ||
-    username !== profile.username ||
-    bio !== (profile.bio || '') ||
-    selectedAvatar !== profile.avatar_url;
+    name !== (profile?.display_name || '') ||
+    username !== (profile?.username || '') ||
+    bio !== (profile?.bio || '') ||
+    getCurrentAvatarUrl() !== (profile?.avatar_url || 'default_avatar');
 
   return (
     <Layout>

@@ -47,22 +47,22 @@ export const ProfileScreen: React.FC = () => {
   // Convertir profile a formato compatible con ProfileContent
   const userData = {
     id: profile.id,
-    username: profile.username,
-    displayName: profile.display_name,
-    email: profile.email,
-    avatarUrl: profile.avatar_url,
-    bio: profile.bio,
-    isVerified: profile.is_verified,
-    isPublic: profile.is_public,
+    username: profile.username || '',
+    displayName: profile.display_name || '',
+    email: profile.email || '',
+    avatarUrl: profile.avatar_url || '',
+    bio: profile.bio || '',
+    isVerified: profile.is_verified || false,
+    isPublic: profile.is_public || true,
   };
 
   // Header para mi perfil
   const headerComponent = (
     <ProfileHeader 
-      username={profile.username}
+      username={profile.username || ''}
       onMenuPress={openSettings}
-      isVerified={profile.is_verified}
-      isPublicProfile={profile.is_public}
+      isVerified={profile.is_verified || false}
+      isPublicProfile={profile.is_public || true}
       showPrivacyIndicator={true} // Solo mostrar en mi perfil
     />
   );

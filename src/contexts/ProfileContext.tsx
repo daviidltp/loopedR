@@ -1,7 +1,7 @@
 import React, { createContext, useContext, useEffect, useState } from 'react';
 import { Alert } from 'react-native';
-import { useAuth } from './AuthContext';
 import { supabase } from '../utils/supabase';
+import { useAuth } from './AuthContext';
 
 // Interfaz para el perfil del usuario basada en la tabla profiles de Supabase
 export interface UserProfile {
@@ -71,11 +71,38 @@ export const ProfileProvider: React.FC<{ children: React.ReactNode }> = ({ child
         .single();
 
       if (fetchError) {
+        // Si el usuario no existe en profiles, crear un perfil básico
+        if (fetchError.code === 'PGRST116') {
+          console.log('[ProfileContext] Usuario no encontrado en profiles, creando perfil básico');
+          setProfile({
+            id: session.user.id,
+            username: '',
+            display_name: '',
+            email: session.user.email || '',
+            updated_at: new Date().toISOString(),
+            avatar_url: 'default_avatar',
+            refresh_token: null,
+            bio: '',
+            is_verified: false,
+            is_public: true,
+          });
+          return;
+        }
         throw fetchError;
       }
 
       if (data) {
-        setProfile(data);
+        // Asegurar que los campos no sean null
+        setProfile({
+          ...data,
+          username: data.username || '',
+          display_name: data.display_name || '',
+          email: data.email || '',
+          avatar_url: data.avatar_url || 'default_avatar',
+          bio: data.bio || '',
+          is_verified: data.is_verified || false,
+          is_public: data.is_public !== undefined ? data.is_public : true,
+        });
       } else {
         setProfile(null);
       }

@@ -1,4 +1,4 @@
-import { CommonActions, RouteProp } from '@react-navigation/native';
+import { RouteProp } from '@react-navigation/native';
 import { StackNavigationProp } from '@react-navigation/stack';
 import React, { Suspense, lazy, useCallback, useEffect, useRef, useState } from 'react';
 import {
@@ -26,6 +26,7 @@ import profileicon5 from '../../../assets/images/profilePics/profileicon5.png';
 import profileicon6 from '../../../assets/images/profilePics/profileicon6.png';
 import { Colors } from '../../constants/Colors';
 import { useAuth } from '../../contexts/AuthContext';
+import { useProfile } from '../../contexts/ProfileContext';
 import { RootStackParamList } from '../../navigation/AppNavigator';
 import { supabase } from '../../utils/supabase';
 import { DefaultAvatar } from '../ui/Avatar/DefaultAvatar';
@@ -128,7 +129,8 @@ export const CreateProfileScreen: React.FC<CreateProfileScreenProps> = ({ naviga
   // CONTEXT & HOOKS
   // ===========================
   
-  const { setUserProfileData, session } = useAuth();
+  const { session, setProfileCompletionStep } = useAuth();
+  const { updateProfile, refetch } = useProfile();
 
   // ===========================
   // LOAD EXISTING DATA
@@ -541,22 +543,53 @@ export const CreateProfileScreen: React.FC<CreateProfileScreenProps> = ({ naviga
         await new Promise(resolve => setTimeout(resolve, 0));
         
         console.log('[CreateProfile] Guardando perfil...');
-        // Save profile data to context
-        await setUserProfileData(username, name, selectedAvatar, bio);
         
-        // Fallback: Si después de 2 segundos no navega automáticamente, forzar reset
-        setTimeout(() => {
-          try {
-            navigation.dispatch(
-              CommonActions.reset({
-                index: 0,
-                routes: [{ name: 'MainApp' }],
-              })
-            );
-          } catch (error) {
-            console.error('[CreateProfile] Error en navegación manual:', error);
+        // Convertir el avatar seleccionado a un URL guardable
+        const getAvatarUrl = (selectedAvatar: any): string | null => {
+          if (selectedAvatar === 'default_avatar') {
+            return 'default_avatar';
           }
-        }, 2000);
+          
+          const presetAvatars = [
+            require('@assets/images/profilePics/profileicon1.png'),
+            require('@assets/images/profilePics/profileicon2.png'),
+            require('@assets/images/profilePics/profileicon6.png'),
+            require('@assets/images/profilePics/profileicon4.png'),
+            require('@assets/images/profilePics/profileicon5.png'),
+          ];
+          
+          const avatarIndex = presetAvatars.findIndex(presetAvatar => presetAvatar === selectedAvatar);
+          if (avatarIndex !== -1) {
+            const avatarFileNames = [
+              'profileicon1.png',
+              'profileicon2.png', 
+              'profileicon6.png',
+              'profileicon4.png',
+              'profileicon5.png'
+            ];
+            return avatarFileNames[avatarIndex];
+          }
+          
+          return 'default_avatar';
+        };
+
+        const avatarUrl = getAvatarUrl(selectedAvatar);
+
+        // Usar updateProfile del ProfileContext en lugar de setUserProfileData
+        await updateProfile({
+          username: username.trim(),
+          display_name: name.trim(),
+          avatar_url: avatarUrl || undefined,
+          bio: bio,
+        });
+
+        // Refetch para asegurar que los datos estén actualizados
+        await refetch();
+        
+        console.log('[CreateProfile] Perfil guardado, actualizando completion step');
+        
+        // Actualizar el completion step para que AppNavigator navegue automáticamente
+        setProfileCompletionStep(2);
         
       } catch (error) {
         Alert.alert('Error', 'No se pudo crear el perfil. Inténtalo de nuevo.');
@@ -564,7 +597,7 @@ export const CreateProfileScreen: React.FC<CreateProfileScreenProps> = ({ naviga
         setIsLoading(false);
       }
     }
-  }, [isButtonEnabled, currentStep, name, username, selectedAvatar, setUserProfileData, animateStepTransition, animateToAvatarStep]);
+  }, [isButtonEnabled, currentStep, name, username, selectedAvatar, bio, updateProfile, refetch, setProfileCompletionStep, animateStepTransition, animateToAvatarStep]);
 
   // ===========================
   // ANIMATED STYLES

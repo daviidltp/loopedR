@@ -25,8 +25,8 @@ export const UserAvatar: React.FC<UserAvatarProps> = ({
   };
 
   const getImageSource = (avatarUrl: string) => {
-    // Si es el avatar por defecto, mostrar iniciales
-    if (avatarUrl === 'default_avatar') {
+    // Verificar si avatarUrl es null, undefined o vacío
+    if (!avatarUrl || avatarUrl === 'default_avatar') {
       return null;
     }
 
@@ -44,7 +44,7 @@ export const UserAvatar: React.FC<UserAvatarProps> = ({
     }
 
     // Si es una URL remota, usarla directamente
-    if (avatarUrl.startsWith('http')) {
+    if (avatarUrl?.startsWith('http')) {
       return { uri: avatarUrl };
     }
 

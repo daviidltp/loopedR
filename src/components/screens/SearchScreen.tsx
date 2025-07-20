@@ -34,8 +34,8 @@ export const SearchScreen: React.FC = () => {
   const filteredUsers = searchText.trim() === '' 
     ? allUsers 
     : allUsers.filter(user => 
-        user.displayName.toLowerCase().startsWith(searchText.toLowerCase()) ||
-        user.username.toLowerCase().startsWith(searchText.toLowerCase())
+        (user.displayName?.toLowerCase() || '').startsWith(searchText.toLowerCase()) ||
+        (user.username?.toLowerCase() || '').startsWith(searchText.toLowerCase())
       );
 
   // Hacer focus solo si viene de HomeScreen, sin animación
