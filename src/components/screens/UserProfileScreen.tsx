@@ -5,7 +5,6 @@ import { ActivityIndicator, BackHandler, StyleSheet, View } from 'react-native';
 import { Icon } from 'react-native-paper';
 import { Colors } from '../../constants/Colors';
 import { useProfile } from '../../contexts/ProfileContext';
-import { useUser } from '../../hooks/useUser';
 import { RootStackParamList } from '../../navigation/AppNavigator';
 import { getUserFollowers, getUserFollowing, isUserFollowing } from '../../utils/mockData';
 import { ResizingButton } from '../ui/buttons/ResizingButton';
@@ -19,14 +18,25 @@ type UserProfileScreenNavigationProp = StackNavigationProp<RootStackParamList>;
 export const UserProfileScreen: React.FC = () => {
   const navigation = useNavigation<UserProfileScreenNavigationProp>();
   const route = useRoute<UserProfileScreenProps['route']>();
-  
-  // Obtener userId de los parámetros de navegación (obligatorio para esta pantalla)
-  const { userId } = route.params as { userId: string };
-  
-  // Usar el nuevo hook para obtener datos del usuario
-  const { user: userData, isLoading } = useUser(userId);
+  // Obtener userId y datos del usuario desde los parámetros de navegación
+  const { userId, userData: userDataFromParams } = route.params as { userId: string, userData?: any };
+
+  // Estado local para los datos del usuario
+  const [userData, setUserData] = React.useState(userDataFromParams);
+  const [isLoading, setIsLoading] = React.useState(!userDataFromParams);
   const { profile: currentUser } = useProfile();
-  
+
+  // Si necesitas datos extra, puedes hacer una carga secundaria aquí (opcional)
+  React.useEffect(() => {
+    if (!userDataFromParams) {
+      setIsLoading(true);
+      // Aquí podrías llamar a tu función para obtener datos completos
+      // Ejemplo: fetchUserData(userId).then(data => { setUserData(data); setIsLoading(false); });
+      // Por ahora, simulamos que no hay datos extra
+      setIsLoading(false);
+    }
+  }, [userId, userDataFromParams]);
+
   // Manejar botón físico de Android para volver atrás
   useFocusEffect(
     React.useCallback(() => {

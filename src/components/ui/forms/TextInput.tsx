@@ -101,40 +101,72 @@ export const TextInput = forwardRef<RNTextInput, CustomTextInputProps>(({
           <AppText variant='body' fontFamily='inter' fontWeight='regular' style={styles.fixedAtSymbol} color={Colors.mutedWhite}>@</AppText>
         )}
 
-        <RNTextInput
-          {...props}
-          ref={ref}
-          value={value}
-          onChangeText={readOnly ? undefined : onChangeText}
-          style={[
-            styles.input,
-            showUserPrefix && { paddingLeft: shouldShowPrefixUp ? 18 : 35 },
-            showFixedAtSymbol && { paddingLeft: 35 },
-            (error || isValid) && { paddingRight: 45 },
-            textTransform && { textTransform },
-            inputHeight !== undefined && { 
-              textAlignVertical: 'top', 
-              paddingTop: 16,
-              paddingBottom: 16
-            },
-            multiline && { 
-              minHeight: inputHeight || 52, 
-              textAlignVertical: 'top', 
-              paddingTop: 10, 
-              paddingBottom: 10 
-            },
-            readOnly && { color: Colors.mutedWhite },
-            customStyle
-          ]}
-          placeholderTextColor={Colors.gray[400]}
-          onFocus={handleFocus}
-          onBlur={handleBlur}
-          selectionColor={Colors.gray[300]}
-          multiline={multiline}
-          numberOfLines={numberOfLines}
-          maxLength={maxLength}
-          editable={!readOnly}
-        />
+        {readOnly ? (
+            <RNTextInput
+              {...props}
+              ref={ref}
+              value={value}
+              style={[
+                styles.input,
+                showUserPrefix && { paddingLeft: shouldShowPrefixUp ? 18 : 35 },
+                showFixedAtSymbol && { paddingLeft: 35 },
+                (error || isValid) && { paddingRight: 45 },
+                textTransform && { textTransform },
+                inputHeight !== undefined && { 
+                  textAlignVertical: 'top', 
+                  paddingTop: 16,
+                  paddingBottom: 16
+                },
+                multiline && { 
+                  minHeight: inputHeight || 52, 
+                  textAlignVertical: 'top', 
+                  paddingTop: 10, 
+                  paddingBottom: 10 
+                },
+                readOnly && { color: Colors.mutedWhite },
+                customStyle
+              ]}
+              placeholderTextColor={Colors.gray[400]}
+              multiline={multiline}
+              numberOfLines={numberOfLines}
+              maxLength={maxLength}
+              editable={false}
+            />
+        ) : (
+          <RNTextInput
+            {...props}
+            ref={ref}
+            value={value}
+            onChangeText={onChangeText}
+            style={[
+              styles.input,
+              showUserPrefix && { paddingLeft: shouldShowPrefixUp ? 18 : 35 },
+              showFixedAtSymbol && { paddingLeft: 35 },
+              (error || isValid) && { paddingRight: 45 },
+              textTransform && { textTransform },
+              inputHeight !== undefined && { 
+                textAlignVertical: 'top', 
+                paddingTop: 16,
+                paddingBottom: 16
+              },
+              multiline && { 
+                minHeight: inputHeight || 52, 
+                textAlignVertical: 'top', 
+                paddingTop: 10, 
+                paddingBottom: 10 
+              },
+              customStyle
+            ]}
+            placeholderTextColor={Colors.gray[400]}
+            onFocus={handleFocus}
+            onBlur={handleBlur}
+            selectionColor={Colors.gray[300]}
+            multiline={multiline}
+            numberOfLines={numberOfLines}
+            maxLength={maxLength}
+            editable={true}
+          />
+        )}
         {/* Icono de validación */}
         {(error || isValid) && !readOnly && (
           <View style={styles.validationIcon}>

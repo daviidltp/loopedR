@@ -1,88 +1,36 @@
 import type { BottomTabNavigationProp, BottomTabScreenProps } from '@react-navigation/bottom-tabs';
 import { useFocusEffect, useNavigation, useRoute } from '@react-navigation/native';
-import { StackNavigationProp } from '@react-navigation/stack';
-import React, { useEffect, useRef, useState } from 'react';
+import React from 'react';
 import { ActivityIndicator, StyleSheet, View } from 'react-native';
 import { Colors } from '../../constants/Colors';
 import { useProfile } from '../../contexts/ProfileContext';
-import { RootStackParamList } from '../../navigation/AppNavigator';
-import { convertSupabaseUserToUser, getSupabaseUsers, searchSupabaseUsers } from '../../utils/userActions';
+import { useUserSearch } from '../../hooks/useUserSearch';
+import { DeleteUserIcon } from '../icons/DeleteUserIcon';
 import { SearchBar } from '../ui/forms/SearchBar';
 import { Layout } from '../ui/layout/Layout';
 import { UserList } from '../ui/list/UserList';
+import { UserListItemSkeleton } from '../ui/list/UserListItemSkeleton';
 import type { BottomNavigationParamList } from '../ui/navigation/BottomNavigationBar';
+import { AppText } from '../ui/Text/AppText';
 
 type SearchScreenProps = BottomTabScreenProps<BottomNavigationParamList, 'Search'>;
 type SearchScreenNavigationProp = BottomTabNavigationProp<BottomNavigationParamList, 'Search'>;
-type MainStackNavigationProp = StackNavigationProp<RootStackParamList>;
 
 export const SearchScreen: React.FC = () => {
   const route = useRoute<SearchScreenProps['route']>();
   const navigation = useNavigation<SearchScreenNavigationProp>();
-  const stackNavigation = useNavigation<MainStackNavigationProp>();
-  const [searchText, setSearchText] = useState('');
-  const [users, setUsers] = useState<any[]>([]);
-  const [isLoading, setIsLoading] = useState(false);
-  const searchBarRef = useRef<any>(null);
   const { profile: currentUser } = useProfile();
-  
+  const {
+    users,
+    isLoading,
+    searchText,
+    setSearchText,
+    handleUserPress,
+    handleClearSearch,
+    searchBarRef,
+  } = useUserSearch(currentUser);
   // Verificar si viene de la animación del SearchBar
   const fromSearchAnimation = route.params?.fromSearchAnimation || false;
-
-  // Cargar usuarios cuando se dispone del currentUser
-  useEffect(() => {
-    if (currentUser?.id) {
-      loadUsers();
-    }
-  }, [currentUser?.id]);
-
-  // Cargar usuarios de Supabase
-  const loadUsers = async () => {
-    try {
-      console.log('[SearchScreen] Cargando usuarios, currentUser ID:', currentUser?.id);
-      setIsLoading(true);
-      const supabaseUsers = await getSupabaseUsers(currentUser?.id);
-      console.log('[SearchScreen] Usuarios obtenidos de Supabase:', supabaseUsers.length);
-      const convertedUsers = supabaseUsers.map(convertSupabaseUserToUser);
-      console.log('[SearchScreen] Usuarios convertidos:', convertedUsers.map(u => ({ id: u.id, username: u.username, avatarUrl: u.avatarUrl })));
-      setUsers(convertedUsers);
-    } catch (error) {
-      console.error('[SearchScreen] Error al cargar usuarios:', error);
-      setUsers([]);
-    } finally {
-      setIsLoading(false);
-    }
-  };
-
-  // Buscar usuarios cuando cambia el texto de búsqueda
-  useEffect(() => {
-    if (!currentUser?.id) return; // No buscar si no tenemos currentUser
-
-    const searchUsers = async () => {
-      if (searchText.trim() === '') {
-        await loadUsers();
-        return;
-      }
-
-      try {
-        console.log('[SearchScreen] Buscando usuarios con texto:', searchText);
-        setIsLoading(true);
-        const supabaseUsers = await searchSupabaseUsers(searchText, currentUser.id);
-        console.log('[SearchScreen] Resultados de búsqueda:', supabaseUsers.length);
-        const convertedUsers = supabaseUsers.map(convertSupabaseUserToUser);
-        setUsers(convertedUsers);
-      } catch (error) {
-        console.error('[SearchScreen] Error al buscar usuarios:', error);
-        setUsers([]);
-      } finally {
-        setIsLoading(false);
-      }
-    };
-
-    // Debounce para evitar demasiadas llamadas a la API
-    const timeoutId = setTimeout(searchUsers, 300);
-    return () => clearTimeout(timeoutId);
-  }, [searchText, currentUser?.id]);
 
   // Hacer focus solo si viene de HomeScreen, sin animación
   useFocusEffect(
@@ -111,24 +59,6 @@ export const SearchScreen: React.FC = () => {
     }, [fromSearchAnimation, navigation])
   );
 
-  // Función para manejar navegación a perfiles
-  const handleUserPress = (userId: string) => {
-    console.log('[SearchScreen] Usuario presionado:', userId);
-    // Si es el usuario actual, navegar a tab de Profile
-    if (userId === currentUser?.id) {
-      navigation.navigate('Profile');
-    } else {
-      // Si es otro usuario, navegar a UserProfileScreen (stack navigation)
-      stackNavigation.navigate('UserProfile', { userId });
-    }
-  };
-
-  // Función para limpiar búsqueda
-  const handleClearSearch = () => {
-    setSearchText('');
-    searchBarRef.current?.clear();
-  };
-
   return (
     <Layout style={styles.container}>
       {/* SearchBar siempre visible */}
@@ -144,18 +74,45 @@ export const SearchScreen: React.FC = () => {
 
       {/* Lista de usuarios */}
       <View style={styles.userListContainer}>
-        {isLoading ? (
+        {isLoading && searchText.trim() !== '' ? (
+          <View>
+            {[...Array(3)].map((_, i) => (
+              <UserListItemSkeleton key={i} />
+            ))}
+          </View>
+        ) : isLoading ? (
           <View style={styles.loadingContainer}>
             <ActivityIndicator size="large" color={Colors.white} />
           </View>
         ) : users.length > 0 ? (
           <UserList
             users={users}
-            onUserPress={handleUserPress}
+            onUserPress={userId => handleUserPress(userId, navigation, currentUser?.id)}
           />
         ) : (
           <View style={styles.emptyContainer}>
-            <ActivityIndicator size="large" color={Colors.white} />
+            <View style={{ flexDirection: 'row', alignItems: 'center', marginTop: 12, gap: 12 }}>
+              <View style={{
+                width: 60,
+                height: 60,
+                borderRadius: 30,
+                backgroundColor: Colors.background,
+                borderWidth: 2,
+                borderColor: Colors.backgroundSoft,
+                justifyContent: 'center',
+                alignItems: 'center'
+              }}>
+                <DeleteUserIcon size={28} color={Colors.mutedWhite} />
+              </View>
+              <AppText
+                variant="body"
+                fontFamily="inter"
+                color={Colors.mutedWhite}
+                style={{ textAlign: 'left', fontSize: 16 }}
+              >
+                {`No se ha encontrado ningún \nusuario`}
+              </AppText>
+            </View>
           </View>
         )}
       </View>
@@ -184,7 +141,8 @@ const styles = StyleSheet.create({
   },
   emptyContainer: {
     flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
+    justifyContent: 'flex-start',
+    alignItems: 'flex-start',
+    paddingHorizontal: 24,
   },
 }); 
