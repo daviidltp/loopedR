@@ -1,76 +1,70 @@
-import { NavigationProp, useNavigation } from '@react-navigation/native';
+import { useNavigation } from '@react-navigation/native';
 import { StackNavigationProp } from '@react-navigation/stack';
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import { UserProfile } from '../contexts/ProfileContext';
 import { RootStackParamList } from '../navigation/AppNavigator';
-import { convertSupabaseUserToUser, getSupabaseUserById, getSupabaseUsers, searchSupabaseUsers } from '../utils/userActions';
+import { convertSupabaseUserToUser, getSupabaseUserById, searchSupabaseUsers } from '../utils/userActions';
+
+export type SearchStatus = 'idle' | 'searching' | 'success' | 'empty' | 'error';
 
 export function useUserSearch(currentUser: UserProfile | null) {
   const stackNavigation = useNavigation<StackNavigationProp<RootStackParamList>>();
   const [searchText, setSearchText] = useState('');
-  const [users, setUsers] = useState<any[]>([]);
-  const [isLoading, setIsLoading] = useState(false);
-  const [hasLoadedUsers, setHasLoadedUsers] = useState(false);
+  const [allUsers, setAllUsers] = useState<any[]>([]);
+  const [status, setStatus] = useState<SearchStatus>('idle');
   const searchBarRef = useRef<any>(null);
 
-  useEffect(() => {
-    if (currentUser?.id) {
-      loadUsers();
-      setHasLoadedUsers(true);
-    }
-  }, [currentUser?.id]);
-
-  const loadUsers = async () => {
-    try {
-      setIsLoading(true);
-      const supabaseUsers = await getSupabaseUsers(currentUser?.id);
-      const convertedUsers = supabaseUsers.map(convertSupabaseUserToUser);
-      setUsers(convertedUsers);
-    } catch (error) {
-      setUsers([]);
-    } finally {
-      setIsLoading(false);
-    }
-  };
+  const filteredUsers = useMemo(() => {
+    if (!searchText.trim()) return [];
+    const search = searchText.trim().toLowerCase();
+    return allUsers.filter(
+      u =>
+        (u.username && u.username.toLowerCase().includes(search)) ||
+        (u.displayName && u.displayName.toLowerCase().includes(search))
+    );
+  }, [searchText, allUsers]);
 
   useEffect(() => {
-    if (!currentUser?.id) return;
-    if (searchText.trim() !== '') {
-      setIsLoading(true);
+    if (!currentUser?.id || searchText.trim() === '') {
+      setAllUsers([]);
+      setStatus('idle');
+      return;
     }
-  }, [searchText]);
 
-  useEffect(() => {
-    if (!currentUser?.id) return;
-    const searchUsers = async () => {
-      if (searchText.trim() === '') {
-        setUsers([]); // <-- Limpia los resultados
-        return;
-      }
+    if (allUsers.length > 0) {
+      setStatus(filteredUsers.length === 0 ? 'empty' : 'searching');
+    } else {
+      setStatus('searching');
+    }
+
+    const timeoutId = setTimeout(async () => {
       try {
-        setIsLoading(true);
         const supabaseUsers = await searchSupabaseUsers(searchText, currentUser.id);
-        const convertedUsers = supabaseUsers.map(convertSupabaseUserToUser);
-        setUsers(convertedUsers);
-      } catch (error) {
-        setUsers([]);
-      } finally {
-        setIsLoading(false);
+        setAllUsers(prevAllUsers => {
+          return supabaseUsers.map(supabaseUser => {
+            const prevUser = prevAllUsers.find(u => u.id === supabaseUser.id);
+            return prevUser
+              ? { ...prevUser, ...convertSupabaseUserToUser(supabaseUser) }
+              : convertSupabaseUserToUser(supabaseUser);
+          });
+        });
+        setStatus(supabaseUsers.length > 0 ? 'success' : 'empty');
+      } catch {
+        setStatus('error');
       }
-    };
-    const timeoutId = setTimeout(searchUsers, 300);
+    }, 300);
     return () => clearTimeout(timeoutId);
-  }, [searchText, currentUser?.id, hasLoadedUsers]);
+  }, [searchText, currentUser?.id]);
 
   const handleUserPress = (
     userId: string,
-    navigation: NavigationProp<any>,
+    navigation: any,
     currentUserId: string | undefined
   ) => {
     if (userId === currentUserId) {
       navigation.navigate('Profile');
     } else {
-      const user = users.find(u => u.id === userId);
+      const user = filteredUsers.find(u => u.id === userId);
       if (user) {
         stackNavigation.navigate('UserProfile', { userId, userData: user });
       } else {
@@ -81,28 +75,31 @@ export function useUserSearch(currentUser: UserProfile | null) {
 
   const loadUserAndNavigate = async (userId: string) => {
     try {
-      setIsLoading(true);
+      setStatus('searching');
       const supabaseUser = await getSupabaseUserById(userId);
       if (!supabaseUser) return;
       const user = convertSupabaseUserToUser(supabaseUser);
-      setUsers(prevUsers => [...prevUsers, user]);
+      setAllUsers(prevUsers => {
+        const exists = prevUsers.some(u => u.id === user.id);
+        return exists ? prevUsers : [...prevUsers, user];
+      });
+      setStatus('success');
       stackNavigation.navigate('UserProfile', { userId, userData: user });
-    } catch (error) {
-      // error
-    } finally {
-      setIsLoading(false);
+    } catch {
+      setStatus('error');
     }
   };
 
   const handleClearSearch = () => {
     setSearchText('');
     searchBarRef.current?.clear?.();
-    setHasLoadedUsers(false);
+    setAllUsers([]);
+    setStatus('idle');
   };
 
   return {
-    users,
-    isLoading,
+    users: filteredUsers,
+    status,
     searchText,
     setSearchText,
     handleUserPress,

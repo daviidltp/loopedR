@@ -1,9 +1,9 @@
-import React from 'react';
-import { Image, StyleSheet, View } from 'react-native';
-import verifiedBlue from '../../../../assets/icons/verified_blue.png';
+import React, { useMemo } from 'react';
+import { StyleSheet, View } from 'react-native';
 import { Colors } from '../../../constants/Colors';
 import { useProfile } from '../../../contexts/ProfileContext';
 import { User, mockUserRelations } from '../../../utils/mockData';
+import { VerifiedIcon } from '../../icons/VerifiedIcon';
 import { DefaultAvatar } from '../Avatar/DefaultAvatar';
 import { PlatformTouchable } from '../buttons/PlatformTouchable';
 import { AppText } from '../Text/AppText';
@@ -13,7 +13,6 @@ interface UserListItemProps {
   onPress?: (userId: string) => void;
 }
 
-// Función helper para verificar si seguimos a un usuario
 const isFollowing = (currentUserId: string | undefined, userId: string): boolean => {
   if (!currentUserId) return false;
   return mockUserRelations.some(
@@ -21,118 +20,92 @@ const isFollowing = (currentUserId: string | undefined, userId: string): boolean
   );
 };
 
-// Función para obtener la imagen del avatar
-const getAvatarImage = (avatarUrl: string) => {
-  // Si es null, undefined o vacío, usar avatar por defecto
-  if (!avatarUrl || avatarUrl === 'default_avatar') {
-    return null;
-  }
 
-  // Si es una URL externa, usar directamente
-  if (avatarUrl.startsWith('http')) {
-    return { uri: avatarUrl };
-  }
 
-  // Si es un avatar preset, cargar desde assets locales
-  const presetAvatars: Record<string, any> = {
-    'profileicon1.png': require('@assets/images/profilePics/profileicon1.png'),
-    'profileicon2.png': require('@assets/images/profilePics/profileicon2.png'),
-    'profileicon6.png': require('@assets/images/profilePics/profileicon6.png'),
-    'profileicon4.png': require('@assets/images/profilePics/profileicon4.png'),
-    'profileicon5.png': require('@assets/images/profilePics/profileicon5.png'),
-  };
-
-  if (presetAvatars[avatarUrl]) {
-    return presetAvatars[avatarUrl];
-  }
-
-  // Si no se reconoce, usar avatar por defecto
-  return null;
-};
-
-export const UserListItem: React.FC<UserListItemProps> = ({
+const UserListItemComponent: React.FC<UserListItemProps> = ({
   user,
   onPress,
 }) => {
   const { profile: currentUser } = useProfile();
 
-  const handlePress = () => onPress?.(user.id);
-
-  const siguiendo = isFollowing(currentUser?.id, user.id);
-
-  // Obtener la imagen del avatar
-  const avatarImage = getAvatarImage(user.avatarUrl);
-
-  const content = (
-    <View style={styles.container}>
-      {/* Avatar circular */}
-      <DefaultAvatar
-        name={user.displayName}
-        size={56}
-        avatarUrl={user.avatarUrl}
-        showUploadButton={false}
-      />
-
-      {/* Información del usuario */}
-      <View style={styles.userInfo}>
-        {/* Username con ícono verificado y texto "· Siguiendo" si corresponde */}
-        <View style={styles.usernameRow}>
-          <AppText 
-            variant='body'
-            fontFamily="inter" 
-            fontWeight="semiBold" 
-            color={Colors.white}
-            style={styles.username}
-            numberOfLines={1}
-          >
-            {user.username}
-          </AppText>
-          {user.isVerified && (
-            <Image 
-              source={verifiedBlue} 
-              style={styles.verifiedIcon}
-            />
-          )}
-          {siguiendo && (
-            <AppText
-              variant='bodySmall'
-              fontFamily="inter"
-              fontWeight="regular"
-              color={Colors.mutedWhite}
-              style={styles.siguiendoText}
-              numberOfLines={1}
-            >
-              {'󠁯· Siguiendo'}
-            </AppText>
-          )}
-        </View>
-        
-        <AppText 
-          variant='bodySmall'
-          fontFamily="inter" 
-          fontWeight="regular" 
-          color={Colors.mutedWhite}
-          style={styles.displayName}
-          numberOfLines={1}
-        >
-          {user.displayName}
-        </AppText>
-      </View>
-    </View>
+  const handlePress = useMemo(() => () => onPress?.(user.id), [onPress, user.id]);
+  const siguiendo = useMemo(
+    () => isFollowing(currentUser?.id, user.id),
+    [currentUser?.id, user.id]
   );
-
-  // Usar TouchableNativeFeedback en Android para ripple effect
 
   return (
     <PlatformTouchable
       onPress={handlePress}
       rippleColor={Colors.gray[700]}
     >
-      {content}
+      <View style={styles.container}>
+        <DefaultAvatar
+          name={user.displayName}
+          size={56}
+          avatarUrl={user.avatarUrl}
+          showUploadButton={false}
+        />
+        <View style={styles.userInfo}>
+          <View style={styles.usernameRow}>
+            <AppText 
+              variant='body'
+              fontFamily="inter" 
+              fontWeight="semiBold" 
+              color={Colors.white}
+              style={styles.username}
+              numberOfLines={1}
+            >
+              {user.username}
+            </AppText>
+            {user.isVerified && (
+              <VerifiedIcon
+                size={14}
+              />
+            )}
+            {siguiendo && (
+              <AppText
+                variant='bodySmall'
+                fontFamily="inter"
+                fontWeight="regular"
+                color={Colors.mutedWhite}
+                style={styles.siguiendoText}
+                numberOfLines={1}
+              >
+                {'· Siguiendo'}
+              </AppText>
+            )}
+          </View>
+          <AppText 
+            variant='bodySmall'
+            fontFamily="inter" 
+            fontWeight="regular" 
+            color={Colors.mutedWhite}
+            style={styles.displayName}
+            numberOfLines={1}
+          >
+            {user.displayName}
+          </AppText>
+        </View>
+      </View>
     </PlatformTouchable>
   );
-  
 };
+
+function areEqual(prevProps: UserListItemProps, nextProps: UserListItemProps) {
+  const prevUser = prevProps.user;
+  const nextUser = nextProps.user;
+  return (
+    prevUser.id === nextUser.id &&
+    prevUser.isVerified === nextUser.isVerified &&
+    prevUser.username === nextUser.username &&
+    prevUser.displayName === nextUser.displayName &&
+    prevUser.avatarUrl === nextUser.avatarUrl &&
+    prevProps.onPress === nextProps.onPress
+  );
+}
+
+export const UserListItem = React.memo(UserListItemComponent, areEqual);
 
 const styles = StyleSheet.create({
   container: {

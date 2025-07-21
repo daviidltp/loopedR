@@ -1,20 +1,20 @@
 import { useNavigation, useRoute } from '@react-navigation/native';
 import { useCallback, useEffect, useState } from 'react';
 import {
-    ActivityIndicator,
-    Alert,
-    BackHandler,
-    Keyboard,
-    Platform,
-    StyleSheet,
-    TouchableWithoutFeedback,
-    View
+  ActivityIndicator,
+  Alert,
+  BackHandler,
+  Keyboard,
+  Platform,
+  StyleSheet,
+  TouchableWithoutFeedback,
+  View
 } from 'react-native';
 import Animated, {
-    Easing,
-    useAnimatedStyle,
-    useSharedValue,
-    withTiming
+  Easing,
+  useAnimatedStyle,
+  useSharedValue,
+  withTiming
 } from 'react-native-reanimated';
 import { Colors } from '../../../constants/Colors';
 import { useProfile } from '../../../contexts/ProfileContext';

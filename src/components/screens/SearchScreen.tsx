@@ -22,7 +22,7 @@ export const SearchScreen: React.FC = () => {
   const { profile: currentUser } = useProfile();
   const {
     users,
-    isLoading,
+    status,
     searchText,
     setSearchText,
     handleUserPress,
@@ -59,8 +59,6 @@ export const SearchScreen: React.FC = () => {
     }, [fromSearchAnimation, navigation])
   );
 
-  const isSearchEmpty = searchText.trim() === '';
-
   return (
     <Layout style={styles.container}>
       {/* SearchBar siempre visible */}
@@ -74,10 +72,10 @@ export const SearchScreen: React.FC = () => {
         />
       </View>
 
-      {/* Lista de usuarios */}
+      {/* Lista de usuarios o mensajes de estado */}
       <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
         <View style={styles.userListContainer}>
-          {isSearchEmpty && !isLoading ? (
+          {status === 'idle' && (
             <View style={styles.defaultContainer}>
               <AppText
                 variant="body"
@@ -88,19 +86,36 @@ export const SearchScreen: React.FC = () => {
                 Busca usuarios para empezar a conectar 🎵
               </AppText>
             </View>
-          ) : isLoading ? (
+          )}
+          {/* Mostrar usuarios previos mientras se busca */}
+          {status === 'searching' && users.length > 0 && (
+            <>
+              <UserList
+                users={users}
+                onUserPress={userId => handleUserPress(userId, navigation, currentUser?.id)}
+              />
+              <View style={{ marginTop: 12 }}>
+                {[...Array(3)].map((_, i) => (
+                  <UserListItemSkeleton key={i} />
+                ))}
+              </View>
+            </>
+          )}
+          {/* Si no hay usuarios, mostrar solo skeletons */}
+          {status === 'searching' && users.length === 0 && (
             <View>
               {[...Array(3)].map((_, i) => (
                 <UserListItemSkeleton key={i} />
               ))}
             </View>
-          ) : users.length > 0 ? (
+          )}
+          {status === 'success' && (
             <UserList
               users={users}
               onUserPress={userId => handleUserPress(userId, navigation, currentUser?.id)}
             />
-          ) : (
-            // Solo mostrar este mensaje si la búsqueda terminó y no hay resultados
+          )}
+          {status === 'empty' && (
             <View style={styles.emptyContainer}>
               <View style={{ flexDirection: 'row', alignItems: 'center', marginTop: 12, gap: 12 }}>
                 <View style={{
@@ -124,6 +139,18 @@ export const SearchScreen: React.FC = () => {
                   {`No se ha encontrado ningún \nusuario`}
                 </AppText>
               </View>
+            </View>
+          )}
+          {status === 'error' && (
+            <View style={styles.emptyContainer}>
+              <AppText
+                variant="body"
+                fontFamily="inter"
+                color={Colors.mutedWhite}
+                style={{ textAlign: 'left', fontSize: 16 }}
+              >
+                Ha ocurrido un error al buscar usuarios. Intenta de nuevo.
+              </AppText>
             </View>
           )}
         </View>

@@ -122,7 +122,7 @@ export const AppNavigator = () => {
           options={({ navigation }) => ({
             headerShown: false,
             cardStyle: { backgroundColor: Colors.background },
-            cardStyleInterpolator: CardStyleInterpolators.forNoAnimation,
+            cardStyleInterpolator: CardStyleInterpolators.forRevealFromBottomAndroid,
             gestureEnabled: true,
             gestureDirection: 'horizontal',
             detachPreviousScreen: false,

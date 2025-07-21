@@ -6,12 +6,14 @@ import { Colors } from '../../constants/Colors';
 
 interface AnimatedVerifiedIconProps {
   size?: number;
+  animated?: boolean;
 }
 
-export const AnimatedVerifiedIcon: React.FC<AnimatedVerifiedIconProps> = ({ size = 28 }) => {
+export const AnimatedVerifiedIcon: React.FC<AnimatedVerifiedIconProps> = ({ size = 28, animated = true }) => {
   const rotateValue = useRef(new Animated.Value(0)).current;
 
   useEffect(() => {
+    if (!animated) return;
     let isMounted = true;
 
     const startRotation = () => {
@@ -19,12 +21,12 @@ export const AnimatedVerifiedIcon: React.FC<AnimatedVerifiedIconProps> = ({ size
       rotateValue.setValue(0);
       Animated.timing(rotateValue, {
         toValue: 1,
-        duration: 10000, // 4 segundos para una rotación completa
-        easing: Easing.linear, // Animación lineal
+        duration: 10000,
+        easing: Easing.linear,
         useNativeDriver: true,
       }).start(({ finished }) => {
         if (finished && isMounted) {
-          startRotation(); // Reiniciar la animación sin transición perceptible
+          startRotation();
         }
       });
     };
@@ -35,7 +37,7 @@ export const AnimatedVerifiedIcon: React.FC<AnimatedVerifiedIconProps> = ({ size
       isMounted = false;
       rotateValue.stopAnimation();
     };
-  }, [rotateValue]);
+  }, [rotateValue, animated]);
 
   const rotate = rotateValue.interpolate({
     inputRange: [0, 1],
@@ -43,21 +45,31 @@ export const AnimatedVerifiedIcon: React.FC<AnimatedVerifiedIconProps> = ({ size
   });
 
   return (
-    <View style={[styles.container, { width: size, height: size }]}>
-      {/* Background que rota */}
-      <Animated.Image
-        source={verifiedBackground}
-        style={[
-          styles.background,
-          {
-            width: size,
-            height: size,
-            transform: [{ rotate }],
-          },
-        ]}
-      />
-      
-      {/* Foreground estático centrado */}
+    <View style={[styles.container, { width: size, height: size }]}> 
+      {animated ? (
+        <Animated.Image
+          source={verifiedBackground}
+          style={[
+            styles.background,
+            {
+              width: size,
+              height: size,
+              transform: [{ rotate }],
+            },
+          ]}
+        />
+      ) : (
+        <Image
+          source={verifiedBackground}
+          style={[
+            styles.background,
+            {
+              width: size,
+              height: size,
+            },
+          ]}
+        />
+      )}
       <Image
         source={quaver}
         style={[
