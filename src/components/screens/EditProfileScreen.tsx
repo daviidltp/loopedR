@@ -284,6 +284,7 @@ export const EditProfileScreen: React.FC = () => {
                   maxLength={50}
                   readOnly={true}
                   onReadOnlyPress={() => {
+					console.log('name: ', name);
                     navigation.navigate('EditProfileElement', {
                       field: 'name',
                       currentValue: name,

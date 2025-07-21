@@ -2,22 +2,22 @@ import { RouteProp } from '@react-navigation/native';
 import { StackNavigationProp } from '@react-navigation/stack';
 import React, { Suspense, lazy, useCallback, useEffect, useRef, useState } from 'react';
 import {
-  ActivityIndicator,
-  Alert,
-  BackHandler,
-  InteractionManager,
-  Keyboard,
-  Platform,
-  TextInput as RNTextInput,
-  StyleSheet,
-  TouchableWithoutFeedback,
-  View
+	ActivityIndicator,
+	Alert,
+	BackHandler,
+	InteractionManager,
+	Keyboard,
+	Platform,
+	TextInput as RNTextInput,
+	StyleSheet,
+	TouchableWithoutFeedback,
+	View
 } from 'react-native';
 import Animated, {
-  Easing,
-  useAnimatedStyle,
-  useSharedValue,
-  withTiming
+	Easing,
+	useAnimatedStyle,
+	useSharedValue,
+	withTiming
 } from 'react-native-reanimated';
 import { Colors } from '../../constants/Colors';
 import { useAuth } from '../../contexts/AuthContext';
@@ -465,7 +465,8 @@ export const CreateProfileScreen: React.FC<CreateProfileScreenProps> = ({ naviga
     // Función vacía para mantener la estética pero sin funcionalidad
   }, []);
 
-  const handleSelectPresetAvatar = useCallback((avatar: any) => {
+  const handleSelectPresetAvatar = useCallback((avatar: string) => {
+    console.log('Seleccionando avatar:', avatar);
     setSelectedAvatar(avatar);
   }, []);
 
