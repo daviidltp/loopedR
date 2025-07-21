@@ -109,21 +109,17 @@ export const PresetAvatarGrid: React.FC<PresetAvatarGridProps> = memo(({
   return (
     <View style={styles.container}>
       <View style={styles.avatarsContainer}>
-        {allAvatars.map((avatar, index) => {
-          // Si es default_avatar, no hay imagen
-          const image = avatar === DEFAULT_AVATAR_ID ? undefined : PRESET_AVATAR_IMAGES[avatar];
-          return (
-            <PresetAvatar
-              key={index}
-              avatarKey={avatar}
-              avatarIndex={index}
-              backgroundColor={avatarBackgrounds[index]}
-              isSelected={selectedAvatar === avatar}
-              onPress={() => onSelectAvatar(avatar)}
-              userName={userName}
-            />
-          );
-        })}
+        {allAvatars.map((avatar, index) => (
+          <PresetAvatar
+            key={index}
+            avatarKey={avatar} // Siempre pasar el string
+            avatarIndex={index}
+            backgroundColor={avatarBackgrounds[index]}
+            isSelected={selectedAvatar === avatar}
+            onPress={() => onSelectAvatar(avatar)}
+            userName={userName}
+          />
+        ))}
       </View>
       
       {/* <ColorSelector
