@@ -1,4 +1,4 @@
-import React, { ReactElement } from "react";
+import { ReactElement } from "react";
 import { ActivityIndicator, StyleSheet, View } from "react-native";
 import { Colors } from "../../../constants/Colors";
 import { AppText } from "../Text/AppText";
@@ -67,8 +67,8 @@ export const RippleButton = ({
     borderColor = "transparent",
     height = 52,
     width,
-    rippleColor = Colors.appleRed,
-    borderless = false,
+    rippleColor = Colors.foregroundSoft,
+    borderless = true,
     fontSize, // Nuevo prop
 }: RippleButtonProps) => {
     // Calcula el borderRadius dinámicamente según la altura

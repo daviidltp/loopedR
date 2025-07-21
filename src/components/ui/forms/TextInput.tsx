@@ -131,6 +131,8 @@ export const TextInput = forwardRef<RNTextInput, CustomTextInputProps>(({
               numberOfLines={numberOfLines}
               maxLength={maxLength}
               editable={false}
+              showSoftInputOnFocus={false}
+              pointerEvents="none"
             />
         ) : (
           <RNTextInput

@@ -35,12 +35,16 @@ export function useUserSearch(currentUser: UserProfile | null) {
 
   useEffect(() => {
     if (!currentUser?.id) return;
+    if (searchText.trim() !== '') {
+      setIsLoading(true);
+    }
+  }, [searchText]);
+
+  useEffect(() => {
+    if (!currentUser?.id) return;
     const searchUsers = async () => {
       if (searchText.trim() === '') {
-        if (!hasLoadedUsers) {
-          await loadUsers();
-          setHasLoadedUsers(true);
-        }
+        setUsers([]); // <-- Limpia los resultados
         return;
       }
       try {

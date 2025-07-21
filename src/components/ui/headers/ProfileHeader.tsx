@@ -126,6 +126,9 @@ export const ProfileHeader: React.FC<ProfileHeaderProps> = ({
       onGoBack={onBackPress}
       centerContent={centerContent}
       actionButtons={actionButtons}
+      containerStyle={{
+        marginHorizontal: 10,
+      }}
     />
   );
 }; 

@@ -1,31 +1,36 @@
-import { Skeleton } from '@rneui/themed';
+import { Skeleton } from "moti/skeleton";
 import React from 'react';
 import { StyleSheet, View } from 'react-native';
 import { Colors } from '../../../constants/Colors';
 
 export const UserListItemSkeleton: React.FC = () => {
+
+  const LinearGradient = require('react-native-svg').LinearGradient;
+  
   return (
     <View style={styles.container}>
       {/* Avatar skeleton */}
       <Skeleton
-        animation="wave"
-        circle
-        width={56}
-        height={56}
-        style={{ backgroundColor: Colors.backgroundSoft }}
-        skeletonStyle={{ backgroundColor: Colors.backgroundUltraSoft }}
-      />
+      colorMode="dark"
+      width={56} // Percentage, number, or 'auto'
+      height={56} // Number (e.g., fontSize)
+      radius="round"
+    />
       <View style={styles.userInfo}>
         <View style={styles.usernameRow}>
-          <Skeleton  width={90} height={16}         
-          style={{ backgroundColor: Colors.backgroundSoft }}
-          skeletonStyle={{ backgroundColor: Colors.backgroundUltraSoft }} 
-          animation="wave" />
+        <Skeleton
+      colorMode="dark"
+      width={200} // Percentage, number, or 'auto'
+      height={20} // Number (e.g., fontSize)
+      radius="square"
+    />
         </View>
-        <Skeleton width={120} height={14} 
-        style={{ backgroundColor: Colors.backgroundSoft }} 
-        skeletonStyle={{ backgroundColor: Colors.backgroundUltraSoft }}
-        animation="wave" />
+        <Skeleton
+      colorMode="dark"
+      width={100} // Percentage, number, or 'auto'
+      height={20} // Number (e.g., fontSize)
+      radius="square"
+    />
       </View>
     </View>
   );

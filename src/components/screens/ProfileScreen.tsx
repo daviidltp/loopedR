@@ -6,7 +6,7 @@ import { Colors } from '../../constants/Colors';
 import { useProfile } from '../../contexts/ProfileContext';
 import { RootStackParamList } from '../../navigation/AppNavigator';
 import { getUserFollowers, getUserFollowing } from '../../utils/mockData';
-import { ResizingButton } from '../ui/buttons/ResizingButton';
+import { RippleButton } from '../ui/buttons/RippleButton';
 import { ProfileHeader } from '../ui/headers/ProfileHeader';
 import { ProfileContent } from './ProfileContent';
 
@@ -68,12 +68,12 @@ export const ProfileScreen: React.FC = () => {
 
   // Botón de acción para mi perfil
   const actionButton = (
-    <ResizingButton
+    <RippleButton
       title="Editar perfil"
       onPress={handleEditProfile}
-      backgroundColor={Colors.background}
+      backgroundColor={Colors.backgroundSoft}
       textColor={Colors.white}
-      borderColor={Colors.white}
+      borderColor={Colors.backgroundSoft}
       height={42}
     />
   );

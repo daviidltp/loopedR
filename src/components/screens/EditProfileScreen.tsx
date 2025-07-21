@@ -322,6 +322,7 @@ export const EditProfileScreen: React.FC = () => {
                   autoCorrect={true}
                   returnKeyType="done"
                   showCharacterCount={true}
+                  multiline={true}
                   numberOfLines={4}
                   inputHeight={112}
                   readOnly={true}

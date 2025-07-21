@@ -1,12 +1,12 @@
 import React, { memo } from 'react';
 import { Pressable, StyleSheet, View } from 'react-native';
 import Animated, {
-    cancelAnimation,
-    Easing,
-    useAnimatedStyle,
-    useSharedValue,
-    withRepeat,
-    withTiming
+  cancelAnimation,
+  Easing,
+  useAnimatedStyle,
+  useSharedValue,
+  withRepeat,
+  withTiming
 } from 'react-native-reanimated';
 import { Colors } from '../../../constants/Colors';
 import { DefaultAvatar } from './DefaultAvatar';
@@ -93,7 +93,7 @@ export const PresetAvatar: React.FC<PresetAvatarProps> = memo(({
               size={80}
               avatarUrl={avatarKey} // Siempre pasar el string
               backgroundColor="transparent"
-              disabled={false}
+              disabled={true}
               showUploadButton={false}
             />
             

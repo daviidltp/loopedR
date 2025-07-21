@@ -3,11 +3,11 @@ import { StackNavigationProp } from '@react-navigation/stack';
 import * as WebBrowser from 'expo-web-browser';
 import { useEffect, useRef, useState } from 'react';
 import {
-	BackHandler,
-	Image,
-	ScrollView,
-	StyleSheet,
-	View
+  BackHandler,
+  Image,
+  ScrollView,
+  StyleSheet,
+  View
 } from 'react-native';
 import { Icon } from 'react-native-paper';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
@@ -21,9 +21,9 @@ import { Layout } from '../ui/layout/Layout';
 import { OptionsBottomSheetRef } from '../ui/modals';
 import { ConfirmationDialog } from '../ui/modals/ConfirmationDialog';
 import {
-	SettingsItem,
-	SettingsProfileSection,
-	SettingsSectionTitle
+  SettingsItem,
+  SettingsProfileSection,
+  SettingsSectionTitle
 } from '../ui/sections';
 
 // Importar iconos personalizados
@@ -264,7 +264,12 @@ export const SettingsScreen = () => {
           <View style={styles.logoutContainer}>
             <ResizingButton
               title={isLoggingOut ? "Cerrando sesión..." : "Cerrar sesión"}
-              onPress={() => setShowLogoutDialog(true)}
+              onPress={() => {
+                setShowLogoutDialog(true);
+                setTimeout(() => {
+                  handleLogoutPress();
+                }, 300);
+              }}
               backgroundColor={Colors.backgroundSoft}
               textColor={Colors.appleRed}
               icon={<Icon source="logout" size={20} color={Colors.appleRed} />}

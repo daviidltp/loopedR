@@ -1,7 +1,7 @@
 import type { BottomTabNavigationProp, BottomTabScreenProps } from '@react-navigation/bottom-tabs';
 import { useFocusEffect, useNavigation, useRoute } from '@react-navigation/native';
 import React from 'react';
-import { ActivityIndicator, StyleSheet, View } from 'react-native';
+import { Keyboard, StyleSheet, TouchableWithoutFeedback, View } from 'react-native';
 import { Colors } from '../../constants/Colors';
 import { useProfile } from '../../contexts/ProfileContext';
 import { useUserSearch } from '../../hooks/useUserSearch';
@@ -59,6 +59,8 @@ export const SearchScreen: React.FC = () => {
     }, [fromSearchAnimation, navigation])
   );
 
+  const isSearchEmpty = searchText.trim() === '';
+
   return (
     <Layout style={styles.container}>
       {/* SearchBar siempre visible */}
@@ -73,49 +75,59 @@ export const SearchScreen: React.FC = () => {
       </View>
 
       {/* Lista de usuarios */}
-      <View style={styles.userListContainer}>
-        {isLoading && searchText.trim() !== '' ? (
-          <View>
-            {[...Array(3)].map((_, i) => (
-              <UserListItemSkeleton key={i} />
-            ))}
-          </View>
-        ) : isLoading ? (
-          <View style={styles.loadingContainer}>
-            <ActivityIndicator size="large" color={Colors.white} />
-          </View>
-        ) : users.length > 0 ? (
-          <UserList
-            users={users}
-            onUserPress={userId => handleUserPress(userId, navigation, currentUser?.id)}
-          />
-        ) : (
-          <View style={styles.emptyContainer}>
-            <View style={{ flexDirection: 'row', alignItems: 'center', marginTop: 12, gap: 12 }}>
-              <View style={{
-                width: 60,
-                height: 60,
-                borderRadius: 30,
-                backgroundColor: Colors.background,
-                borderWidth: 2,
-                borderColor: Colors.backgroundSoft,
-                justifyContent: 'center',
-                alignItems: 'center'
-              }}>
-                <DeleteUserIcon size={28} color={Colors.mutedWhite} />
-              </View>
+      <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
+        <View style={styles.userListContainer}>
+          {isSearchEmpty && !isLoading ? (
+            <View style={styles.defaultContainer}>
               <AppText
                 variant="body"
                 fontFamily="inter"
                 color={Colors.mutedWhite}
                 style={{ textAlign: 'left', fontSize: 16 }}
               >
-                {`No se ha encontrado ningún \nusuario`}
+                Busca usuarios para empezar a conectar 🎵
               </AppText>
             </View>
-          </View>
-        )}
-      </View>
+          ) : isLoading ? (
+            <View>
+              {[...Array(3)].map((_, i) => (
+                <UserListItemSkeleton key={i} />
+              ))}
+            </View>
+          ) : users.length > 0 ? (
+            <UserList
+              users={users}
+              onUserPress={userId => handleUserPress(userId, navigation, currentUser?.id)}
+            />
+          ) : (
+            // Solo mostrar este mensaje si la búsqueda terminó y no hay resultados
+            <View style={styles.emptyContainer}>
+              <View style={{ flexDirection: 'row', alignItems: 'center', marginTop: 12, gap: 12 }}>
+                <View style={{
+                  width: 60,
+                  height: 60,
+                  borderRadius: 30,
+                  backgroundColor: Colors.background,
+                  borderWidth: 2,
+                  borderColor: Colors.backgroundSoft,
+                  justifyContent: 'center',
+                  alignItems: 'center'
+                }}>
+                  <DeleteUserIcon size={28} color={Colors.mutedWhite} />
+                </View>
+                <AppText
+                  variant="body"
+                  fontFamily="inter"
+                  color={Colors.mutedWhite}
+                  style={{ textAlign: 'left', fontSize: 16 }}
+                >
+                  {`No se ha encontrado ningún \nusuario`}
+                </AppText>
+              </View>
+            </View>
+          )}
+        </View>
+      </TouchableWithoutFeedback>
     </Layout>
   );
 };
@@ -143,6 +155,12 @@ const styles = StyleSheet.create({
     flex: 1,
     justifyContent: 'flex-start',
     alignItems: 'flex-start',
+    paddingHorizontal: 24,
+  },
+  defaultContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
     paddingHorizontal: 24,
   },
 }); 

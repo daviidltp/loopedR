@@ -14,7 +14,7 @@ export interface UnifiedUser {
   email?: string; // Solo disponible para el usuario actual
 }
 
-export const useUser = (userId: string) => {
+export const useUser = (userId: string, userDataFromParams?: any) => {
   const { profile: currentUser, isLoading: currentUserLoading } = useProfile();
   const [user, setUser] = useState<UnifiedUser | null>(null);
   const [isLoading, setIsLoading] = useState(true);
