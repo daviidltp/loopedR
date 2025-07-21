@@ -58,7 +58,7 @@ export const searchSupabaseUsers = async (
     let query = supabase
       .from('profiles')
       .select('id, username, display_name, bio, avatar_url, is_public, is_verified, updated_at')
-      .or(`username.ilike.%${searchTerm}%,display_name.ilike.%${searchTerm}%`)
+      .or(`username.ilike.${searchTerm}%,display_name.ilike.${searchTerm}%`)
       .order('updated_at', { ascending: false });
 
     // Si hay un usuario actual, excluirlo de los resultados

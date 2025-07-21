@@ -17,7 +17,7 @@ export type RootStackParamList = {
   Settings: undefined;
   EditProfile: undefined;
   EditProfileElement: { field: 'name' | 'username' | 'bio'; currentValue: string; title: string };
-  UserProfile: { userId: string };
+  UserProfile: { userId: string; userData?: any };
 };
 
 const Stack = createStackNavigator<RootStackParamList>();

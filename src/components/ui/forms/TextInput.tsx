@@ -102,7 +102,6 @@ export const TextInput = forwardRef<RNTextInput, CustomTextInputProps>(({
         )}
 
         {readOnly ? (
-          <View pointerEvents="none">
             <RNTextInput
               {...props}
               ref={ref}
@@ -133,7 +132,6 @@ export const TextInput = forwardRef<RNTextInput, CustomTextInputProps>(({
               maxLength={maxLength}
               editable={false}
             />
-          </View>
         ) : (
           <RNTextInput
             {...props}
