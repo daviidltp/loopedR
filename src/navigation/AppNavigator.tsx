@@ -115,7 +115,7 @@ const MainAppScreens = () => (
           close: {
             animation: 'timing',
             config: {
-              duration: 0,
+              duration: 300,
               easing: Easing.out(Easing.cubic),
             },
           },

@@ -1,31 +1,57 @@
 import React from 'react';
-import { Image, StyleSheet, Text, View } from 'react-native';
+import { StyleSheet, View } from 'react-native';
 import { Colors } from '../../../constants/Colors';
-import { FONT_FAMILIES } from '../../../constants/Fonts';
+import { VerifiedIcon } from '../../icons/VerifiedIcon';
+import { DefaultAvatar } from '../Avatar/DefaultAvatar';
+import { AppText } from '../Text/AppText';
 
 interface PostHeaderProps {
-  username: string;
-  avatarUrl: string;
-  isVerified?: boolean;
+  user: {
+    username: string;
+    avatarUrl: string;
+    isVerified?: boolean;
+    displayName?: string;
+  };
 }
 
 export const PostHeader: React.FC<PostHeaderProps> = ({
-  username,
-  avatarUrl,
-  isVerified = false,
+  user,
 }) => {
   return (
     <View style={styles.container}>
-      <Image source={{ uri: avatarUrl }} style={styles.avatar} />
+      <DefaultAvatar
+        name={user.displayName || user.username}
+        size={40}
+        avatarUrl={user.avatarUrl}
+        showUploadButton={false}
+        disabled={true}
+      />
       <View style={styles.userInfo}>
-        <View style={styles.nameContainer}>
-          <Text style={styles.username}>{username}</Text>
-          {isVerified && (
-            <View style={styles.verifiedBadge}>
-              <Text style={styles.verifiedIcon}>✓</Text>
-            </View>
+        <View style={styles.usernameRow}>
+          <AppText
+            variant='body'
+            fontFamily="inter"
+            fontWeight="semiBold"
+            color={Colors.white}
+            style={styles.username}
+            numberOfLines={1}
+          >
+            {user.username}
+          </AppText>
+          {user.isVerified && (
+            <VerifiedIcon size={16} />
           )}
         </View>
+        <AppText
+          variant='bodySmall'
+          fontFamily="inter"
+          fontWeight="regular"
+          color={Colors.mutedWhite}
+          style={styles.displayName}
+          numberOfLines={1}
+        >
+          {user.displayName}
+        </AppText>
       </View>
     </View>
   );
@@ -37,38 +63,21 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     paddingHorizontal: 16,
     paddingVertical: 12,
-  },
-  avatar: {
-    width: 40,
-    height: 40,
-    borderRadius: 20,
-    backgroundColor: Colors.gray[700],
+    gap: 12,
   },
   userInfo: {
-    marginLeft: 12,
     flex: 1,
+    justifyContent: 'center',
   },
-  nameContainer: {
+  usernameRow: {
     flexDirection: 'row',
     alignItems: 'center',
+    marginBottom: 2,
   },
   username: {
-    fontSize: 16,
-    fontFamily: FONT_FAMILIES.semiBold,
-    color: Colors.white,
+    marginRight: 6,
   },
-  verifiedBadge: {
-    width: 18,
-    height: 18,
-    backgroundColor: Colors.spotifyGreen,
-    borderRadius: 9,
-    justifyContent: 'center',
-    alignItems: 'center',
-    marginLeft: 6,
-  },
-  verifiedIcon: {
-    fontSize: 12,
-    color: Colors.white,
-    fontFamily: FONT_FAMILIES.bold,
+  displayName: {
+    opacity: 0.8,
   },
 }); 

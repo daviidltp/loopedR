@@ -64,7 +64,7 @@ export const mockUsers: User[] = [
 
 // Relaciones de seguimiento simuladas
 export const mockUserRelations: UserRelation[] = [
-  { followerId: '1', followingId: '2' }, // q888kbwstnr1b5p7j1lv32vr4
+  { followerId: 'q888kbwstnr1b5p7j1lv32vr4', followingId: '2' }, // q888kbwstnr1b5p7j1lv32vr4
   { followerId: '2', followingId: '3' },
   
   // musiclover23 sigue a rockstar_girl y dj_beats
@@ -115,15 +115,6 @@ export const hasAnyFollowing = (userId: string): boolean => {
 };
 
 // Nuevos tipos para posts, comentarios y notificaciones
-export interface Post {
-  id: string;
-  userId: string;
-  content: string;
-  timestamp: number;
-  likes: number;
-  comments: number;
-}
-
 export interface Comment {
   id: string;
   postId: string;
@@ -156,31 +147,56 @@ export interface Notification {
   timestamp: number;
 }
 
+// Tipos de post discriminados
+export type Top3SongsPost = {
+  id: string;
+  type: 'top-3-songs';
+  user: User;
+  timestamp: number;
+  topSongs: Array<{
+    position: number;
+    title: string;
+    artist: string;
+    plays: string;
+    albumCover: string;
+  }>;
+  description: string;
+};
+
+export type Post = Top3SongsPost; // | OtroTipoDePostEnElFuturo
+
 // Posts mock
 export const mockPosts: Post[] = [
   {
-    id: '1',
-    userId: 'q888kbwstnr1b5p7j1lv32vr4',
-    content: 'Trabajando en el nuevo feature de looped 🎵',
-    timestamp: Date.now() - 1000 * 60 * 30, // 30 minutos atrás
-    likes: 5,
-    comments: 2,
-  },
-  {
-    id: '2',
-    userId: 'q888kbwstnr1b5p7j1lv32vr4',
-    content: 'La música conecta almas ✨',
+    id: 'top3-1',
+    type: 'top-3-songs',
+    user: mockUsers[1], // pedrodquevedo
     timestamp: Date.now() - 1000 * 60 * 60 * 2, // 2 horas atrás
-    likes: 12,
-    comments: 4,
-  },
-  {
-    id: '3',
-    userId: '2',
-    content: 'Nuevo tema en camino 🔥',
-    timestamp: Date.now() - 1000 * 60 * 60 * 24, // 1 día atrás
-    likes: 89,
-    comments: 15,
+    topSongs: [
+      {
+        position: 1,
+
+        title: 'BIRDS OF A FEATHER',
+        artist: 'Billie Eilish',
+        plays: '950K',
+        albumCover: 'https://i.scdn.co/image/ab67616d0000b27371d62ea7ea8a5be92d3c1f62',
+      },
+      {
+        position: 2,
+        title: 'God\'s Plan',
+        artist: 'Drake',
+        plays: '1.2M',
+        albumCover: 'https://i.scdn.co/image/ab67616d0000b273f907de96b9a4fbc04accc0d5',
+      },
+      {
+        position: 3,
+        title: 'Lacy',
+        artist: 'Olivia Rodrigo',
+        plays: '800K',
+        albumCover: 'https://i.scdn.co/image/ab67616d0000b2734063d624ebf8ff67bc3701ee',
+      },
+    ],
+    description: 'Mis 3 canciones más escuchadas este mes',
   },
 ];
 
