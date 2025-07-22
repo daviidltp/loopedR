@@ -7,6 +7,7 @@ import { AccountPrivacy } from '../components/screens/EditProfileScreens/Account
 import { EditProfileElement } from '../components/screens/EditProfileScreens/EditProfileElement';
 import { SettingsScreen } from '../components/screens/SettingsScreen';
 import { UserProfileScreen } from '../components/screens/UserProfileScreen';
+import { FollowRequestsScreen } from '../components/ui/modals/FollowRequestsModal';
 import { BottomNavigationBar } from '../components/ui/navigation/BottomNavigationBar';
 import { Colors } from '../constants/Colors';
 import { useAuth } from '../contexts/AuthContext';
@@ -20,6 +21,7 @@ export type RootStackParamList = {
   EditProfileElement: { field: 'name' | 'username' | 'bio'; currentValue: string; title: string };
   UserProfile: { userId: string; userData?: any };
   AccountPrivacy: undefined;
+  FollowRequests: undefined;
 };
 
 const Stack = createStackNavigator<RootStackParamList>();
@@ -148,6 +150,11 @@ const MainAppScreens = () => (
         detachPreviousScreen: false,
         freezeOnBlur: false,
       }}
+    />
+    <Stack.Screen 
+      name="FollowRequests" 
+      component={FollowRequestsScreen}
+      options={{ headerShown: false }}
     />
   </>
 );

@@ -1,72 +1,46 @@
 import { useNavigation } from '@react-navigation/native';
-import React, { useState } from 'react';
+import type { StackNavigationProp } from '@react-navigation/stack';
+import React from 'react';
 import { StyleSheet, View } from 'react-native';
 import { useProfile } from '../../contexts/ProfileContext';
-import {
-	getFollowRequestsForUser
-} from '../../utils/mockData';
+import type { RootStackParamList } from '../../navigation/AppNavigator';
 import { FollowRequestSection } from '../ui/cards/FollowRequestSection';
 import { NotificationsHeader } from '../ui/headers/NotificationsHeader';
 import { Layout } from '../ui/layout/Layout';
-import { FollowRequestsModal } from '../ui/modals/FollowRequestsModal';
-import { AppText } from '../ui/Text/AppText';
+// import { FollowRequestsModal } from '../ui/modals/FollowRequestsModal'; // Eliminar modal
 
 export const InboxScreen: React.FC = () => {
-  const navigation = useNavigation();
+  const navigation = useNavigation<StackNavigationProp<RootStackParamList>>();
   const { profile: currentUser } = useProfile();
-  const [isModalVisible, setIsModalVisible] = useState(false);
+  // const [isModalVisible, setIsModalVisible] = useState(false); // Eliminar modal
 
   // Obtener solicitudes de seguimiento del usuario actual
-  const followRequests = currentUser ? getFollowRequestsForUser(currentUser.id) : [];
+  // const followRequests = currentUser ? getFollowRequestsForUser(currentUser.id) : [];
+  // Ahora la lógica de solicitudes viene del contexto en FollowRequestSection
 
   // Aquí puedes agregar lógica para otras notificaciones si existen en el futuro
-  const hasNotifications = followRequests.length > 0; // Puedes expandir esto si hay más tipos
+  // const hasNotifications = followRequests.length > 0; // Puedes expandir esto si hay más tipos
 
   const handleViewAllRequests = () => {
-    setIsModalVisible(true);
+    navigation.navigate('FollowRequests');
   };
 
-  const handleAcceptRequest = (requestId: string) => {
-    console.log('Aceptar solicitud:', requestId);
-    // TODO: Implementar aceptar solicitud
-  };
-
-  const handleRejectRequest = (requestId: string) => {
-    console.log('Rechazar solicitud:', requestId);
-    // TODO: Implementar rechazar solicitud
-  };
-
-  const handleCloseModal = () => {
-    setIsModalVisible(false);
-  };
+  // const handleAcceptRequest = (requestId: string) => { ... } // Eliminar modal
+  // const handleRejectRequest = (requestId: string) => { ... } // Eliminar modal
+  // const handleCloseModal = () => { ... } // Eliminar modal
 
   return (
     <Layout>
       <View style={styles.container}>
         <NotificationsHeader />
-        
         <View style={styles.content}>
           <FollowRequestSection
-            requests={followRequests}
+            // requests={followRequests} // Ya no se pasa, el contexto lo gestiona
             onPress={handleViewAllRequests}
           />
-          {!hasNotifications && (
-            <View style={styles.emptyStateContainer}>
-              <AppText variant="body" fontFamily="inter" color="#888" style={{textAlign:'center'}}>
-                No tienes notificaciones
-              </AppText>
-            </View>
-          )}
-          
+          {/* Aquí puedes agregar más notificaciones si lo deseas */}
         </View>
-
-        <FollowRequestsModal
-          visible={isModalVisible}
-          requests={followRequests}
-          onClose={handleCloseModal}
-          onAccept={handleAcceptRequest}
-          onReject={handleRejectRequest}
-        />
+        {/* Eliminar el modal */}
       </View>
     </Layout>
   );

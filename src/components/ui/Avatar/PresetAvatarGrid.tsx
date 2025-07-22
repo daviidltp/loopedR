@@ -27,7 +27,7 @@ const PRESET_AVATAR_FILENAMES = [
   'profileicon5.png',
 ];
 
-const PRESET_AVATAR_IMAGES: Record<string, any> = {
+export const PRESET_AVATAR_IMAGES: Record<string, any> = {
   'profileicon1.png': profileicon1,
   'profileicon2.png': profileicon2,
   'profileicon6.png': profileicon6,

@@ -1,27 +1,29 @@
+import { useNavigation } from '@react-navigation/native';
+import type { StackNavigationProp } from '@react-navigation/stack';
 import React from 'react';
-import { FlatList, Image, Modal, StyleSheet, TouchableOpacity, View } from 'react-native';
+import { FlatList, Image, StyleSheet, TouchableOpacity, View } from 'react-native';
 import { Colors } from '../../../constants/Colors';
 import { useFollowers } from '../../../contexts/FollowersContext';
+import { useProfile } from '../../../contexts/ProfileContext';
+import type { RootStackParamList } from '../../../navigation/AppNavigator';
+import { convertSupabaseUserToUser } from '../../../utils/userActions';
 import { CheckIcon } from '../../icons/CheckIcon';
 import { CrossIcon } from '../../icons/CrossIcon';
+import { DefaultAvatar } from '../Avatar/DefaultAvatar';
+import { DEFAULT_AVATAR_ID, PRESET_AVATAR_IMAGES } from '../Avatar/PresetAvatarGrid';
 import { AppText } from '../Text/AppText';
+import { PlatformTouchable } from '../buttons/PlatformTouchable';
 
-interface FollowRequestsModalProps {
-  visible: boolean;
-  requests: any[]; // This type will need to be updated based on the new structure
-  onClose: () => void;
-  onAccept: (requestId: string) => void;
-  onReject: (requestId: string) => void;
-}
+const getAvatarSource = (avatarUrl: string | undefined) => {
+  if (!avatarUrl || avatarUrl === DEFAULT_AVATAR_ID) return undefined;
+  if (PRESET_AVATAR_IMAGES[avatarUrl]) return PRESET_AVATAR_IMAGES[avatarUrl];
+  return { uri: avatarUrl };
+};
 
-export const FollowRequestsModal: React.FC<FollowRequestsModalProps> = ({
-  visible,
-  requests,
-  onClose,
-  onAccept,
-  onReject,
-}) => {
+export const FollowRequestsScreen: React.FC = () => {
   const { followRequests, acceptFollowRequest, rejectFollowRequest, isLoading } = useFollowers();
+  const stackNavigation = useNavigation<StackNavigationProp<RootStackParamList>>();
+  const { profile: currentUser } = useProfile();
 
   const handleAccept = async (requestId: string) => {
     await acceptFollowRequest(requestId);
@@ -29,82 +31,108 @@ export const FollowRequestsModal: React.FC<FollowRequestsModalProps> = ({
   const handleReject = async (requestId: string) => {
     await rejectFollowRequest(requestId);
   };
+  const handleUserPress = (userId: string, userData: any) => {
+    if (userId === currentUser?.id) {
+      stackNavigation.navigate('MainApp');
+    } else {
+      const user = convertSupabaseUserToUser(userData);
+      stackNavigation.navigate('UserProfile', { userId, userData: user });
+    }
+  };
 
-  const renderItem = ({ item }: { item: any }) => (
-    <View style={modalStyles.requestItem}>
-      <Image source={{ uri: item.follower_profile?.avatar_url || '' }} style={modalStyles.avatar} />
-      <View style={modalStyles.infoContainer}>
-        <AppText variant="body" fontFamily="inter" fontWeight="semiBold" color={Colors.white}>
-          {item.follower_profile?.display_name || item.follower_profile?.username || 'Usuario'}
-        </AppText>
-        <AppText variant="bodySmall" fontFamily="inter" color={Colors.mutedWhite}>
-          @{item.follower_profile?.username || 'usuario'}
-        </AppText>
-        {item.follower_profile?.is_verified && (
-          <AppText variant="bodySmall" fontFamily="inter" color={Colors.white}>
-            ✔ Verificado
-          </AppText>
-        )}
-      </View>
-      <View style={modalStyles.actions}>
-        <TouchableOpacity onPress={() => handleAccept(item.id)} disabled={isLoading} style={modalStyles.actionBtn}>
-          <CheckIcon size={24} color={Colors.spotifyGreen || '#1DB954'} />
-        </TouchableOpacity>
-        <TouchableOpacity onPress={() => handleReject(item.id)} disabled={isLoading} style={modalStyles.actionBtn}>
-          <CrossIcon size={24} color={'#fa233b'} />
-        </TouchableOpacity>
-      </View>
-    </View>
-  );
-
-  if (!visible) return null;
-  return (
-    <Modal visible={visible} onRequestClose={onClose} animationType="slide" transparent>
-      <View style={modalStyles.overlay}>
-        <View style={modalStyles.modalContent}>
-          <AppText variant="h5" fontFamily="inter" fontWeight="bold" color={Colors.white} style={modalStyles.title}>
-            Solicitudes de seguimiento
-          </AppText>
-          {followRequests.length > 0 ? (
-            <FlatList
-              data={followRequests}
-              keyExtractor={item => item.id}
-              renderItem={renderItem}
-              style={modalStyles.list}
-              showsVerticalScrollIndicator={false}
-            />
+  const renderItem = ({ item }: { item: any }) => {
+    const avatarUrl = item.follower_profile?.avatar_url;
+    const avatarSource = getAvatarSource(avatarUrl);
+    return (
+      <PlatformTouchable
+        onPress={() => handleUserPress(item.follower_id, item.follower_profile)}
+        rippleColor={Colors.gray[700]}
+        disabled={isLoading}
+      >
+        <View style={screenStyles.requestItem}>
+          {avatarSource ? (
+            <Image source={avatarSource} style={screenStyles.avatar} />
           ) : (
-            <View style={modalStyles.emptyContainer}>
-              <AppText variant="body" fontFamily="inter" color={Colors.mutedWhite}>
-                No tienes solicitudes de seguimiento
-              </AppText>
-            </View>
+            <DefaultAvatar
+              name={item.follower_profile?.display_name || item.follower_profile?.username || 'Usuario'}
+              size={48}
+              showUploadButton={false}
+              disabled={true}
+            />
           )}
-          <TouchableOpacity onPress={onClose} style={modalStyles.closeBtn}>
-            <AppText variant="body" fontFamily="inter" color={Colors.white}>Cerrar</AppText>
-          </TouchableOpacity>
+          <View style={screenStyles.infoContainer}>
+            <AppText variant="body" fontFamily="inter" fontWeight="semiBold" color={Colors.white}>
+              {item.follower_profile?.display_name || item.follower_profile?.username || 'Usuario'}
+            </AppText>
+            <AppText variant="bodySmall" fontFamily="inter" color={Colors.mutedWhite}>
+              @{item.follower_profile?.username || 'usuario'}
+            </AppText>
+            {item.follower_profile?.is_verified && (
+              <AppText variant="bodySmall" fontFamily="inter" color={Colors.white}>
+                ✔ Verificado
+              </AppText>
+            )}
+          </View>
+          <View style={screenStyles.actions}>
+            <TouchableOpacity onPress={() => handleAccept(item.id)} disabled={isLoading} style={screenStyles.actionBtn}>
+              <CheckIcon size={24} color={Colors.spotifyGreen || '#1DB954'} />
+            </TouchableOpacity>
+            <TouchableOpacity onPress={() => handleReject(item.id)} disabled={isLoading} style={screenStyles.actionBtn}>
+              <CrossIcon size={24} color={'#fa233b'} />
+            </TouchableOpacity>
+          </View>
         </View>
+      </PlatformTouchable>
+    );
+  };
+
+  return (
+    <View style={screenStyles.container}>
+      <View style={screenStyles.header}>
+        <TouchableOpacity onPress={() => stackNavigation.goBack()} style={screenStyles.backBtn}>
+          <AppText variant="body" fontFamily="inter" color={Colors.white}>{'< Volver'}</AppText>
+        </TouchableOpacity>
+        <AppText variant="h5" fontFamily="inter" fontWeight="bold" color={Colors.white} style={screenStyles.title}>
+          Solicitudes de seguimiento
+        </AppText>
       </View>
-    </Modal>
+      {followRequests.length > 0 ? (
+        <FlatList
+          data={followRequests}
+          keyExtractor={item => item.id}
+          renderItem={renderItem}
+          style={screenStyles.list}
+          showsVerticalScrollIndicator={false}
+        />
+      ) : (
+        <View style={screenStyles.emptyContainer}>
+          <AppText variant="body" fontFamily="inter" color={Colors.mutedWhite}>
+            No tienes solicitudes de seguimiento
+          </AppText>
+        </View>
+      )}
+    </View>
   );
 };
 
-const modalStyles = StyleSheet.create({
-  overlay: {
+const screenStyles = StyleSheet.create({
+  container: {
     flex: 1,
-    backgroundColor: 'rgba(0,0,0,0.7)',
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  modalContent: {
     backgroundColor: Colors.background,
-    borderRadius: 16,
-    padding: 24,
-    width: '90%',
-    maxHeight: '80%',
+    paddingTop: 48,
+  },
+  header: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginBottom: 16,
+    paddingHorizontal: 16,
+  },
+  backBtn: {
+    marginRight: 12,
+    padding: 8,
   },
   title: {
-    marginBottom: 16,
+    flex: 1,
     textAlign: 'center',
   },
   list: {
@@ -114,6 +142,7 @@ const modalStyles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     marginBottom: 16,
+    paddingHorizontal: 16,
   },
   avatar: {
     width: 48,
@@ -137,10 +166,5 @@ const modalStyles = StyleSheet.create({
   emptyContainer: {
     alignItems: 'center',
     marginVertical: 32,
-  },
-  closeBtn: {
-    alignSelf: 'center',
-    marginTop: 8,
-    padding: 8,
   },
 }); 

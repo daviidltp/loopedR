@@ -300,9 +300,19 @@ export const UserProfileScreen: React.FC = () => {
     </View>
   );
 
+  // Convertir userData a formato seguro para ProfileContent
+  const safeUserData = {
+    ...userData,
+    displayName: (userData.displayName || '').trim(),
+    username: (userData.username || '').trim(),
+    bio: (userData.bio || '').trim(),
+    email: (userData.email || '').trim(),
+    avatarUrl: userData.avatarUrl || '',
+  };
+
   return (
     <ProfileContent
-      userData={userData}
+      userData={safeUserData}
       followersCount={isOwnProfile ? followersCount : externalFollowersCount}
       followingCount={isOwnProfile ? followingCount : externalFollowingCount}
       headerComponent={headerComponent}
