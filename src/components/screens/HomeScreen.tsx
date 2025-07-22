@@ -1,6 +1,6 @@
 import { mockPosts } from '@/src/utils/mockData';
 import type { BottomTabNavigationProp } from '@react-navigation/bottom-tabs';
-import { useNavigation } from '@react-navigation/native';
+import { useFocusEffect, useNavigation } from '@react-navigation/native';
 import React from 'react';
 import { Keyboard, ScrollView, StyleSheet, TouchableWithoutFeedback, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
@@ -25,11 +25,13 @@ export const HomeScreen: React.FC = () => {
   const [userHasFriends, setUserHasFriends] = React.useState(false);
   const navigation = useNavigation<BottomTabNavigationProp<BottomNavigationParamList, 'Home'>>();
 
-  React.useEffect(() => {
-    if (currentUser?.id) {
-      getFollowingCount(currentUser.id).then(count => setUserHasFriends(count > 0)).catch(() => setUserHasFriends(false));
-    }
-  }, [currentUser?.id, getFollowingCount]);
+  useFocusEffect(
+    React.useCallback(() => {
+      if (currentUser?.id) {
+        getFollowingCount(currentUser.id).then(count => setUserHasFriends(count > 0)).catch(() => setUserHasFriends(false));
+      }
+    }, [currentUser?.id, getFollowingCount])
+  );
 
   // Componente interno para el estado vacío
   const EmptyState: React.FC = () => (
