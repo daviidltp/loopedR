@@ -4,7 +4,8 @@ import React from 'react';
 import { Keyboard, ScrollView, StyleSheet, TouchableWithoutFeedback, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Colors } from '../../constants/Colors';
-import { currentUser, hasAnyFollowing } from '../../utils/mockData';
+import { useFollowers } from '../../contexts/FollowersContext';
+import { useProfile } from '../../contexts/ProfileContext';
 import { SearchBar } from '../ui/forms/SearchBar';
 import { HomeHeader } from '../ui/headers';
 import { Layout } from '../ui/layout';
@@ -17,9 +18,16 @@ const SEARCH_BAR_INITIAL_POSITION = 230;
 
 export const HomeScreen: React.FC = () => {
   const insets = useSafeAreaInsets();
-  const userHasFriends = hasAnyFollowing(currentUser.id);
+  const { profile: currentUser } = useProfile();
+  const { getFollowingCount } = useFollowers();
+  const [userHasFriends, setUserHasFriends] = React.useState(false);
   const navigation = useNavigation<BottomTabNavigationProp<BottomNavigationParamList, 'Home'>>();
-  
+
+  React.useEffect(() => {
+    if (currentUser?.id) {
+      getFollowingCount(currentUser.id).then(count => setUserHasFriends(count > 0)).catch(() => setUserHasFriends(false));
+    }
+  }, [currentUser?.id, getFollowingCount]);
 
   return (
     <Layout>
