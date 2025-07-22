@@ -1,9 +1,9 @@
 import React from 'react';
 import { StyleSheet, View } from 'react-native';
 import { Icon } from 'react-native-paper';
-import { Switch } from 'react-native-switch';
 import { Colors } from '../../../constants/Colors';
 import { PlatformTouchable } from '../buttons/PlatformTouchable';
+import { CustomSwitch } from '../forms/CustomSwitch';
 import { AppText } from '../Text/AppText';
 
 interface SettingsItemProps {
@@ -99,23 +99,14 @@ export const SettingsItem: React.FC<SettingsItemProps> = ({
         
         <View style={styles.rightSection}>
           {hasSwitch ? (
-            
-              <Switch
-                value={switchValue}
-                onValueChange={onSwitchChange}
-                circleBorderWidth={0}
-                backgroundActive={Colors.secondaryGreenDark}
-                backgroundInactive={Colors.gray[700]}
-                circleActiveColor={Colors.secondaryGreen}
-                circleInActiveColor={Colors.gray[300]}
-                renderActiveText={false}
-                renderInActiveText={false}
-                switchRightPx={2}
-                switchLeftPx={2}
-                circleSize={20}
-                barHeight={30}
-                switchWidthMultiplier={2.5}
-              />
+            <CustomSwitch
+              value={switchValue}
+              onValueChange={onSwitchChange || (() => {})}
+              activeColor={Colors.secondaryGreenDark}
+              inactiveColor={Colors.gray[700]}
+              thumbActiveColor={Colors.secondaryGreen}
+              thumbInactiveColor={Colors.gray[300]}
+            />
             
           ) : (
             showChevron && (

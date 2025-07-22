@@ -1,7 +1,7 @@
-import React from 'react';
-import { View } from 'react-native';
-import { Notifier } from 'react-native-notifier';
-import { Icon } from 'react-native-paper';
+import React, { useState } from 'react';
+import { Platform, View } from 'react-native';
+import { Icon, Snackbar } from 'react-native-paper';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Colors } from '../../../constants/Colors';
 import { AnimatedVerifiedIcon } from '../../icons/AnimatedVerifiedIcon';
 import { AppText } from '../Text/AppText';
@@ -26,40 +26,12 @@ export const ProfileHeader: React.FC<ProfileHeaderProps> = ({
   isMyProfile = false,
   isPublicProfile = true,
 }) => {
+  // Estado para el Snackbar
+  const [snackbarVisible, setSnackbarVisible] = useState(false);
+  const insets = useSafeAreaInsets();
+
   const handleBookmarkPress = () => {
-    Notifier.showNotification({
-      title: 'Próximamente en looped... 🤫',
-      description: '',
-      duration: 2000,
-      showAnimationDuration: 300,
-      hideAnimationDuration: 300,
-      onPress: () => {
-        Notifier.hideNotification();
-      },
-      swipeEnabled: true,
-      queueMode: 'next',
-      componentProps: {
-        containerStyle: {
-          backgroundColor: Colors.secondaryGreenDark,
-          marginHorizontal: 0,
-          marginTop: 0,
-          paddingVertical: 16,
-          paddingTop: 45,
-          borderRadius: 0,
-        },
-        titleStyle: {
-          color: Colors.white,
-          fontSize: 20,
-          fontWeight: '700',
-          fontFamily: 'Raleway',
-        },
-        descriptionStyle: {
-          color: Colors.mutedWhite,
-          fontSize: 14,
-          fontFamily: 'Raleway',
-        },
-      },
-    });
+    setSnackbarVisible(true);
   };
 
   const handleRightButtonPress = () => {
@@ -72,7 +44,7 @@ export const ProfileHeader: React.FC<ProfileHeaderProps> = ({
 
   // Contenido central con username, icono de privacidad y verificación
   const centerContent = (
-    <View style={{ flexDirection: 'row', alignItems: 'center', flex: 1 }}>
+    <View style={{ flexDirection: 'row', alignItems: 'center', flex: 1, marginHorizontal: 12 }}>
       {isMyProfile && !isPublicProfile && (
         <View style={{ marginRight: 8 }}>
           <Icon
@@ -121,14 +93,39 @@ export const ProfileHeader: React.FC<ProfileHeaderProps> = ({
   ];
 
   return (
-    <GlobalHeader
-      goBack={!isMyProfile}
-      onGoBack={onBackPress}
-      centerContent={centerContent}
-      actionButtons={actionButtons}
-      containerStyle={{
-        marginHorizontal: 10,
-      }}
-    />
+    <>
+      <GlobalHeader
+        goBack={!isMyProfile}
+        onGoBack={onBackPress}
+        centerContent={centerContent}
+        actionButtons={actionButtons}
+        containerStyle={{}}
+      />
+      <Snackbar
+        visible={snackbarVisible}
+        onDismiss={() => setSnackbarVisible(false)}
+        duration={2000}
+        style={{
+          backgroundColor: Colors.secondaryGreenDark,
+          marginHorizontal: 16,
+          marginBottom: Platform.OS === 'ios' ? insets.bottom : insets.bottom + 40,
+          borderRadius: 12,
+        }}
+        theme={{ colors: { onSurface: Colors.white } }}
+      >
+        <View>
+          <AppText
+            style={{ color: Colors.white, fontSize: 18, fontWeight: '700', fontFamily: 'Raleway', textAlign: 'center' }}
+          >
+            Próximamente en looped... 🤫
+          </AppText>
+          <AppText
+            style={{ color: Colors.mutedWhite, fontSize: 14, fontFamily: 'Raleway', textAlign: 'center' }}
+          >
+            aaa
+          </AppText>
+        </View>
+      </Snackbar>
+    </>
   );
 }; 

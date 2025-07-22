@@ -25,7 +25,7 @@ export const HomeHeader: React.FC = () => {
           }}
         >
           <AnimatedVerifiedIcon size={24} />
-          <AppText variant='body' fontFamily='inter' fontWeight='bold' color={Colors.secondaryGreen}>Obtener Plus</AppText>
+          <AppText variant='body' fontFamily='inter' lineHeight={22} fontWeight='bold' color={Colors.secondaryGreen}>Obtener Plus</AppText>
         </Pressable>
       </View>
     </View>
