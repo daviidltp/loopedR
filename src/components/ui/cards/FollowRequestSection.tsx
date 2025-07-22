@@ -1,6 +1,7 @@
 import React from 'react';
 import { StyleSheet, View } from 'react-native';
 import { Colors } from '../../../constants/Colors';
+import { useFollowers } from '../../../contexts/FollowersContext';
 import { FollowRequest, getUserById } from '../../../utils/mockData';
 import { UsersGroup } from '../../icons/UsersGroup';
 import { DefaultAvatar } from '../Avatar/DefaultAvatar';
@@ -16,6 +17,17 @@ export const FollowRequestSection: React.FC<FollowRequestSectionProps> = ({
   requests,
   onPress,
 }) => {
+  const { followRequests } = useFollowers();
+
+  let sectionText = 'No tienes solicitudes';
+  if (followRequests.length === 1) {
+    const req = followRequests[0];
+    sectionText = `${req.follower_profile?.display_name || req.follower_profile?.username || 'Alguien'} quiere seguirte`;
+  } else if (followRequests.length > 1) {
+    const first = followRequests[0];
+    sectionText = `${first.follower_profile?.display_name || first.follower_profile?.username || 'Alguien'} y ${followRequests.length - 1} persona${followRequests.length - 1 === 1 ? '' : 's'} más quieren seguirte`;
+  }
+
   // Si no hay solicitudes, mostrar el estado vacío pero con el mismo formato visual
   if (requests.length === 0) {
     return (
@@ -54,7 +66,7 @@ export const FollowRequestSection: React.FC<FollowRequestSectionProps> = ({
               numberOfLines={1}
               ellipsizeMode="tail"
             >
-              No tienes solicitudes
+              {sectionText}
             </AppText>
           </View>
 

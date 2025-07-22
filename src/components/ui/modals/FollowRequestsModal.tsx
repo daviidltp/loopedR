@@ -1,16 +1,14 @@
 import React from 'react';
-import { FlatList, Modal, StyleSheet, View } from 'react-native';
-import DeleteUserIcon from '../../../../assets/icons/delete-user.svg';
+import { FlatList, Image, Modal, StyleSheet, TouchableOpacity, View } from 'react-native';
 import { Colors } from '../../../constants/Colors';
-import { FollowRequest } from '../../../utils/mockData';
-import { FollowRequestCard } from '../cards/FollowRequestCard';
-import { GlobalHeader } from '../headers/GlobalHeader';
-import { Layout } from '../layout';
+import { useFollowers } from '../../../contexts/FollowersContext';
+import { CheckIcon } from '../../icons/CheckIcon';
+import { CrossIcon } from '../../icons/CrossIcon';
 import { AppText } from '../Text/AppText';
 
 interface FollowRequestsModalProps {
   visible: boolean;
-  requests: FollowRequest[];
+  requests: any[]; // This type will need to be updated based on the new structure
   onClose: () => void;
   onAccept: (requestId: string) => void;
   onReject: (requestId: string) => void;
@@ -23,96 +21,126 @@ export const FollowRequestsModal: React.FC<FollowRequestsModalProps> = ({
   onAccept,
   onReject,
 }) => {
-  if (!visible) return null;
-  return (
-    <Layout>
-    <Modal
-      visible={visible}
-      animationType="slide"
-      presentationStyle="pageSheet"
-      onRequestClose={onClose}
-    >
-      <View style={styles.container}>
-        {/* Header */}
-        <GlobalHeader
-          goBack={true}
-          onLeftIconPress={onClose}
-          centerContent={<AppText variant='h4' fontFamily='raleway' fontWeight='bold' color="#fff">Solicitudes de seguimiento</AppText>}
-        />
+  const { followRequests, acceptFollowRequest, rejectFollowRequest, isLoading } = useFollowers();
 
-        {/* Lista de solicitudes */}
-        {requests.length > 0 ? (
-          <FlatList
-            data={requests}
-            keyExtractor={(item) => item.id}
-            renderItem={({ item }) => (
-              <FollowRequestCard
-                request={item}
-                onAccept={onAccept}
-                onReject={onReject}
-              />
-            )}
-            style={styles.list}
-            showsVerticalScrollIndicator={false}
-          />
-        ) : (
-          <View style={styles.emptyContainer}>
-            <View style={styles.emptyIconContainer}>
-              <DeleteUserIcon
-                width={80}
-                height={80}
-                fill={Colors.mutedWhite}
-              />
-            </View>
-            <AppText 
-              variant="h6"
-              fontFamily="inter" 
-              fontWeight="bold" 
-              style={styles.emptyText}
-            >
-              No tienes solicitudes de seguimiento
-            </AppText>
-            <AppText 
-              variant='bodySmall'
-              fontFamily="inter" 
-              fontWeight="regular" 
-              color={Colors.mutedWhite}
-              style={styles.emptySubtext}
-            >
-              Te avisaremos cuando recibas una solicitud
-            </AppText>
-          </View>
+  const handleAccept = async (requestId: string) => {
+    await acceptFollowRequest(requestId);
+  };
+  const handleReject = async (requestId: string) => {
+    await rejectFollowRequest(requestId);
+  };
+
+  const renderItem = ({ item }: { item: any }) => (
+    <View style={modalStyles.requestItem}>
+      <Image source={{ uri: item.follower_profile?.avatar_url || '' }} style={modalStyles.avatar} />
+      <View style={modalStyles.infoContainer}>
+        <AppText variant="body" fontFamily="inter" fontWeight="semiBold" color={Colors.white}>
+          {item.follower_profile?.display_name || item.follower_profile?.username || 'Usuario'}
+        </AppText>
+        <AppText variant="bodySmall" fontFamily="inter" color={Colors.mutedWhite}>
+          @{item.follower_profile?.username || 'usuario'}
+        </AppText>
+        {item.follower_profile?.is_verified && (
+          <AppText variant="bodySmall" fontFamily="inter" color={Colors.white}>
+            ✔ Verificado
+          </AppText>
         )}
       </View>
+      <View style={modalStyles.actions}>
+        <TouchableOpacity onPress={() => handleAccept(item.id)} disabled={isLoading} style={modalStyles.actionBtn}>
+          <CheckIcon size={24} color={Colors.spotifyGreen || '#1DB954'} />
+        </TouchableOpacity>
+        <TouchableOpacity onPress={() => handleReject(item.id)} disabled={isLoading} style={modalStyles.actionBtn}>
+          <CrossIcon size={24} color={'#fa233b'} />
+        </TouchableOpacity>
+      </View>
+    </View>
+  );
+
+  if (!visible) return null;
+  return (
+    <Modal visible={visible} onRequestClose={onClose} animationType="slide" transparent>
+      <View style={modalStyles.overlay}>
+        <View style={modalStyles.modalContent}>
+          <AppText variant="h5" fontFamily="inter" fontWeight="bold" color={Colors.white} style={modalStyles.title}>
+            Solicitudes de seguimiento
+          </AppText>
+          {followRequests.length > 0 ? (
+            <FlatList
+              data={followRequests}
+              keyExtractor={item => item.id}
+              renderItem={renderItem}
+              style={modalStyles.list}
+              showsVerticalScrollIndicator={false}
+            />
+          ) : (
+            <View style={modalStyles.emptyContainer}>
+              <AppText variant="body" fontFamily="inter" color={Colors.mutedWhite}>
+                No tienes solicitudes de seguimiento
+              </AppText>
+            </View>
+          )}
+          <TouchableOpacity onPress={onClose} style={modalStyles.closeBtn}>
+            <AppText variant="body" fontFamily="inter" color={Colors.white}>Cerrar</AppText>
+          </TouchableOpacity>
+        </View>
+      </View>
     </Modal>
-    </Layout>
   );
 };
 
-const styles = StyleSheet.create({
-  container: {
+const modalStyles = StyleSheet.create({
+  overlay: {
     flex: 1,
-    backgroundColor: Colors.background,
-  },
-
-  list: {
-    flex: 1,
-  },
-  emptyContainer: {
-    flex: 1,
+    backgroundColor: 'rgba(0,0,0,0.7)',
     justifyContent: 'center',
     alignItems: 'center',
-    paddingHorizontal: 24,
-    paddingBottom: 50,
   },
-  emptyIconContainer: {
-    marginBottom: 20,
+  modalContent: {
+    backgroundColor: Colors.background,
+    borderRadius: 16,
+    padding: 24,
+    width: '90%',
+    maxHeight: '80%',
   },
-  emptyText: {
+  title: {
+    marginBottom: 16,
     textAlign: 'center',
-    marginBottom: 8,
   },
-  emptySubtext: {
-    textAlign: 'center',
+  list: {
+    marginBottom: 16,
+  },
+  requestItem: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginBottom: 16,
+  },
+  avatar: {
+    width: 48,
+    height: 48,
+    borderRadius: 24,
+    marginRight: 12,
+    backgroundColor: Colors.backgroundSoft,
+  },
+  infoContainer: {
+    flex: 1,
+  },
+  actions: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginLeft: 8,
+  },
+  actionBtn: {
+    marginHorizontal: 4,
+    padding: 4,
+  },
+  emptyContainer: {
+    alignItems: 'center',
+    marginVertical: 32,
+  },
+  closeBtn: {
+    alignSelf: 'center',
+    marginTop: 8,
+    padding: 8,
   },
 }); 

@@ -3,7 +3,7 @@ import React, { useState } from 'react';
 import { StyleSheet, View } from 'react-native';
 import { useProfile } from '../../contexts/ProfileContext';
 import {
-  getFollowRequestsForUser
+	getFollowRequestsForUser
 } from '../../utils/mockData';
 import { FollowRequestSection } from '../ui/cards/FollowRequestSection';
 import { NotificationsHeader } from '../ui/headers/NotificationsHeader';

@@ -28,17 +28,18 @@ export const UserProfileScreen: React.FC = () => {
   const {
     followersCount,
     followingCount,
-    isFollowing,
+    getFollowStatus,
     follow,
     unfollow,
+    cancelFollowRequest,
     fetchFollowersCount,
     fetchFollowingCount,
-    fetchIsFollowing,
+    fetchFollowStatus,
   } = useFollowers();
 
   const [externalFollowersCount, setExternalFollowersCount] = React.useState(0);
   const [externalFollowingCount, setExternalFollowingCount] = React.useState(0);
-  const [externalIsFollowing, setExternalIsFollowing] = React.useState(false);
+  const [externalFollowStatus, setExternalFollowStatus] = React.useState<'none' | 'pending' | 'accepted'>('none');
   const [isFollowLoading, setIsFollowLoading] = React.useState(false);
 
   React.useEffect(() => {
@@ -62,9 +63,9 @@ export const UserProfileScreen: React.FC = () => {
       fetchFollowersCount(userData.id).then(setExternalFollowersCount).catch(() => setExternalFollowersCount(0));
       fetchFollowingCount(userData.id).then(setExternalFollowingCount).catch(() => setExternalFollowingCount(0));
       if (currentUser?.id) {
-        fetchIsFollowing(userData.id, currentUser.id).then(setExternalIsFollowing).catch(() => setExternalIsFollowing(false));
+        fetchFollowStatus(userData.id, currentUser.id).then(setExternalFollowStatus).catch(() => setExternalFollowStatus('none'));
       }
-    }, [userData?.id, currentUser?.id, fetchFollowersCount, fetchFollowingCount, fetchIsFollowing])
+    }, [userData?.id, currentUser?.id, fetchFollowersCount, fetchFollowingCount, fetchFollowStatus])
   );
 
   // Manejar botón físico de Android para volver atrás
@@ -103,10 +104,12 @@ export const UserProfileScreen: React.FC = () => {
     // TODO: Mostrar menú de opciones para otros usuarios
   };
 
+  const isOwnProfile = currentUser?.id === userData?.id;
+
   const handleFollowPress = async () => {
     if (!userData?.id) return;
-    if (currentUser?.id === userData.id) return;
-    if (externalIsFollowing) {
+    if (isOwnProfile) return;
+    if (externalFollowStatus === 'accepted') {
       Alert.alert(
         'Dejar de seguir',
         `¿Estás seguro de que quieres dejar de seguir a @${userData.username}?`,
@@ -117,8 +120,26 @@ export const UserProfileScreen: React.FC = () => {
               setIsFollowLoading(true);
               try {
                 await unfollow(userData.id);
-                setExternalIsFollowing(false);
+                setExternalFollowStatus('none');
                 setExternalFollowersCount(f => Math.max(0, f - 1));
+              } catch {}
+              setIsFollowLoading(false);
+            }
+          }
+        ]
+      );
+    } else if (externalFollowStatus === 'pending') {
+      Alert.alert(
+        'Cancelar solicitud',
+        `¿Quieres cancelar tu solicitud de seguimiento a @${userData.username}?`,
+        [
+          { text: 'No', style: 'cancel' },
+          {
+            text: 'Cancelar solicitud', style: 'destructive', onPress: async () => {
+              setIsFollowLoading(true);
+              try {
+                await cancelFollowRequest(userData.id);
+                setExternalFollowStatus('none');
               } catch {}
               setIsFollowLoading(false);
             }
@@ -129,12 +150,15 @@ export const UserProfileScreen: React.FC = () => {
       setIsFollowLoading(true);
       try {
         await follow(userData.id);
-        setExternalIsFollowing(true);
-        setExternalFollowersCount(f => f + 1);
+        setExternalFollowStatus('pending');
       } catch {}
       setIsFollowLoading(false);
     }
   };
+
+  let buttonTitle = 'Seguir';
+  if (externalFollowStatus === 'pending') buttonTitle = 'Pendiente';
+  if (externalFollowStatus === 'accepted') buttonTitle = 'Siguiendo';
 
   // Mostrar loading mientras se cargan los datos
   if (isLoading) {
@@ -192,7 +216,7 @@ export const UserProfileScreen: React.FC = () => {
   // const isFollowing = currentUser ? isUserFollowing(currentUser.id, userData.id) : false; // This line is no longer needed
 
   // Verificar si es el perfil del usuario actual
-  const isOwnProfile = currentUser?.id === userData.id;
+  // const isOwnProfile = currentUser?.id === userData.id; // This line is now calculated above
 
   // Obtener estadísticas de seguimiento
   // const followers = getUserFollowers(userData.id); // This line is no longer needed
@@ -220,12 +244,12 @@ export const UserProfileScreen: React.FC = () => {
     />
   ) : (
     <ResizingButton
-      icon={externalIsFollowing ? <Icon source="check" size={18} color={Colors.white} /> : undefined}
-      title={externalIsFollowing ? 'Siguiendo' : 'Seguir'}
+      icon={externalFollowStatus === 'accepted' ? <Icon source="check" size={18} color={Colors.white} /> : undefined}
+      title={buttonTitle}
       onPress={handleFollowPress}
-      backgroundColor={externalIsFollowing ? Colors.backgroundUltraSoft : Colors.white}
-      textColor={externalIsFollowing ? Colors.white : Colors.background}
-      borderColor={externalIsFollowing ? undefined : 'transparent'}
+      backgroundColor={externalFollowStatus === 'accepted' ? Colors.backgroundUltraSoft : Colors.white}
+      textColor={externalFollowStatus === 'accepted' ? Colors.white : Colors.background}
+      borderColor={externalFollowStatus === 'accepted' ? undefined : 'transparent'}
       height={42}
       isLoading={isFollowLoading}
       isDisabled={isFollowLoading}
@@ -233,7 +257,7 @@ export const UserProfileScreen: React.FC = () => {
   );
 
   // Contenido adicional específico para perfiles de otros usuarios
-  const additionalContent = !isOwnProfile && !userData.isPublic && !externalIsFollowing ? (
+  const additionalContent = !isOwnProfile && !userData.isPublic && externalFollowStatus !== 'accepted' ? (
     // Cuenta privada y no la seguimos
     <View style={styles.privateContentSection}>
       <View style={styles.privateIconContainer}>
