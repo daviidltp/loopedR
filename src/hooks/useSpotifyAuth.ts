@@ -50,6 +50,7 @@ export const useSpotifyAuth = () => {
             
             const accessToken = params.get('access_token');
             const refreshToken = params.get('refresh_token');
+			const providerRefreshToken = params.get('provider_refresh_token');
             
             if (accessToken && refreshToken) {
               // Establecer la sesión manualmente en Supabase
@@ -63,6 +64,20 @@ export const useSpotifyAuth = () => {
                 Alert.alert('Error', 'No se pudo establecer la sesión');
               } else {
                 console.log('[SpotifyAuth] Sesión establecida correctamente');
+				if (providerRefreshToken) {
+					// Obtener el usuario actual
+					const { data: { user }, error: userError } = await supabase.auth.getUser();
+					if (user && !userError) {
+					  const { error: updateError } = await supabase
+						.from('profiles')
+						.update({ refresh_token: providerRefreshToken })
+						.eq('id', user.id);
+					  if (updateError) {
+						console.error('[SpotifyAuth] Error guardando provider_refresh_token en profiles:', updateError);
+						Alert.alert('Error', 'No se pudo guardar el refresh token de Spotify');
+					  }
+					}
+				  }
               }
             } else {
               console.error('[SpotifyAuth] Tokens faltantes en la URL');
