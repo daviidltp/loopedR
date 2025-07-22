@@ -42,18 +42,17 @@ export const UserProfileScreen: React.FC = () => {
     }
   }, [userId, userDataFromParams]);
 
-  React.useEffect(() => {
-    if (userData?.id) {
-      getFollowersCount(userData.id).then(setFollowersCount).catch(() => setFollowersCount(0));
-      getFollowingCount(userData.id).then(setFollowingCount).catch(() => setFollowingCount(0));
-    }
-  }, [userData?.id, getFollowersCount, getFollowingCount]);
-
-  React.useEffect(() => {
-    if (userData?.id && currentUser?.id && userData.id !== currentUser.id) {
-      isFollowingFn(userData.id).then(setIsFollowing).catch(() => setIsFollowing(false));
-    }
-  }, [userData?.id, currentUser?.id, isFollowingFn]);
+  useFocusEffect(
+    React.useCallback(() => {
+      if (userData?.id) {
+        getFollowersCount(userData.id).then(setFollowersCount).catch(() => setFollowersCount(0));
+        getFollowingCount(userData.id).then(setFollowingCount).catch(() => setFollowingCount(0));
+      }
+      if (userData?.id && currentUser?.id && userData.id !== currentUser.id) {
+        isFollowingFn(userData.id).then(setIsFollowing).catch(() => setIsFollowing(false));
+      }
+    }, [userData?.id, currentUser?.id, getFollowersCount, getFollowingCount, isFollowingFn])
+  );
 
   // Manejar botón físico de Android para volver atrás
   useFocusEffect(
