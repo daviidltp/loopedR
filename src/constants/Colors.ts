@@ -9,7 +9,7 @@ export const Colors = {
   appleRed: '#fa233b',
   white: '#FFFFFF',
   lessMutedWhite: '#FFFFFFCC',
-  mutedWhite: '#FFFFFF99',
+  mutedWhite: '#999999',
   gold: '#D4AF37',
   gray: {
     100: '#F5F5F5',

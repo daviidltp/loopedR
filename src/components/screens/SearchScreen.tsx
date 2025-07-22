@@ -28,27 +28,24 @@ export const SearchScreen: React.FC = () => {
     handleUserPress,
     handleClearSearch,
     searchBarRef,
+    popularUsers,
+    popularStatus,
   } = useUserSearch(currentUser);
-  // Verificar si viene de la animación del SearchBar
+
   const fromSearchAnimation = route.params?.fromSearchAnimation || false;
 
-  // Hacer focus solo si viene de HomeScreen, sin animación
   useFocusEffect(
     React.useCallback(() => {
-      if (fromSearchAnimation) {
-        const focusTimer = setTimeout(() => {
-          if (searchBarRef.current && searchBarRef.current.focus) {
-            searchBarRef.current.focus();
-          }
-        }, 200);
-        return () => {
-          clearTimeout(focusTimer);
-        };
-      }
+      if (!fromSearchAnimation) return;
+
+      const focusTimer = setTimeout(() => {
+        searchBarRef.current?.focus?.();
+      }, 200);
+
+      return () => clearTimeout(focusTimer);
     }, [fromSearchAnimation])
   );
 
-  // Limpiar parámetro al salir de la pantalla
   useFocusEffect(
     React.useCallback(() => {
       return () => {
@@ -59,9 +56,121 @@ export const SearchScreen: React.FC = () => {
     }, [fromSearchAnimation, navigation])
   );
 
+  const renderPopularUsers = () => (
+    <View style={styles.defaultContainer}>
+      <AppText 
+        variant="body" 
+        fontFamily="raleway" 
+        fontWeight="bold" 
+        color={Colors.mutedWhite} 
+        style={styles.popularAccountsTitle}
+      >
+        Cuentas populares
+      </AppText>
+
+      {popularStatus === 'searching' &&  
+        <View style={styles.skeletonContainer}>
+          {[...Array(7)].map((_, i) => (
+            <UserListItemSkeleton key={i} />
+          ))}
+        </View>
+      }
+      
+      {popularStatus === 'success' && (
+        <UserList 
+          users={popularUsers} 
+          onUserPress={userId => handleUserPress(userId, navigation, currentUser?.id)} 
+        />
+      )}
+
+      {popularStatus === 'empty' && (
+        <AppText color={Colors.mutedWhite} style={styles.centeredText}>
+          No hay cuentas populares.
+        </AppText>
+      )}
+
+      {popularStatus === 'error' && (
+        <AppText color={'red'} style={styles.centeredText}>
+          Error al cargar cuentas populares.
+        </AppText>
+      )}
+    </View>
+  );
+
+  const renderSearchResults = () => {
+    if (status === 'searching' && users.length > 0) {
+      return (
+        <>
+          <UserList
+            users={users}
+            onUserPress={userId => handleUserPress(userId, navigation, currentUser?.id)}
+          />
+          <View style={styles.skeletonContainer}>
+            {[...Array(3)].map((_, i) => (
+              <UserListItemSkeleton key={i} />
+            ))}
+          </View>
+        </>
+      );
+    }
+
+    if (status === 'searching' && users.length === 0) {
+      return (
+        <View>
+          {[...Array(6)].map((_, i) => (
+            <UserListItemSkeleton key={i} />
+          ))}
+        </View>
+      );
+    }
+
+    if (status === 'success') {
+      return (
+        <UserList
+          users={users}
+          onUserPress={userId => handleUserPress(userId, navigation, currentUser?.id)}
+        />
+      );
+    }
+
+    if (status === 'empty') {
+      return (
+        <View style={styles.emptyContainer}>
+          <View style={styles.emptyContent}>
+            <View style={styles.emptyIconContainer}>
+              <DeleteUserIcon size={28} color={Colors.mutedWhite} />
+            </View>
+            <AppText
+              variant="body"
+              fontFamily="inter"
+              color={Colors.mutedWhite}
+              style={styles.emptyText}
+            >
+              {`No se ha encontrado ningún \nusuario`}
+            </AppText>
+          </View>
+        </View>
+      );
+    }
+
+    if (status === 'error') {
+      return (
+        <View style={styles.emptyContainer}>
+          <AppText
+            variant="body"
+            fontFamily="inter"
+            color={Colors.mutedWhite}
+            style={styles.errorText}
+          >
+            Ha ocurrido un error al buscar usuarios. Intenta de nuevo.
+          </AppText>
+        </View>
+      );
+    }
+  };
+
   return (
     <Layout style={styles.container}>
-      {/* SearchBar siempre visible */}
       <View style={styles.searchContainer}>
         <SearchBar
           ref={searchBarRef}
@@ -72,87 +181,10 @@ export const SearchScreen: React.FC = () => {
         />
       </View>
 
-      {/* Lista de usuarios o mensajes de estado */}
       <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
         <View style={styles.userListContainer}>
-          {status === 'idle' && (
-            <View style={styles.defaultContainer}>
-              <AppText
-                variant="body"
-                fontFamily="inter"
-                color={Colors.mutedWhite}
-                style={{ textAlign: 'left', fontSize: 16 }}
-              >
-                Busca usuarios para empezar a conectar 🎵
-              </AppText>
-            </View>
-          )}
-          {/* Mostrar usuarios previos mientras se busca */}
-          {status === 'searching' && users.length > 0 && (
-            <>
-              <UserList
-                users={users}
-                onUserPress={userId => handleUserPress(userId, navigation, currentUser?.id)}
-              />
-              <View style={{ marginTop: 12 }}>
-                {[...Array(3)].map((_, i) => (
-                  <UserListItemSkeleton key={i} />
-                ))}
-              </View>
-            </>
-          )}
-          {/* Si no hay usuarios, mostrar solo skeletons */}
-          {status === 'searching' && users.length === 0 && (
-            <View>
-              {[...Array(3)].map((_, i) => (
-                <UserListItemSkeleton key={i} />
-              ))}
-            </View>
-          )}
-          {status === 'success' && (
-            <UserList
-              users={users}
-              onUserPress={userId => handleUserPress(userId, navigation, currentUser?.id)}
-            />
-          )}
-          {status === 'empty' && (
-            <View style={styles.emptyContainer}>
-              <View style={{ flexDirection: 'row', alignItems: 'center', marginTop: 12, gap: 12 }}>
-                <View style={{
-                  width: 60,
-                  height: 60,
-                  borderRadius: 30,
-                  backgroundColor: Colors.background,
-                  borderWidth: 2,
-                  borderColor: Colors.backgroundSoft,
-                  justifyContent: 'center',
-                  alignItems: 'center'
-                }}>
-                  <DeleteUserIcon size={28} color={Colors.mutedWhite} />
-                </View>
-                <AppText
-                  variant="body"
-                  fontFamily="inter"
-                  color={Colors.mutedWhite}
-                  style={{ textAlign: 'left', fontSize: 16 }}
-                >
-                  {`No se ha encontrado ningún \nusuario`}
-                </AppText>
-              </View>
-            </View>
-          )}
-          {status === 'error' && (
-            <View style={styles.emptyContainer}>
-              <AppText
-                variant="body"
-                fontFamily="inter"
-                color={Colors.mutedWhite}
-                style={{ textAlign: 'left', fontSize: 16 }}
-              >
-                Ha ocurrido un error al buscar usuarios. Intenta de nuevo.
-              </AppText>
-            </View>
-          )}
+          {status === 'idle' && renderPopularUsers()}
+          {renderSearchResults()}
         </View>
       </TouchableWithoutFeedback>
     </Layout>
@@ -173,10 +205,18 @@ const styles = StyleSheet.create({
   userListContainer: {
     flex: 1,
   },
-  loadingContainer: {
+  defaultContainer: {
     flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
+  },
+  popularAccountsTitle: {
+    paddingLeft: 20,
+    paddingVertical: 12
+  },
+  centeredText: {
+    textAlign: 'center'
+  },
+  skeletonContainer: {
+    marginTop: 12
   },
   emptyContainer: {
     flex: 1,
@@ -184,10 +224,28 @@ const styles = StyleSheet.create({
     alignItems: 'flex-start',
     paddingHorizontal: 24,
   },
-  defaultContainer: {
-    flex: 1,
-    justifyContent: 'center',
+  emptyContent: {
+    flexDirection: 'row',
     alignItems: 'center',
-    paddingHorizontal: 24,
+    marginTop: 12,
+    gap: 12
   },
-}); 
+  emptyIconContainer: {
+    width: 60,
+    height: 60,
+    borderRadius: 30,
+    backgroundColor: Colors.background,
+    borderWidth: 2,
+    borderColor: Colors.backgroundSoft,
+    justifyContent: 'center',
+    alignItems: 'center'
+  },
+  emptyText: {
+    textAlign: 'left',
+    fontSize: 16
+  },
+  errorText: {
+    textAlign: 'left',
+    fontSize: 16
+  }
+});

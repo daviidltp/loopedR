@@ -99,11 +99,27 @@ const MainAppScreens = () => (
       options={({ navigation }) => ({
         headerShown: false,
         cardStyle: { backgroundColor: Colors.background },
-        cardStyleInterpolator: CardStyleInterpolators.forHorizontalIOS,
+        cardStyleInterpolator: CardStyleInterpolators.forNoAnimation,
         gestureEnabled: true,
         gestureDirection: 'horizontal',
         detachPreviousScreen: false,
         freezeOnBlur: false,
+        transitionSpec: {
+          open: {
+            animation: 'timing',
+            config: {
+              duration: 0,
+              easing: Easing.out(Easing.cubic),
+            },
+          },
+          close: {
+            animation: 'timing',
+            config: {
+              duration: 0,
+              easing: Easing.out(Easing.cubic),
+            },
+          },
+        },
       })}
     />
     <Stack.Screen 

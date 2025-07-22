@@ -16,6 +16,7 @@ interface DefaultAvatarProps {
   showUploadButton?: boolean;
   uploadButtonSize?: number;
   onUploadPress?: () => void;
+  renderIcon?: React.ReactNode; // <-- nuevo prop opcional
 }
 
 export const DefaultAvatar: React.FC<DefaultAvatarProps> = ({ 
@@ -30,6 +31,7 @@ export const DefaultAvatar: React.FC<DefaultAvatarProps> = ({
   showUploadButton = true,
   uploadButtonSize = 40,
   onUploadPress,
+  renderIcon, // <-- nuevo prop
 }) => {
   const getInitials = (name: string): string => {
     const words = name.trim().split(/\s+/);
@@ -101,6 +103,8 @@ export const DefaultAvatar: React.FC<DefaultAvatarProps> = ({
               ]}
               resizeMode="cover"
             />
+          ) : renderIcon ? (
+            <View style={{alignItems: 'center', justifyContent: 'center'}}>{renderIcon}</View>
           ) : (
             <AppText
               fontFamily="raleway"

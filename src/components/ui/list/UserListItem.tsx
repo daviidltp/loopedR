@@ -45,6 +45,7 @@ const UserListItemComponent: React.FC<UserListItemProps> = ({
           size={56}
           avatarUrl={user.avatarUrl}
           showUploadButton={false}
+          disabled={true}
         />
         <View style={styles.userInfo}>
           <View style={styles.usernameRow}>

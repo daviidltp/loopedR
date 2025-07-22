@@ -3,7 +3,7 @@ import { StackNavigationProp } from '@react-navigation/stack';
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { UserProfile } from '../contexts/ProfileContext';
 import { RootStackParamList } from '../navigation/AppNavigator';
-import { convertSupabaseUserToUser, getSupabaseUserById, searchSupabaseUsers } from '../utils/userActions';
+import { convertSupabaseUserToUser, getSupabaseUserById, getSupabaseUsers, searchSupabaseUsers } from '../utils/userActions';
 
 export type SearchStatus = 'idle' | 'searching' | 'success' | 'empty' | 'error';
 
@@ -13,6 +13,8 @@ export function useUserSearch(currentUser: UserProfile | null) {
   const [allUsers, setAllUsers] = useState<any[]>([]);
   const [status, setStatus] = useState<SearchStatus>('idle');
   const searchBarRef = useRef<any>(null);
+  const [popularUsers, setPopularUsers] = useState<any[]>([]);
+  const [popularStatus, setPopularStatus] = useState<SearchStatus>('idle');
 
   const filteredUsers = useMemo(() => {
     if (!searchText.trim()) return [];
@@ -56,6 +58,25 @@ export function useUserSearch(currentUser: UserProfile | null) {
     return () => clearTimeout(timeoutId);
   }, [searchText, currentUser?.id]);
 
+  // Obtener los 5 usuarios más populares al montar o cambiar currentUser
+  useEffect(() => {
+    if (!currentUser?.id || status !== 'idle') {
+      setPopularUsers([]);
+      setPopularStatus('idle');
+      return;
+    }
+    setPopularStatus('searching');
+    getSupabaseUsers(currentUser.id)
+      .then(users => {
+        setPopularUsers(users.slice(0, 5).map(convertSupabaseUserToUser));
+        setPopularStatus(users.length > 0 ? 'success' : 'empty');
+      })
+      .catch(() => {
+        setPopularUsers([]);
+        setPopularStatus('error');
+      });
+  }, [currentUser?.id, status]);
+
   const handleUserPress = (
     userId: string,
     navigation: any,
@@ -64,7 +85,8 @@ export function useUserSearch(currentUser: UserProfile | null) {
     if (userId === currentUserId) {
       navigation.navigate('Profile');
     } else {
-      const user = filteredUsers.find(u => u.id === userId);
+      // Buscar en ambos arrays
+      const user = filteredUsers.find(u => u.id === userId) || popularUsers.find(u => u.id === userId);
       if (user) {
         stackNavigation.navigate('UserProfile', { userId, userData: user });
       } else {
@@ -97,6 +119,17 @@ export function useUserSearch(currentUser: UserProfile | null) {
     setStatus('idle');
   };
 
+  // Nueva función para obtener los 5 usuarios más populares de Supabase
+  const getPopularUsers = async () => {
+    if (!currentUser?.id) return [];
+    try {
+      const supabaseUsers = await getSupabaseUsers(currentUser.id);
+      return supabaseUsers.slice(0, 5).map(convertSupabaseUserToUser);
+    } catch {
+      return [];
+    }
+  };
+
   return {
     users: filteredUsers,
     status,
@@ -105,5 +138,7 @@ export function useUserSearch(currentUser: UserProfile | null) {
     handleUserPress,
     handleClearSearch,
     searchBarRef,
+    popularUsers,
+    popularStatus,
   };
 } 

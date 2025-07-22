@@ -3,12 +3,13 @@ import React, { useState } from 'react';
 import { StyleSheet, View } from 'react-native';
 import { useProfile } from '../../contexts/ProfileContext';
 import {
-	getFollowRequestsForUser
+  getFollowRequestsForUser
 } from '../../utils/mockData';
 import { FollowRequestSection } from '../ui/cards/FollowRequestSection';
 import { NotificationsHeader } from '../ui/headers/NotificationsHeader';
 import { Layout } from '../ui/layout/Layout';
 import { FollowRequestsModal } from '../ui/modals/FollowRequestsModal';
+import { AppText } from '../ui/Text/AppText';
 
 export const InboxScreen: React.FC = () => {
   const navigation = useNavigation();
@@ -17,6 +18,9 @@ export const InboxScreen: React.FC = () => {
 
   // Obtener solicitudes de seguimiento del usuario actual
   const followRequests = currentUser ? getFollowRequestsForUser(currentUser.id) : [];
+
+  // Aquí puedes agregar lógica para otras notificaciones si existen en el futuro
+  const hasNotifications = followRequests.length > 0; // Puedes expandir esto si hay más tipos
 
   const handleViewAllRequests = () => {
     setIsModalVisible(true);
@@ -46,6 +50,14 @@ export const InboxScreen: React.FC = () => {
             requests={followRequests}
             onPress={handleViewAllRequests}
           />
+          {!hasNotifications && (
+            <View style={styles.emptyStateContainer}>
+              <AppText variant="body" fontFamily="inter" color="#888" style={{textAlign:'center'}}>
+                No tienes notificaciones
+              </AppText>
+            </View>
+          )}
+          
         </View>
 
         <FollowRequestsModal
@@ -66,7 +78,15 @@ const styles = StyleSheet.create({
   },
   content: {
     flex: 1,
-    paddingHorizontal: 20,
-    paddingTop: 16,
+    paddingTop: 8,
+    paddingBottom: 20,
   },
+  emptyStateContainer: {
+    justifyContent:'center', 
+    alignItems:'center',
+    flex: 1,
+    paddingBottom: 80,
+    width: '100%',
+    height: '80%',
+  }
 }); 

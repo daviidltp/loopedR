@@ -3,9 +3,10 @@ import { FlatList, Modal, StyleSheet, View } from 'react-native';
 import DeleteUserIcon from '../../../../assets/icons/delete-user.svg';
 import { Colors } from '../../../constants/Colors';
 import { FollowRequest } from '../../../utils/mockData';
-import { AppText } from '../Text/AppText';
 import { FollowRequestCard } from '../cards/FollowRequestCard';
 import { GlobalHeader } from '../headers/GlobalHeader';
+import { Layout } from '../layout';
+import { AppText } from '../Text/AppText';
 
 interface FollowRequestsModalProps {
   visible: boolean;
@@ -22,7 +23,9 @@ export const FollowRequestsModal: React.FC<FollowRequestsModalProps> = ({
   onAccept,
   onReject,
 }) => {
+  if (!visible) return null;
   return (
+    <Layout>
     <Modal
       visible={visible}
       animationType="slide"
@@ -34,7 +37,7 @@ export const FollowRequestsModal: React.FC<FollowRequestsModalProps> = ({
         <GlobalHeader
           goBack={true}
           onLeftIconPress={onClose}
-          centerContent={<AppText variant='h2' fontFamily='raleway' fontWeight='bold' color="#fff">Solicitudes de seguimiento</AppText>}
+          centerContent={<AppText variant='h4' fontFamily='raleway' fontWeight='bold' color="#fff">Solicitudes de seguimiento</AppText>}
         />
 
         {/* Lista de solicitudes */}
@@ -82,6 +85,7 @@ export const FollowRequestsModal: React.FC<FollowRequestsModalProps> = ({
         )}
       </View>
     </Modal>
+    </Layout>
   );
 };
 

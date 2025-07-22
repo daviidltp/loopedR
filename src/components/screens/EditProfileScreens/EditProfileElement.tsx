@@ -307,7 +307,7 @@ export const EditProfileElement: React.FC = () => {
                 </AppText>
               </AppText>
             ],
-            maxLength: 50,
+            maxLength: 120,
             autoCapitalize: 'sentences' as const,
             autoCorrect: true,
             returnKeyType: 'done' as const,
@@ -321,7 +321,7 @@ export const EditProfileElement: React.FC = () => {
             label: '',
             placeholder: '',
             description: [],
-            maxLength: 50,
+            maxLength: 120,
             autoCapitalize: 'none',
             autoCorrect: false,
             returnKeyType: 'done',
