@@ -3,11 +3,11 @@ import { StackNavigationProp } from '@react-navigation/stack';
 import * as WebBrowser from 'expo-web-browser';
 import { useEffect, useRef, useState } from 'react';
 import {
-	BackHandler,
-	Image,
-	ScrollView,
-	StyleSheet,
-	View
+  BackHandler,
+  Image,
+  ScrollView,
+  StyleSheet,
+  View
 } from 'react-native';
 import { Icon } from 'react-native-paper';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
@@ -18,12 +18,12 @@ import { RootStackParamList } from '../../navigation/AppNavigator';
 import { ResizingButton } from '../ui/buttons';
 import { GlobalHeader } from '../ui/headers/GlobalHeader';
 import { Layout } from '../ui/layout/Layout';
-import { OptionsBottomSheetRef } from '../ui/modals';
 import { ConfirmationDialog } from '../ui/modals/ConfirmationDialog';
+import { OptionsBottomSheet, OptionsBottomSheetRef } from '../ui/modals/OptionsBottomSheet';
 import {
-	SettingsItem,
-	SettingsProfileSection,
-	SettingsSectionTitle
+  SettingsItem,
+  SettingsProfileSection,
+  SettingsSectionTitle
 } from '../ui/sections';
 
 // Importar iconos personalizados
@@ -32,6 +32,7 @@ import LanguageIcon from '../../../assets/icons/language.svg';
 import UserLockIcon from '../../../assets/icons/user-lock.svg';
 import verifiedBlue from '../../../assets/icons/verified_blue.png';
 import { AppText } from '../ui/Text/AppText';
+
 
 type SettingsScreenNavigationProp = StackNavigationProp<RootStackParamList, 'Settings'>;
 
@@ -43,10 +44,24 @@ export const SettingsScreen = () => {
   
   // Toggle switch state management
   const [notificationsEnabled, setNotificationsEnabled] = useState(true);
+  const isMounted = useRef(true);
+
+  useEffect(() => {
+    isMounted.current = true;
+    return () => {
+      isMounted.current = false;
+    };
+  }, []);
+
+  const safeSetNotificationsEnabled = (value: boolean) => {
+    if (isMounted.current) {
+      setNotificationsEnabled(value);
+    }
+  };
   
   // User preference selections state
   const [selectedLanguage, setSelectedLanguage] = useState('es');
-  const [selectedPrivacy, setSelectedPrivacy] = useState('public');
+  // const [selectedPrivacy, setSelectedPrivacy] = useState('public'); // Eliminar este estado
   
   // Logout operation state management to prevent race conditions and provide user feedback
   const [isLoggingOut, setIsLoggingOut] = useState(false);
@@ -54,8 +69,15 @@ export const SettingsScreen = () => {
   const [showLogoutDialog, setShowLogoutDialog] = useState(false);
   
   // Bottom sheet modal references for option selection
-  const languageBottomSheetRef = useRef<OptionsBottomSheetRef>(null);
-  const privacyBottomSheetRef = useRef<OptionsBottomSheetRef>(null);
+  const [showOptionsSheet, setShowOptionsSheet] = useState<null | 'language' | 'privacy'>(null);
+  const optionsBottomSheetRef = useRef<OptionsBottomSheetRef>(null);
+
+  // Elimina el estado openSheet
+
+  // Estado para el BottomSheet de prueba
+  const [testSheetOpen, setTestSheetOpen] = useState(false);
+
+  // (Elimina el useEffect de apertura automática)
 
   // Obtener datos del usuario autenticado desde Supabase
   const userData = {
@@ -81,9 +103,12 @@ export const SettingsScreen = () => {
     return option ? option.label : 'Español';
   };
 
-  const getPrivacyLabel = (value: string) => {
-    const option = privacyOptions.find(opt => opt.value === value);
-    return option ? option.label : 'Público';
+  // Obtener el valor real de privacidad del contexto
+  const getPrivacyLabel = () => {
+    if (currentUser && typeof currentUser.is_public === 'boolean') {
+      return currentUser.is_public ? 'Público' : 'Privado';
+    }
+    return 'Público';
   };
 
   // Android hardware back button handler setup
@@ -116,21 +141,32 @@ export const SettingsScreen = () => {
   // Ahora se usan las funciones utilitarias importadas
 
   const handleLanguagePress = () => {
-    languageBottomSheetRef.current?.expand();
+    if (showOptionsSheet === 'language') {
+      setShowOptionsSheet(null);
+      setTimeout(() => setShowOptionsSheet('language'), 20);
+    } else {
+      setShowOptionsSheet('language');
+    }
   };
 
   const handlePrivacyPress = () => {
-    privacyBottomSheetRef.current?.expand();
+    if (showOptionsSheet === 'privacy') {
+      setShowOptionsSheet(null);
+      setTimeout(() => setShowOptionsSheet('privacy'), 20);
+    } else {
+      setShowOptionsSheet('privacy');
+    }
   };
 
-  const handleLanguageSelect = (language: string) => {
-    setSelectedLanguage(language);
-    console.log('Idioma seleccionado:', language);
-  };
-
-  const handlePrivacySelect = (privacy: string) => {
-    setSelectedPrivacy(privacy);
-    console.log('Privacidad seleccionada:', privacy);
+  const handleOptionsSelect = (value: string) => {
+    if (showOptionsSheet === 'language') {
+      setSelectedLanguage(value);
+      console.log('Idioma seleccionado:', value);
+    } else if (showOptionsSheet === 'privacy') {
+      // setSelectedPrivacy(value); // Eliminar esta línea
+      console.log('Privacidad seleccionada:', value);
+    }
+    setShowOptionsSheet(null);
   };
 
   /**
@@ -176,6 +212,14 @@ export const SettingsScreen = () => {
     }
   };
 
+  useEffect(() => {
+    if (showOptionsSheet && optionsBottomSheetRef.current) {
+      setTimeout(() => {
+        optionsBottomSheetRef.current?.expand();
+      }, 10); // 10ms suele ser suficiente para que el ref se asigne
+    }
+  }, [showOptionsSheet]);
+
   return (
     <Layout excludeBottomSafeArea>
       <View style={styles.container}>
@@ -202,7 +246,7 @@ export const SettingsScreen = () => {
               iconColor={Colors.mutedWhite}
               hasSwitch={true}
               switchValue={notificationsEnabled}
-              onSwitchChange={setNotificationsEnabled}
+              onSwitchChange={safeSetNotificationsEnabled}
             />
             <SettingsItem
               customIcon={<LanguageIcon width={24} height={24} fill={Colors.background} stroke={Colors.mutedWhite}/>}
@@ -219,9 +263,9 @@ export const SettingsScreen = () => {
             <SettingsItem
               icon="lock"
               title="Privacidad"
-              subtitle={getPrivacyLabel(selectedPrivacy)}
+              subtitle={getPrivacyLabel()}
               iconColor={Colors.mutedWhite}
-              onPress={() => handleOptionPress('Privacidad')}
+              onPress={() => navigation.navigate('AccountPrivacy' as never)}
             />
             <SettingsItem
               customIcon={
@@ -277,22 +321,16 @@ export const SettingsScreen = () => {
         </ScrollView>
       </View>
 
-      {/* Bottom Sheets - Causando lag*/}
-      {/* <OptionsBottomSheet
-        ref={languageBottomSheetRef}
-        title="Idioma"
-        options={languageOptions}
-        selectedValue={selectedLanguage}
-        onOptionSelect={handleLanguageSelect}
-      />
-
-      <OptionsBottomSheet
-        ref={privacyBottomSheetRef}
-        title="Privacidad"
-        options={privacyOptions}
-        selectedValue={selectedPrivacy}
-        onOptionSelect={handlePrivacySelect}
-      /> */}
+      {/* Bottom Sheets - Optimizado: solo uno y solo se monta cuando se necesita */}
+      {showOptionsSheet && (
+        <OptionsBottomSheet
+          ref={optionsBottomSheetRef}
+          title={showOptionsSheet === 'language' ? 'Idioma' : 'Privacidad'}
+          options={showOptionsSheet === 'language' ? languageOptions : privacyOptions}
+          selectedValue={showOptionsSheet === 'language' ? selectedLanguage : 'public'} // Asumiendo un valor por defecto para la privacidad
+          onOptionSelect={handleOptionsSelect}
+        />
+      )}
 
       {/* ConfirmationDialog para cerrar sesión */}
       <ConfirmationDialog
@@ -302,7 +340,9 @@ export const SettingsScreen = () => {
         onCancel={() => setShowLogoutDialog(false)}
         onConfirm={async () => {
           setShowLogoutDialog(false);
-          await handleLogoutPress();
+          setTimeout(async () => {
+            await handleLogoutPress();
+          }, 300);
         }}
         confirmText="Cerrar sesión"
         cancelText="Cancelar"

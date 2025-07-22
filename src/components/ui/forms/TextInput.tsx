@@ -1,5 +1,5 @@
 import { forwardRef, useRef, useState } from 'react';
-import { Animated, Pressable, TextInput as RNTextInput, StyleSheet, TextInputProps, View } from 'react-native';
+import { Animated, TextInput as RNTextInput, StyleSheet, TextInputProps, TouchableOpacity, View } from 'react-native';
 import { textStyles } from '../../../constants';
 import { Colors } from '../../../constants/Colors';
 import { CheckIcon } from '../../icons/CheckIcon';
@@ -102,7 +102,6 @@ export const TextInput = forwardRef<RNTextInput, CustomTextInputProps>(({
         )}
 
         {readOnly ? (
-          <View pointerEvents="none">
             <RNTextInput
               {...props}
               ref={ref}
@@ -132,8 +131,9 @@ export const TextInput = forwardRef<RNTextInput, CustomTextInputProps>(({
               numberOfLines={numberOfLines}
               maxLength={maxLength}
               editable={false}
+              showSoftInputOnFocus={false}
+              pointerEvents="none"
             />
-          </View>
         ) : (
           <RNTextInput
             {...props}
@@ -206,9 +206,9 @@ export const TextInput = forwardRef<RNTextInput, CustomTextInputProps>(({
       {description && <AppText variant='bodySmall' fontFamily='inter' color={Colors.mutedWhite} style={styles.description}>{description}</AppText>}
       
       {readOnly ? (
-        <Pressable onPress={handleReadOnlyPress}>
+        <TouchableOpacity onPress={handleReadOnlyPress} activeOpacity={0.7}>
           {inputContent}
-        </Pressable>
+        </TouchableOpacity>
       ) : (
         inputContent
       )}

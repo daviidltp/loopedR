@@ -1,5 +1,5 @@
 import React from 'react';
-import { Image, Pressable, StyleSheet, View } from 'react-native';
+import { Image, StyleSheet, TouchableNativeFeedback, View } from 'react-native';
 import { Colors } from '../../../constants/Colors';
 import { AppText } from '../Text/AppText';
 import { UploadButton } from './UploadButton';
@@ -66,58 +66,57 @@ export const DefaultAvatar: React.FC<DefaultAvatarProps> = ({
 
   return (
     <View style={[styles.avatarContainer, { width: size, height: size }]}>  
-      <Pressable
-        android_ripple={{
-          color: Colors.gray[700],
-          borderless: true,
-          radius: size / 2,
-        }}
-        style={[
-          styles.container,
-          {
-            width: size,
-            height: size,
-            borderRadius: 100,
-            backgroundColor: backgroundColor || '#1A1A1A',
-            opacity: disabled ? 0.5 : 1,
-            overflow: 'hidden',
-            borderWidth: borderStyle === 'dashed' ? 2 : 0,
-            borderColor: borderStyle === 'dashed' ? Colors.gray[700] : undefined,
-            borderStyle: borderStyle,
-          },
-        ]}
+      <TouchableNativeFeedback
+        useForeground={true}
         onPress={onPress}
         disabled={disabled}
         accessibilityRole="button"
         accessibilityLabel={`Avatar de ${name}`}
+        background={TouchableNativeFeedback.Ripple(Colors.gray[700], false)}
       >
-        {imageSource ? (
-          <Image
-            source={imageSource}
-            style={[
-              styles.selectedImage,
-              // Si es una URL remota, usar 100% de width y height
-              avatarUrl && (avatarUrl.startsWith('http://') || avatarUrl.startsWith('https://')) 
-                ? { width: '100%', height: '100%' }
-                : {}
-            ]}
-            resizeMode="cover"
-          />
-        ) : (
-          <AppText
-            fontFamily="raleway"
-            fontWeight="bold"
-            letterSpacing={0}
-            style={[
-              styles.text,
-              { fontSize: size * 0.3 },
-              { lineHeight: size * 0.3 },
-            ]}
-          >
-            {initials}
-          </AppText>
-        )}
-      </Pressable>
+        <View
+          style={[
+            styles.container,
+            {
+              width: size,
+              height: size,
+              borderRadius: 100,
+              backgroundColor: backgroundColor || '#1A1A1A',
+              overflow: 'hidden',
+              borderWidth: borderStyle === 'dashed' ? 2 : 0,
+              borderColor: borderStyle === 'dashed' ? Colors.gray[700] : undefined,
+              borderStyle: borderStyle,
+             
+            },
+          ]}
+        >
+          {imageSource ? (
+            <Image
+              source={imageSource}
+              style={[
+                styles.selectedImage,
+                avatarUrl && (avatarUrl.startsWith('http://') || avatarUrl.startsWith('https://')) 
+                  ? { width: '100%', height: '100%' }
+                  : {}
+              ]}
+              resizeMode="cover"
+            />
+          ) : (
+            <AppText
+              fontFamily="raleway"
+              fontWeight="bold"
+              letterSpacing={0}
+              style={[
+                styles.text,
+                { fontSize: size * 0.3 },
+                { lineHeight: size * 0.3 },
+              ]}
+            >
+              {initials}
+            </AppText>
+          )}
+        </View>
+      </TouchableNativeFeedback>
       {showUploadButton && (
         <View style={[styles.uploadButtonOverlay, { right: '6%', bottom: '4%' }]}> 
           <UploadButton size={uploadButtonSize} disabled={disabled} onPress={onUploadPress} />

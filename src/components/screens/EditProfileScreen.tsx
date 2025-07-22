@@ -284,7 +284,6 @@ export const EditProfileScreen: React.FC = () => {
                   maxLength={50}
                   readOnly={true}
                   onReadOnlyPress={() => {
-					console.log('name: ', name);
                     navigation.navigate('EditProfileElement', {
                       field: 'name',
                       currentValue: name,
@@ -323,6 +322,7 @@ export const EditProfileScreen: React.FC = () => {
                   autoCorrect={true}
                   returnKeyType="done"
                   showCharacterCount={true}
+                  multiline={true}
                   numberOfLines={4}
                   inputHeight={112}
                   readOnly={true}

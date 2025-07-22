@@ -174,15 +174,6 @@ export const WelcomeScreen: React.FC<WelcomeScreenProps> = ({ navigation }) => {
           </View>
 
           <View style={styles.bottomSection}>
-            <ResizingButton
-              onPress={handleShowSkipAlert}
-              title="Skip process"
-              backgroundColor={Colors.background}
-              textColor={Colors.white}
-              borderColor={Colors.white}
-              isLoading={false}
-              isDisabled={loading || isLoading}
-            />
             <View style={{paddingBottom: 10}}></View>
             <ResizingButton
               onPress={handleConnectSpotify}

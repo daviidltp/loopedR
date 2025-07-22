@@ -3,6 +3,7 @@ import { CardStyleInterpolators, createStackNavigator } from '@react-navigation/
 import { ActivityIndicator, Easing, View } from 'react-native';
 import { CreateProfileScreen, WelcomeScreen } from '../components';
 import { EditProfileScreen } from '../components/screens/EditProfileScreen';
+import { AccountPrivacy } from '../components/screens/EditProfileScreens/AccountPrivacy';
 import { EditProfileElement } from '../components/screens/EditProfileScreens/EditProfileElement';
 import { SettingsScreen } from '../components/screens/SettingsScreen';
 import { UserProfileScreen } from '../components/screens/UserProfileScreen';
@@ -17,7 +18,8 @@ export type RootStackParamList = {
   Settings: undefined;
   EditProfile: undefined;
   EditProfileElement: { field: 'name' | 'username' | 'bio'; currentValue: string; title: string };
-  UserProfile: { userId: string };
+  UserProfile: { userId: string; userData?: any };
+  AccountPrivacy: undefined;
 };
 
 const Stack = createStackNavigator<RootStackParamList>();
@@ -36,17 +38,113 @@ const LoadingScreen = () => (
   </View>
 );
 
+// Función para obtener las pantallas principales de la app
+const MainAppScreens = () => (
+  <>
+    <Stack.Screen 
+      name="MainApp" 
+      component={BottomNavigationBar}
+      options={{
+        gestureEnabled: false,
+        cardStyleInterpolator: CardStyleInterpolators.forFadeFromBottomAndroid,
+        animationTypeForReplace: 'push',
+        cardStyle: { backgroundColor: Colors.background },
+      }}
+    />
+    <Stack.Screen 
+      name="Settings" 
+      component={SettingsScreen}
+      options={({ navigation }) => ({
+        headerShown: false,
+        headerTitle: 'Settings',
+        headerTitleAlign: 'left',
+        headerLeftContainerStyle: {
+          paddingLeft: 8,
+        },
+        headerStyle: {
+          backgroundColor: Colors.background,
+          elevation: 0,
+          shadowOpacity: 0,
+          borderBottomWidth: 0,
+        },
+        cardStyle: { backgroundColor: Colors.background },
+        headerTitleStyle: {
+          fontSize: 18,
+          fontWeight: '600',
+          color: Colors.white,
+        },
+        cardStyleInterpolator: CardStyleInterpolators.forHorizontalIOS,
+        gestureEnabled: true,
+        gestureDirection: 'horizontal',
+        detachPreviousScreen: false,
+        freezeOnBlur: false,
+      })}
+    />
+    <Stack.Screen 
+      name="EditProfile" 
+      component={EditProfileScreen}
+      options={({ navigation }) => ({
+        headerShown: false,
+        cardStyle: { backgroundColor: Colors.background },
+        cardStyleInterpolator: CardStyleInterpolators.forHorizontalIOS,
+        gestureEnabled: true,
+        gestureDirection: 'horizontal',
+        detachPreviousScreen: false,
+        freezeOnBlur: false,
+      })}
+    />
+    <Stack.Screen 
+      name="EditProfileElement" 
+      component={EditProfileElement}
+      options={({ navigation }) => ({
+        headerShown: false,
+        cardStyle: { backgroundColor: Colors.background },
+        cardStyleInterpolator: CardStyleInterpolators.forHorizontalIOS,
+        gestureEnabled: true,
+        gestureDirection: 'horizontal',
+        detachPreviousScreen: false,
+        freezeOnBlur: false,
+      })}
+    />
+    <Stack.Screen 
+      name="UserProfile" 
+      component={UserProfileScreen}
+      options={({ navigation }) => ({
+        headerShown: false,
+        cardStyle: { backgroundColor: Colors.background },
+        cardStyleInterpolator: CardStyleInterpolators.forHorizontalIOS,
+        gestureEnabled: true,
+        gestureDirection: 'horizontal',
+        gestureResponseDistance: 50,
+        detachPreviousScreen: false,
+        freezeOnBlur: false,
+      })}
+    />
+    <Stack.Screen 
+      name="AccountPrivacy" 
+      component={AccountPrivacy}
+      options={{
+        headerShown: false,
+        cardStyle: { backgroundColor: Colors.background },
+        cardStyleInterpolator: CardStyleInterpolators.forHorizontalIOS,
+        gestureEnabled: true,
+        gestureDirection: 'horizontal',
+        detachPreviousScreen: false,
+        freezeOnBlur: false,
+      }}
+    />
+  </>
+);
+
 export const AppNavigator = () => {
   const { isLoading, profileCompletionStep, isOnboardingCompleted, onboardingLoading, session } = useAuth();
-
-
 
   // Mostrar pantalla de carga mientras se determina el estado
   if (isLoading || onboardingLoading) {
     return <LoadingScreen />;
   }
 
-  // Si el usuario ya completó el onboarding, ir directo a la app (sin verificar profileCompletionStep)
+  // Si el usuario ya completó el onboarding, mostrar app principal SIEMPRE
   if (isOnboardingCompleted === true) {
     return (
       <Stack.Navigator
@@ -56,98 +154,19 @@ export const AppNavigator = () => {
           headerShown: false,
           gestureEnabled: true,
           gestureDirection: 'horizontal',
+          cardStyleInterpolator: CardStyleInterpolators.forHorizontalIOS,
           cardStyle: { backgroundColor: Colors.background },
           detachPreviousScreen: false,
-          animationTypeForReplace: 'push',
           freezeOnBlur: false,
           presentation: 'card',
         }}
       >
-        <Stack.Screen 
-          name="MainApp" 
-          component={BottomNavigationBar}
-          options={{
-            gestureEnabled: false,
-            cardStyleInterpolator: CardStyleInterpolators.forFadeFromBottomAndroid,
-            animationTypeForReplace: 'push',
-            cardStyle: { backgroundColor: Colors.background },
-          }}
-        />
-        <Stack.Screen 
-          name="Settings" 
-          component={SettingsScreen}
-          options={({ navigation }) => ({
-            headerShown: false,
-            headerTitle: 'Settings',
-            headerTitleAlign: 'left',
-            headerLeftContainerStyle: {
-              paddingLeft: 8,
-            },
-            headerStyle: {
-              backgroundColor: Colors.background,
-              elevation: 0,
-              shadowOpacity: 0,
-              borderBottomWidth: 0,
-            },
-            cardStyle: { backgroundColor: Colors.background },
-            headerTitleStyle: {
-              fontSize: 18,
-              fontWeight: '600',
-              color: Colors.white,
-            },
-            cardStyleInterpolator: CardStyleInterpolators.forHorizontalIOS,
-            gestureEnabled: true,
-            gestureDirection: 'horizontal',
-
-            detachPreviousScreen: false,
-            freezeOnBlur: false,
-          })}
-        />
-        <Stack.Screen 
-          name="EditProfile" 
-          component={EditProfileScreen}
-          options={({ navigation }) => ({
-            headerShown: false,
-            cardStyle: { backgroundColor: Colors.background },
-            cardStyleInterpolator: CardStyleInterpolators.forFadeFromRightAndroid,
-            gestureEnabled: true,
-            gestureDirection: 'horizontal',
-            detachPreviousScreen: false,
-            freezeOnBlur: false,
-          })}
-        />
-        <Stack.Screen 
-          name="EditProfileElement" 
-          component={EditProfileElement}
-          options={({ navigation }) => ({
-            headerShown: false,
-            cardStyle: { backgroundColor: Colors.background },
-            cardStyleInterpolator: CardStyleInterpolators.forNoAnimation,
-            gestureEnabled: true,
-            gestureDirection: 'horizontal',
-            detachPreviousScreen: false,
-            freezeOnBlur: false,
-          })}
-        />
-        <Stack.Screen 
-          name="UserProfile" 
-          component={UserProfileScreen}
-          options={({ navigation }) => ({
-            headerShown: false,
-            cardStyle: { backgroundColor: Colors.background },
-            cardStyleInterpolator: CardStyleInterpolators.forHorizontalIOS,
-            gestureEnabled: true,
-            gestureDirection: 'horizontal',
-            gestureResponseDistance: 50,
-            detachPreviousScreen: false,
-            freezeOnBlur: false,
-          })}
-        />
+        {MainAppScreens()}
       </Stack.Navigator>
     );
   }
 
-  // Si no hay sesión, mostrar welcome
+  // Si no hay sesión, mostrar welcome y create profile
   if (!session) {
     return (
       <Stack.Navigator
@@ -204,8 +223,8 @@ export const AppNavigator = () => {
     );
   }
 
+  // Si el usuario no ha completado el perfil, mostrar welcome y create profile
   if (profileCompletionStep < 2) {
-    // Usuario sin perfil completado - mostrar welcome y create profile
     return (
       <Stack.Navigator
         key="welcome-stack"
@@ -215,13 +234,10 @@ export const AppNavigator = () => {
           gestureEnabled: true,
           gestureDirection: 'horizontal',
           cardStyleInterpolator: CardStyleInterpolators.forHorizontalIOS,
-          // Prevenir flash blanco
           cardStyle: { backgroundColor: Colors.background },
-          // Optimizaciones para react-native-screens
           detachPreviousScreen: true,
           freezeOnBlur: true,
           presentation: 'card',
-          // Optimizaciones adicionales de transición
           transitionSpec: {
             open: {
               animation: 'timing',
@@ -280,85 +296,7 @@ export const AppNavigator = () => {
         presentation: 'card',
       }}
     >
-      <Stack.Screen 
-        name="MainApp" 
-        component={BottomNavigationBar}
-        options={{
-          gestureEnabled: false,
-          cardStyleInterpolator: CardStyleInterpolators.forFadeFromBottomAndroid,
-          animationTypeForReplace: 'push',
-          cardStyle: { backgroundColor: Colors.background },
-        }}
-      />
-      <Stack.Screen 
-        name="Settings" 
-        component={SettingsScreen}
-        options={({ navigation }) => ({
-          headerShown: false,
-          headerTitle: 'Settings',
-          headerTitleAlign: 'left',
-          headerLeftContainerStyle: {
-            paddingLeft: 8,
-          },
-          headerStyle: {
-            backgroundColor: Colors.background,
-            elevation: 0,
-            shadowOpacity: 0,
-            borderBottomWidth: 0,
-          },
-          cardStyle: { backgroundColor: Colors.background },
-          headerTitleStyle: {
-            fontSize: 18,
-            fontWeight: '600',
-            color: Colors.white,
-          },
-          cardStyleInterpolator: CardStyleInterpolators.forHorizontalIOS,
-          gestureEnabled: true,
-          gestureDirection: 'horizontal',
-          detachPreviousScreen: false,
-          freezeOnBlur: false,
-        })}
-      />
-      <Stack.Screen 
-        name="EditProfile" 
-        component={EditProfileScreen}
-        options={({ navigation }) => ({
-          headerShown: false,
-          cardStyle: { backgroundColor: Colors.background },
-          cardStyleInterpolator: CardStyleInterpolators.forFadeFromRightAndroid,
-          gestureEnabled: true,
-          gestureDirection: 'horizontal',
-          detachPreviousScreen: false,
-          freezeOnBlur: false,
-        })}
-      />
-      <Stack.Screen 
-        name="EditProfileElement" 
-        component={EditProfileElement}
-        options={({ navigation }) => ({
-          headerShown: false,
-          cardStyle: { backgroundColor: Colors.background },
-          cardStyleInterpolator: CardStyleInterpolators.forHorizontalIOS,
-          gestureEnabled: true,
-          gestureDirection: 'horizontal',
-          detachPreviousScreen: false,
-          freezeOnBlur: false,
-        })}
-      />
-      <Stack.Screen 
-        name="UserProfile" 
-        component={UserProfileScreen}
-        options={({ navigation }) => ({
-          headerShown: false,
-          cardStyle: { backgroundColor: Colors.background },
-          cardStyleInterpolator: CardStyleInterpolators.forHorizontalIOS,
-          gestureEnabled: true,
-          gestureDirection: 'horizontal',
-          gestureResponseDistance: 50,
-          detachPreviousScreen: false,
-          freezeOnBlur: false,
-        })}
-      />
+      {MainAppScreens()}
     </Stack.Navigator>
   );
 }; 
