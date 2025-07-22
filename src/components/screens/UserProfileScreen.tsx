@@ -25,11 +25,20 @@ export const UserProfileScreen: React.FC = () => {
   const [userData, setUserData] = React.useState(userDataFromParams);
   const [isLoading, setIsLoading] = React.useState(!userDataFromParams);
   const { profile: currentUser } = useProfile();
-  const { getFollowersCount, getFollowingCount, isFollowing: isFollowingFn, follow, unfollow } = useFollowers();
+  const {
+    followersCount,
+    followingCount,
+    isFollowing,
+    follow,
+    unfollow,
+    fetchFollowersCount,
+    fetchFollowingCount,
+    fetchIsFollowing,
+  } = useFollowers();
 
-  const [followersCount, setFollowersCount] = React.useState(0);
-  const [followingCount, setFollowingCount] = React.useState(0);
-  const [isFollowing, setIsFollowing] = React.useState(false);
+  const [externalFollowersCount, setExternalFollowersCount] = React.useState(0);
+  const [externalFollowingCount, setExternalFollowingCount] = React.useState(0);
+  const [externalIsFollowing, setExternalIsFollowing] = React.useState(false);
   const [isFollowLoading, setIsFollowLoading] = React.useState(false);
 
   React.useEffect(() => {
@@ -44,14 +53,18 @@ export const UserProfileScreen: React.FC = () => {
 
   useFocusEffect(
     React.useCallback(() => {
-      if (userData?.id) {
-        getFollowersCount(userData.id).then(setFollowersCount).catch(() => setFollowersCount(0));
-        getFollowingCount(userData.id).then(setFollowingCount).catch(() => setFollowingCount(0));
+      if (!userData?.id) return;
+      if (currentUser?.id === userData.id) {
+        // No hace falta fetch, usamos el contexto
+        return;
       }
-      if (userData?.id && currentUser?.id && userData.id !== currentUser.id) {
-        isFollowingFn(userData.id).then(setIsFollowing).catch(() => setIsFollowing(false));
+      // Para otros usuarios, fetch puntual
+      fetchFollowersCount(userData.id).then(setExternalFollowersCount).catch(() => setExternalFollowersCount(0));
+      fetchFollowingCount(userData.id).then(setExternalFollowingCount).catch(() => setExternalFollowingCount(0));
+      if (currentUser?.id) {
+        fetchIsFollowing(userData.id, currentUser.id).then(setExternalIsFollowing).catch(() => setExternalIsFollowing(false));
       }
-    }, [userData?.id, currentUser?.id, getFollowersCount, getFollowingCount, isFollowingFn])
+    }, [userData?.id, currentUser?.id, fetchFollowersCount, fetchFollowingCount, fetchIsFollowing])
   );
 
   // Manejar botón físico de Android para volver atrás
@@ -92,8 +105,8 @@ export const UserProfileScreen: React.FC = () => {
 
   const handleFollowPress = async () => {
     if (!userData?.id) return;
-    if (isFollowing) {
-      // Confirmar dejar de seguir
+    if (currentUser?.id === userData.id) return;
+    if (externalIsFollowing) {
       Alert.alert(
         'Dejar de seguir',
         `¿Estás seguro de que quieres dejar de seguir a @${userData.username}?`,
@@ -104,8 +117,8 @@ export const UserProfileScreen: React.FC = () => {
               setIsFollowLoading(true);
               try {
                 await unfollow(userData.id);
-                setIsFollowing(false);
-                setFollowersCount(f => Math.max(0, f - 1));
+                setExternalIsFollowing(false);
+                setExternalFollowersCount(f => Math.max(0, f - 1));
               } catch {}
               setIsFollowLoading(false);
             }
@@ -116,8 +129,8 @@ export const UserProfileScreen: React.FC = () => {
       setIsFollowLoading(true);
       try {
         await follow(userData.id);
-        setIsFollowing(true);
-        setFollowersCount(f => f + 1);
+        setExternalIsFollowing(true);
+        setExternalFollowersCount(f => f + 1);
       } catch {}
       setIsFollowLoading(false);
     }
@@ -207,12 +220,12 @@ export const UserProfileScreen: React.FC = () => {
     />
   ) : (
     <ResizingButton
-      icon={isFollowing ? <Icon source="check" size={18} color={Colors.white} /> : undefined}
-      title={isFollowing ? 'Siguiendo' : 'Seguir'}
+      icon={externalIsFollowing ? <Icon source="check" size={18} color={Colors.white} /> : undefined}
+      title={externalIsFollowing ? 'Siguiendo' : 'Seguir'}
       onPress={handleFollowPress}
-      backgroundColor={isFollowing ? Colors.backgroundUltraSoft : Colors.white}
-      textColor={isFollowing ? Colors.white : Colors.background}
-      borderColor={isFollowing ? undefined : 'transparent'}
+      backgroundColor={externalIsFollowing ? Colors.backgroundUltraSoft : Colors.white}
+      textColor={externalIsFollowing ? Colors.white : Colors.background}
+      borderColor={externalIsFollowing ? undefined : 'transparent'}
       height={42}
       isLoading={isFollowLoading}
       isDisabled={isFollowLoading}
@@ -220,7 +233,7 @@ export const UserProfileScreen: React.FC = () => {
   );
 
   // Contenido adicional específico para perfiles de otros usuarios
-  const additionalContent = !isOwnProfile && !userData.isPublic && !isFollowing ? (
+  const additionalContent = !isOwnProfile && !userData.isPublic && !externalIsFollowing ? (
     // Cuenta privada y no la seguimos
     <View style={styles.privateContentSection}>
       <View style={styles.privateIconContainer}>
@@ -266,8 +279,8 @@ export const UserProfileScreen: React.FC = () => {
   return (
     <ProfileContent
       userData={userData}
-      followersCount={followersCount}
-      followingCount={followingCount}
+      followersCount={isOwnProfile ? followersCount : externalFollowersCount}
+      followingCount={isOwnProfile ? followingCount : externalFollowingCount}
       headerComponent={headerComponent}
       isPublic={userData.isPublic}
       actionButton={actionButton}

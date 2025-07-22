@@ -1,4 +1,4 @@
-import { useFocusEffect, useNavigation } from '@react-navigation/native';
+import { useNavigation } from '@react-navigation/native';
 import { StackNavigationProp } from '@react-navigation/stack';
 import React from 'react';
 import { ActivityIndicator, StyleSheet, View } from 'react-native';
@@ -15,18 +15,7 @@ type ProfileScreenNavigationProp = StackNavigationProp<RootStackParamList>;
 export const ProfileScreen: React.FC = () => {
   const navigation = useNavigation<ProfileScreenNavigationProp>();
   const { profile, isLoading } = useProfile();
-  const { getFollowersCount, getFollowingCount } = useFollowers();
-  const [followersCount, setFollowersCount] = React.useState(0);
-  const [followingCount, setFollowingCount] = React.useState(0);
-
-  useFocusEffect(
-    React.useCallback(() => {
-      if (profile?.id) {
-        getFollowersCount(profile.id).then(setFollowersCount).catch(() => setFollowersCount(0));
-        getFollowingCount(profile.id).then(setFollowingCount).catch(() => setFollowingCount(0));
-      }
-    }, [profile?.id, getFollowersCount, getFollowingCount])
-  );
+  const { followersCount, followingCount } = useFollowers();
 
   const openSettings = () => {
     navigation.navigate('Settings');

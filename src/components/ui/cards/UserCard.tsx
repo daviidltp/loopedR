@@ -24,19 +24,14 @@ export const UserCard: React.FC<UserCardProps> = ({
   // onFollowPress,
 }) => {
   const { profile: currentUser } = useProfile();
-  const { isFollowing: isFollowingFn, follow, unfollow } = useFollowers();
-  const [isFollowing, setIsFollowing] = React.useState(false);
+  const { isFollowing, follow, unfollow } = useFollowers();
   const [isFollowLoading, setIsFollowLoading] = React.useState(false);
 
-  React.useEffect(() => {
-    if (user.id && currentUser?.id && user.id !== currentUser.id) {
-      isFollowingFn(user.id).then(setIsFollowing).catch(() => setIsFollowing(false));
-    }
-  }, [user.id, currentUser?.id, isFollowingFn]);
+  const following = isFollowing(user.id);
 
   const handleFollowPress = async () => {
     if (!user.id) return;
-    if (isFollowing) {
+    if (following) {
       Alert.alert(
         'Dejar de seguir',
         `¿Estás seguro de que quieres dejar de seguir a @${user.username}?`,
@@ -47,7 +42,6 @@ export const UserCard: React.FC<UserCardProps> = ({
               setIsFollowLoading(true);
               try {
                 await unfollow(user.id);
-                setIsFollowing(false);
               } catch {}
               setIsFollowLoading(false);
             }
@@ -58,7 +52,6 @@ export const UserCard: React.FC<UserCardProps> = ({
       setIsFollowLoading(true);
       try {
         await follow(user.id);
-        setIsFollowing(true);
       } catch {}
       setIsFollowLoading(false);
     }
@@ -102,12 +95,12 @@ export const UserCard: React.FC<UserCardProps> = ({
 
       {/* Botón seguir */}
       <ResizingButton
-        icon={isFollowing ? <Icon source="check" size={18} color={Colors.white} /> : undefined}
-        title={isFollowing ? 'Siguiendo' : 'Seguir'}
+        icon={following ? <Icon source="check" size={18} color={Colors.white} /> : undefined}
+        title={following ? 'Siguiendo' : 'Seguir'}
         onPress={handleFollowPress}
-        backgroundColor={isFollowing ? Colors.backgroundUltraSoft : Colors.white}
-        textColor={isFollowing ? Colors.white : Colors.background}
-        borderColor={isFollowing ? undefined : 'transparent'}
+        backgroundColor={following ? Colors.backgroundUltraSoft : Colors.white}
+        textColor={following ? Colors.white : Colors.background}
+        borderColor={following ? undefined : 'transparent'}
         height={42}
         isLoading={isFollowLoading}
         isDisabled={isFollowLoading}

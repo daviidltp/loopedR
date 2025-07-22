@@ -21,16 +21,16 @@ const SEARCH_BAR_INITIAL_POSITION = 230;
 export const HomeScreen: React.FC = () => {
   const insets = useSafeAreaInsets();
   const { profile: currentUser } = useProfile();
-  const { getFollowingCount } = useFollowers();
-  const [userHasFriends, setUserHasFriends] = React.useState(false);
+  const { followingCount } = useFollowers();
+  const userHasFriends = followingCount > 0;
   const navigation = useNavigation<BottomTabNavigationProp<BottomNavigationParamList, 'Home'>>();
 
   useFocusEffect(
     React.useCallback(() => {
       if (currentUser?.id) {
-        getFollowingCount(currentUser.id).then(count => setUserHasFriends(count > 0)).catch(() => setUserHasFriends(false));
+        // getFollowingCount(currentUser.id).then(count => setUserHasFriends(count > 0)).catch(() => setUserHasFriends(false));
       }
-    }, [currentUser?.id, getFollowingCount])
+    }, [currentUser?.id, followingCount])
   );
 
   // Componente interno para el estado vacío
