@@ -2,4 +2,5 @@ export { Post } from './Post';
 export { PostComments } from './PostComments';
 export { PostDescription } from './PostDescription';
 export { PostHeader } from './PostHeader';
-export { SpotifyWrappedContent } from './SpotifyWrappedContent';
+export { WeeklyLoops } from './WeeklyLoops';
+
