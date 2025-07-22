@@ -7,6 +7,7 @@ import { NotifierWrapper } from 'react-native-notifier';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 import { enableScreens } from 'react-native-screens';
 import { AuthProvider } from './src/contexts/AuthContext';
+import { FollowersProvider } from './src/contexts/FollowersContext';
 import { ProfileProvider } from './src/contexts/ProfileContext';
 import { useFonts } from './src/hooks/useFonts';
 import { AppNavigator } from './src/navigation/AppNavigator';
@@ -47,50 +48,52 @@ export default function App() {
   }
 
   return (
-    <SafeAreaProvider>
-    <GestureHandlerRootView style={{ flex: 1, backgroundColor: '#000000' }} onLayout={onLayoutRootView}>
-        <AuthProvider>
-          <ProfileProvider>
-            <NavigationContainer 
-              ref={navigationRef}
-              theme={{
-            dark: true,
-            colors: {
-              primary: '#ffffff',
-              background: '#000000',
-              card: '#000000',
-              text: '#ffffff',
-              border: '#000000',
-              notification: '#ff453a',
-            },
-            fonts: {
-              regular: {
-                fontFamily: 'System',
-                fontWeight: 'normal' as const,
-              },
-              medium: {
-                fontFamily: 'System',
-                fontWeight: '500' as const,
-              },
-              bold: {
-                fontFamily: 'System',
-                fontWeight: 'bold' as const,
-              },
-              heavy: {
-                fontFamily: 'System',
-                fontWeight: '900' as const,
-              },
-            },
-              }}
-            >
-            <NotifierWrapper>
-              <AppNavigator />
-            </NotifierWrapper>
-          </NavigationContainer>
-          </ProfileProvider>
-        </AuthProvider>
-      </GestureHandlerRootView>
-      </SafeAreaProvider>
+    <AuthProvider>
+      <FollowersProvider>
+        <SafeAreaProvider>
+          <GestureHandlerRootView style={{ flex: 1, backgroundColor: '#000000' }} onLayout={onLayoutRootView}>
+            <ProfileProvider>
+              <NavigationContainer
+                ref={navigationRef}
+                theme={{
+                  dark: true,
+                  colors: {
+                    primary: '#ffffff',
+                    background: '#000000',
+                    card: '#000000',
+                    text: '#ffffff',
+                    border: '#000000',
+                    notification: '#ff453a',
+                  },
+                  fonts: {
+                    regular: {
+                      fontFamily: 'System',
+                      fontWeight: 'normal' as const,
+                    },
+                    medium: {
+                      fontFamily: 'System',
+                      fontWeight: '500' as const,
+                    },
+                    bold: {
+                      fontFamily: 'System',
+                      fontWeight: 'bold' as const,
+                    },
+                    heavy: {
+                      fontFamily: 'System',
+                      fontWeight: '900' as const,
+                    },
+                  },
+                }}
+              >
+                <NotifierWrapper>
+                  <AppNavigator />
+                </NotifierWrapper>
+              </NavigationContainer>
+            </ProfileProvider>
+          </GestureHandlerRootView>
+        </SafeAreaProvider>
+      </FollowersProvider>
+    </AuthProvider>
   );
 }
 

@@ -3,9 +3,9 @@ import { StackNavigationProp } from '@react-navigation/stack';
 import React from 'react';
 import { ActivityIndicator, StyleSheet, View } from 'react-native';
 import { Colors } from '../../constants/Colors';
+import { useFollowers } from '../../contexts/FollowersContext';
 import { useProfile } from '../../contexts/ProfileContext';
 import { RootStackParamList } from '../../navigation/AppNavigator';
-import { getUserFollowers, getUserFollowing } from '../../utils/mockData';
 import { RippleButton } from '../ui/buttons/RippleButton';
 import { ProfileHeader } from '../ui/headers/ProfileHeader';
 import { ProfileContent } from './ProfileContent';
@@ -15,6 +15,16 @@ type ProfileScreenNavigationProp = StackNavigationProp<RootStackParamList>;
 export const ProfileScreen: React.FC = () => {
   const navigation = useNavigation<ProfileScreenNavigationProp>();
   const { profile, isLoading } = useProfile();
+  const { getFollowersCount, getFollowingCount } = useFollowers();
+  const [followersCount, setFollowersCount] = React.useState(0);
+  const [followingCount, setFollowingCount] = React.useState(0);
+
+  React.useEffect(() => {
+    if (profile?.id) {
+      getFollowersCount(profile.id).then(setFollowersCount).catch(() => setFollowersCount(0));
+      getFollowingCount(profile.id).then(setFollowingCount).catch(() => setFollowingCount(0));
+    }
+  }, [profile?.id, getFollowersCount, getFollowingCount]);
 
   const openSettings = () => {
     navigation.navigate('Settings');
@@ -37,12 +47,6 @@ export const ProfileScreen: React.FC = () => {
     );
   }
   
-  // Obtener datos de seguidores/seguidos desde mockData
-  const followers = getUserFollowers(profile.id);
-  const following = getUserFollowing(profile.id);
-  const followersCount = followers.length;
-  const followingCount = following.length;
-
   // Convertir profile a formato compatible con ProfileContent
   const userData = {
     id: profile.id,
