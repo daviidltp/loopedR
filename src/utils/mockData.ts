@@ -6,6 +6,9 @@ export interface User {
   avatarUrl: string;
   isVerified: boolean;
   isPublic: boolean; // true = público, false = privado
+  followersCount: number;
+  followingCount: number;
+  followStatus: 'none' | 'pending' | 'accepted';
 }
 
 export interface UserRelation {
@@ -23,6 +26,9 @@ export const mockUsers: User[] = [
     avatarUrl: 'https://pbs.twimg.com/profile_images/1578802191678177281/BlJ-NtBl_400x400.jpg',
     isVerified: true,
     isPublic: false, // Perfil privado para mostrar el candado
+    followersCount: 0,
+    followingCount: 0,
+    followStatus: 'none',
   },
   {
     id: '2',
@@ -32,6 +38,9 @@ export const mockUsers: User[] = [
     avatarUrl: 'https://pbs.twimg.com/profile_images/1851626170543972353/lmBVAsTV_400x400.jpg',
     isVerified: true,
     isPublic: true,
+    followersCount: 0,
+    followingCount: 0,
+    followStatus: 'none',
   },
   {
     id: '3',
@@ -41,6 +50,9 @@ export const mockUsers: User[] = [
     avatarUrl: 'https://unavatar.io/x/abepe1010',
     isVerified: true,
     isPublic: false,
+    followersCount: 0,
+    followingCount: 0,
+    followStatus: 'none',
   },
   {
     id: '4',
@@ -50,6 +62,9 @@ export const mockUsers: User[] = [
     avatarUrl: 'https://pbs.twimg.com/profile_images/1360924630719098880/rC6A3VyY_400x400.jpg',
     isVerified: false,
     isPublic: false,
+    followersCount: 0,
+    followingCount: 0,
+    followStatus: 'none',
   },
   {
     id: '5',
@@ -59,6 +74,9 @@ export const mockUsers: User[] = [
     avatarUrl: 'https://pbs.twimg.com/profile_images/1492654234122207234/su1Dtj9B_400x400.jpg',
     isVerified: false,
     isPublic: true,
+    followersCount: 0,
+    followingCount: 0,
+    followStatus: 'none',
   },
 ];
 

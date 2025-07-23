@@ -1,10 +1,12 @@
 import type { BottomTabNavigationProp, BottomTabScreenProps } from '@react-navigation/bottom-tabs';
-import { useFocusEffect, useNavigation, useRoute } from '@react-navigation/native';
+import { CompositeNavigationProp, useFocusEffect, useNavigation, useRoute } from '@react-navigation/native';
+import { StackNavigationProp } from '@react-navigation/stack';
 import React from 'react';
 import { Keyboard, StyleSheet, TouchableWithoutFeedback, View } from 'react-native';
 import { Colors } from '../../constants/Colors';
 import { useProfile } from '../../contexts/ProfileContext';
 import { useUserSearch } from '../../hooks/useUserSearch';
+import type { RootStackParamList } from '../../navigation/AppNavigator';
 import { DeleteUserIcon } from '../icons/DeleteUserIcon';
 import { SearchBar } from '../ui/forms/SearchBar';
 import { Layout } from '../ui/layout/Layout';
@@ -14,7 +16,10 @@ import type { BottomNavigationParamList } from '../ui/navigation/BottomNavigatio
 import { AppText } from '../ui/Text/AppText';
 
 type SearchScreenProps = BottomTabScreenProps<BottomNavigationParamList, 'Search'>;
-type SearchScreenNavigationProp = BottomTabNavigationProp<BottomNavigationParamList, 'Search'>;
+type SearchScreenNavigationProp = CompositeNavigationProp<
+  BottomTabNavigationProp<BottomNavigationParamList, 'Search'>,
+  StackNavigationProp<RootStackParamList>
+>;
 
 export const SearchScreen: React.FC = () => {
   const route = useRoute<SearchScreenProps['route']>();
@@ -56,6 +61,16 @@ export const SearchScreen: React.FC = () => {
     }, [fromSearchAnimation, navigation])
   );
 
+  // Recargar usuarios al volver a SearchScreen (solo si no hay búsqueda activa)
+  useFocusEffect(
+    React.useCallback(() => {
+      if (!searchText) {
+        // Forzar recarga de populares y limpiar resultados
+        handleClearSearch();
+      }
+    }, [searchText])
+  );
+
   const renderPopularUsers = () => (
     <View style={styles.defaultContainer}>
       <AppText 
@@ -68,22 +83,24 @@ export const SearchScreen: React.FC = () => {
         Cuentas populares
       </AppText>
 
-      {popularStatus === 'searching' &&  
+      {/* Solo muestra skeleton si no hay datos */}
+      {popularStatus === 'searching' && popularUsers.length === 0 &&  
         <View style={styles.skeletonContainer}>
           {[...Array(7)].map((_, i) => (
             <UserListItemSkeleton key={i} />
           ))}
         </View>
       }
-      
-      {popularStatus === 'success' && (
+
+      {/* Muestra la lista si hay datos, aunque esté recargando */}
+      {popularUsers.length > 0 && (
         <UserList 
           users={popularUsers} 
-          onUserPress={userId => handleUserPress(userId, navigation, currentUser?.id)} 
+          onUserPress={userId => navigation.navigate('UserProfile', { userId, userData: popularUsers.find(u => u.id === userId) })} 
         />
       )}
 
-      {popularStatus === 'empty' && (
+      {popularStatus === 'empty' && popularUsers.length === 0 && (
         <AppText color={Colors.mutedWhite} style={styles.centeredText}>
           No hay cuentas populares.
         </AppText>
@@ -103,7 +120,7 @@ export const SearchScreen: React.FC = () => {
         <>
           <UserList
             users={users}
-            onUserPress={userId => handleUserPress(userId, navigation, currentUser?.id)}
+            onUserPress={userId => navigation.navigate('UserProfile', { userId, userData: users.find(u => u.id === userId) })}
           />
           <View style={styles.skeletonContainer}>
             {[...Array(3)].map((_, i) => (
