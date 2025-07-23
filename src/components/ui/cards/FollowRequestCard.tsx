@@ -1,9 +1,8 @@
 import React from 'react';
-import { Image, StyleSheet, View } from 'react-native';
+import { Image, StyleSheet, TouchableOpacity, View } from 'react-native';
 import { IconButton } from 'react-native-paper';
 import verifiedBlue from '../../../../assets/icons/verified_blue.png';
 import { Colors } from '../../../constants/Colors';
-import { CheckIcon } from '../../icons/CheckIcon';
 import { DefaultAvatar } from '../Avatar/DefaultAvatar';
 import { AppText } from '../Text/AppText';
 import { PlatformTouchable } from '../buttons/PlatformTouchable';
@@ -78,25 +77,22 @@ export const FollowRequestCard: React.FC<FollowRequestCardProps> = ({
       </View>
       {/* Botones de acción */}
       <View style={styles.buttonsContainer}>
-        <View style={styles.iconButtonWrapper}>
-          <IconButton
-            icon={() => <CheckIcon size={22} color={Colors.spotifyGreen} />}
-            size={22}
-            onPress={() => onAccept(request.id)}
-            style={{ backgroundColor: Colors.background, borderRadius: 20 }}
-            accessibilityLabel="Aceptar solicitud"
-          />
-        </View>
-        <View style={styles.iconButtonWrapper}>
-          <IconButton
-            icon="close"
-            size={22}
-            onPress={() => onReject(request.id)}
-            iconColor={Colors.white}
-            style={{ backgroundColor: Colors.background, borderRadius: 20 }}
-            accessibilityLabel="Rechazar solicitud"
-          />
-        </View>
+        <TouchableOpacity
+          style={styles.acceptButton}
+          onPress={() => onAccept(request.id)}
+          accessibilityLabel="Aceptar solicitud"
+          activeOpacity={0.8}
+        >
+          <AppText style={styles.acceptButtonText}>Aceptar</AppText>
+        </TouchableOpacity>
+        <IconButton
+          icon="close"
+          size={22}
+          onPress={() => onReject(request.id)}
+          iconColor={Colors.white}
+          style={styles.rejectButton}
+          accessibilityLabel="Rechazar solicitud"
+        />
       </View>
     </View>
   );
@@ -152,5 +148,25 @@ const styles = StyleSheet.create({
   },
   iconButtonWrapper: {
     marginHorizontal: 2,
+  },
+  acceptButton: {
+    backgroundColor: '#00b290',
+    borderRadius: 8,
+    paddingVertical: 6,
+    paddingHorizontal: 30,
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginRight: 8,
+    minWidth: 90,
+  },
+  acceptButtonText: {
+    color: Colors.white,
+    fontWeight: 'bold',
+    fontSize: 16,
+  },
+  rejectButton: {
+    backgroundColor: 'transparent',
+    borderRadius: 20,
+    marginLeft: 0,
   },
 }); 
