@@ -28,7 +28,14 @@ export const UserProfileScreen: React.FC = () => {
   const { profile: currentUser } = useProfile();
 
   const {
-
+    followersCount,
+    followingCount,
+    getFollowStatus,
+    follow,
+    unfollow,
+    cancelFollowRequest,
+    fetchFollowersCount,
+    fetchFollowingCount,
     fetchFollowStatus,
   } = useFollowers();
 
@@ -73,7 +80,6 @@ export const UserProfileScreen: React.FC = () => {
         setOptimisticFollowStatus('none');
       }
     };
-    
     checkFollowStatus();
     return () => { isMounted = false; };
   }, [userData?.id, userData?.isPublic, currentUser?.id, fetchFollowStatus]);
@@ -183,7 +189,6 @@ export const UserProfileScreen: React.FC = () => {
         // Si falla, revertir estado
         setExternalFollowStatus(prevFollowStatus);
         setExternalFollowersCount(prevFollowersCount);
-        setOptimisticFollowStatus(prevFollowStatus);
         if (typeof window !== 'undefined' && window.alert) {
           window.alert('Hubo un error al actualizar el seguimiento.');
         } else {
@@ -282,7 +287,7 @@ export const UserProfileScreen: React.FC = () => {
   );
 
   // Contenido adicional específico para perfiles de otros usuarios
-  const canShowPosts = userData.isPublic || optimisticFollowStatus === 'accepted';
+  const canShowPosts = userData.isPublic || isFollowAcceptedFromServer;
   const additionalContent = !canShowPosts ? (
     // Cuenta privada y no la seguimos (según Supabase)
     <View style={styles.privateContentSection}>

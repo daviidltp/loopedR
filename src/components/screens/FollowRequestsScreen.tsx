@@ -34,6 +34,7 @@ export const FollowRequestsScreen: React.FC = () => {
 
   const handleUserPress = (userId: string, userData: any) => {
     const user = convertSupabaseUserToUser(userData);
+    console.log('user', userData);
     navigation.navigate('UserProfile', { userId, userData: user });
   };
 

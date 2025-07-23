@@ -8,7 +8,18 @@ interface FollowRequest {
   following_id: string;
   created_at: string;
   status: 'pending' | 'accepted';
-  follower_profile?: any; // perfil del usuario que solicita seguirte
+  follower_profile?: {
+    id: string;
+    username: string;
+    display_name: string;
+    bio: string | null;
+    avatar_url: string | null;
+    is_public: boolean;
+    is_verified: boolean;
+    followersCount?: number;
+    followingCount?: number;
+    followStatus?: 'none' | 'pending' | 'accepted';
+  }; // perfil del usuario que solicita seguirte
 }
 
 interface FollowersContextType {
@@ -94,11 +105,31 @@ export const FollowersProvider: React.FC<{ children: React.ReactNode }> = ({ chi
       // Solicitudes recibidas (pending)
       const { data: requestsData, error: requestsError } = await supabase
         .from('followers')
-        .select('id, follower_id, following_id, created_at, status, follower_profile:profiles!followers_follower_id_fkey(*)')
+        .select('id, follower_id, following_id, created_at, status, follower_profile:profiles!followers_follower_id_fkey(id, username, display_name, bio, avatar_url, is_public, is_verified)')
         .eq('following_id', userId)
         .eq('status', 'pending');
       if (requestsError) throw requestsError;
-      setFollowRequests(requestsData || []);
+      
+      // Obtener followersCount, followingCount y followStatus para cada usuario en las solicitudes
+      const requestsWithStats = await Promise.all((requestsData || []).map(async (request: any) => {
+        if (request.follower_profile) {
+          const followersCount = await fetchFollowersCount(request.follower_profile.id);
+          const followingCount = await fetchFollowingCount(request.follower_profile.id);
+          const followStatus = await fetchFollowStatus(request.follower_profile.id, userId);
+          return {
+            ...request,
+            follower_profile: {
+              ...request.follower_profile,
+              followersCount,
+              followingCount,
+              followStatus,
+            }
+          };
+        }
+        return request;
+      }));
+      
+      setFollowRequests(requestsWithStats || []);
 
       // Relaciones (para saber si sigo a alguien y el estado)
       const { data: relData, error: relError } = await supabase
