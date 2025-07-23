@@ -20,7 +20,7 @@ interface SpotifyWrappedContentProps {
   titleColor?: string;
 }
 
-export const WeeklyLoops: React.FC<SpotifyWrappedContentProps> = ({
+export const WelcomePost: React.FC<SpotifyWrappedContentProps> = ({
   topSongs,
   coverSize = 50,
   borderColor = '#A876FF77',
@@ -66,10 +66,10 @@ export const WeeklyLoops: React.FC<SpotifyWrappedContentProps> = ({
       {/* Contenido principal */}
       <View style={[styles.content, {     backgroundColor: backgroundColor, }]}>
         <View style={styles.titleContainer}>
-          <AppText variant='h2' fontFamily='raleway' fontWeight='bold' color={titleColor}>Bucles de</AppText>
-          <AppText variant='h2' fontFamily='raleway' fontWeight='bold' color={titleColor}>la semana</AppText>
+          <AppText variant='h2' fontFamily='raleway' fontWeight='bold' color={titleColor} letterSpacing={0}>#WelcomeToLooped</AppText>
         </View>
         <View style={styles.songsContainer}>
+        <AppText variant='body' fontFamily='raleway' fontWeight='bold' color={Colors.lessMutedWhite} letterSpacing={0} style={{ marginBottom: 16 }}>Canciones más escuchadas del mes</AppText>
           {topSongs.map((song) => (
             <View key={song.position} style={styles.songItem}>
               <SongCover song={song} size={coverSize} />
@@ -124,7 +124,7 @@ const styles = StyleSheet.create({
   },
   titleContainer: {
     alignItems: 'flex-start',
-    marginBottom: 24,
+    marginBottom: 20,
   },
   songsContainer: {
   },

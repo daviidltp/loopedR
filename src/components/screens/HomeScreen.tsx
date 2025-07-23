@@ -69,9 +69,10 @@ export const HomeScreen: React.FC = () => {
           ) : (
             <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
               <View style={styles.feedContainer}>
-                <Post post={mockPosts[0]} backgroundColor='#FF767622' borderColor='#FF767677' />
-                <Post post={mockPosts[1]} backgroundColor='#A876FF22' borderColor='#A876FF77' />
-                <Post post={mockPosts[2]} backgroundColor='#76D1FF22' borderColor='#76D1FF77' />
+              <Post post={mockPosts[3]} colorName='yellow' type='welcome' />
+                <Post post={mockPosts[0]} colorName='red' type='top-3-songs' />
+                <Post post={mockPosts[1]} colorName='purple' type='top-3-songs' />
+                <Post post={mockPosts[2]} colorName='blue' type='top-3-songs' />
               </View>
             </TouchableWithoutFeedback>
           )}

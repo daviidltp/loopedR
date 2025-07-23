@@ -163,7 +163,22 @@ export type Top3SongsPost = {
   description: string;
 };
 
-export type Post = Top3SongsPost; // | OtroTipoDePostEnElFuturo
+export type WelcomePost = {
+  id: string;
+  type: 'welcome';
+  user: User;
+  timestamp: number;
+  topSongs: Array<{
+    position: number;
+    title: string;
+    artist: string;
+    plays: string;
+    albumCover: string;
+  }>;
+  description: string;
+};
+
+export type Post = Top3SongsPost | WelcomePost; // | OtroTipoDePostEnElFuturo
 
 // Posts mock
 export const mockPosts: Post[] = [
@@ -258,6 +273,36 @@ export const mockPosts: Post[] = [
       },
     ],
     description: 'wtf es este bucle bro',
+  },
+  {
+    id: 'top3-4',
+    type: 'welcome',
+    user: mockUsers[3], // david
+    timestamp: Date.now() - 1000 * 60 * 60 * 1, // 1 hora atrás
+    topSongs: [
+      {
+        position: 1,
+        title: 'DESPECHÁ',
+        artist: 'ROSALÍA',
+        plays: '1.8M',
+        albumCover: 'https://i.scdn.co/image/ab67616d0000b2738f072024e0358fc5c62eba41',
+      },
+      {
+        position: 2,
+        title: 'Flowers',
+        artist: 'Miley Cyrus',
+        plays: '2.5M',
+        albumCover: 'https://i.scdn.co/image/ab67616d0000b273f429549123dbe8552764ba1d',
+      },
+      {
+        position: 3,
+        title: 'As It Was',
+        artist: 'Harry Styles',
+        plays: '1.9M',
+        albumCover: 'https://i.scdn.co/image/ab67616d0000b273b46f74097655d7f353caab14',
+      },
+    ],
+    description: 'Pues ya estamos por aquí!',
   },
 ];
 
