@@ -7,7 +7,7 @@ import { AccountPrivacy } from '../components/screens/EditProfileScreens/Account
 import { EditProfileElement } from '../components/screens/EditProfileScreens/EditProfileElement';
 import { SettingsScreen } from '../components/screens/SettingsScreen';
 import { UserProfileScreen } from '../components/screens/UserProfileScreen';
-import { FollowRequestsScreen } from '../components/ui/modals/FollowRequestsModal';
+import { FollowRequestsModal } from '../components/ui/modals/FollowRequestsModal';
 import { BottomNavigationBar } from '../components/ui/navigation/BottomNavigationBar';
 import { Colors } from '../constants/Colors';
 import { useAuth } from '../contexts/AuthContext';
@@ -153,7 +153,7 @@ const MainAppScreens = () => (
     />
     <Stack.Screen 
       name="FollowRequests" 
-      component={FollowRequestsScreen}
+      component={FollowRequestsModal}
       options={{ headerShown: false }}
     />
   </>
