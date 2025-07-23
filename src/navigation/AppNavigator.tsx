@@ -5,9 +5,9 @@ import { CreateProfileScreen, WelcomeScreen } from '../components';
 import { EditProfileScreen } from '../components/screens/EditProfileScreen';
 import { AccountPrivacy } from '../components/screens/EditProfileScreens/AccountPrivacy';
 import { EditProfileElement } from '../components/screens/EditProfileScreens/EditProfileElement';
+import { FollowRequestsScreen } from '../components/screens/FollowRequestsScreen';
 import { SettingsScreen } from '../components/screens/SettingsScreen';
 import { UserProfileScreen } from '../components/screens/UserProfileScreen';
-import { FollowRequestsModal } from '../components/ui/modals/FollowRequestsModal';
 import { BottomNavigationBar } from '../components/ui/navigation/BottomNavigationBar';
 import { Colors } from '../constants/Colors';
 import { useAuth } from '../contexts/AuthContext';
@@ -158,8 +158,16 @@ const MainAppScreens = () => (
     />
     <Stack.Screen 
       name="FollowRequests" 
-      component={FollowRequestsModal}
-      options={{ headerShown: false }}
+      component={FollowRequestsScreen}
+      options={{
+        headerShown: false,
+        cardStyle: { backgroundColor: Colors.background },
+        cardStyleInterpolator: CardStyleInterpolators.forHorizontalIOS,
+        gestureEnabled: true,
+        gestureDirection: 'horizontal',
+        detachPreviousScreen: false,
+        freezeOnBlur: false,
+      }}
     />
   </>
 );

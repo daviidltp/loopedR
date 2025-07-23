@@ -8,7 +8,6 @@ import { useFollowers } from '../../contexts/FollowersContext';
 import { useProfile } from '../../contexts/ProfileContext';
 import { useUserSearch } from '../../hooks/useUserSearch';
 import { RootStackParamList } from '../../navigation/AppNavigator';
-import { getUserStatsById } from '../../utils/userActions';
 import { ResizingButton } from '../ui/buttons/ResizingButton';
 import { ProfileHeader } from '../ui/headers/ProfileHeader';
 import { AppText } from '../ui/Text/AppText';
@@ -29,14 +28,7 @@ export const UserProfileScreen: React.FC = () => {
   const { profile: currentUser } = useProfile();
 
   const {
-    followersCount,
-    followingCount,
-    getFollowStatus,
-    follow,
-    unfollow,
-    cancelFollowRequest,
-    fetchFollowersCount,
-    fetchFollowingCount,
+
     fetchFollowStatus,
   } = useFollowers();
 
@@ -50,6 +42,8 @@ export const UserProfileScreen: React.FC = () => {
     typeof userDataFromParams?.followStatus === 'string' ? userDataFromParams.followStatus : 'accepted'
   );
   const [isFollowLoading, setIsFollowLoading] = React.useState(false);
+  const [isFollowAcceptedFromServer, setIsFollowAcceptedFromServer] = React.useState(false);
+  const [optimisticFollowStatus, setOptimisticFollowStatus] = React.useState<'none' | 'pending' | 'accepted'>('accepted');
 
   // Si no hay datos completos, podrías hacer un fetch aquí (opcional)
   React.useEffect(() => {
@@ -60,6 +54,45 @@ export const UserProfileScreen: React.FC = () => {
       setIsLoading(false);
     }
   }, [userId, userDataFromParams]);
+
+  // Consultar estado real desde Supabase al cargar la pantalla
+  React.useEffect(() => {
+    let isMounted = true;
+    const checkFollowStatus = async () => {
+      if (fetchFollowStatus && currentUser?.id && userData?.id && !userData.isPublic) {
+        const status = await fetchFollowStatus(userData.id, currentUser.id);
+        if (isMounted) {
+          setIsFollowAcceptedFromServer(status === 'accepted');
+          setOptimisticFollowStatus(status);
+        }
+      } else if (userData?.isPublic) {
+        setIsFollowAcceptedFromServer(true);
+        setOptimisticFollowStatus('accepted');
+      } else {
+        setIsFollowAcceptedFromServer(false);
+        setOptimisticFollowStatus('none');
+      }
+    };
+    
+    checkFollowStatus();
+    return () => { isMounted = false; };
+  }, [userData?.id, userData?.isPublic, currentUser?.id, fetchFollowStatus]);
+
+  // Tras cada acción de follow/unfollow/cancel, volver a consultar el estado real
+  const refetchFollowStatusFromServer = React.useCallback(() => {
+    if (fetchFollowStatus && currentUser?.id && userData?.id && !userData.isPublic) {
+      fetchFollowStatus(userData.id, currentUser.id).then(status => {
+        setIsFollowAcceptedFromServer(status === 'accepted');
+        setOptimisticFollowStatus(status);
+      });
+    } else if (userData?.isPublic) {
+      setIsFollowAcceptedFromServer(true);
+      setOptimisticFollowStatus('accepted');
+    } else {
+      setIsFollowAcceptedFromServer(false);
+      setOptimisticFollowStatus('none');
+    }
+  }, [fetchFollowStatus, currentUser?.id, userData?.id, userData?.isPublic]);
 
   // Manejar botón físico de Android para volver atrás
   useFocusEffect(
@@ -109,30 +142,62 @@ export const UserProfileScreen: React.FC = () => {
   // Obtener la función de acción optimista desde el hook global
   const { handleFollowAction } = useUserSearch(currentUser);
 
-  const handleFollowPress = async () => {
+  const handleFollowPress = () => {
     if (!userData?.id) return;
-    setIsFollowLoading(true);
+    const prevFollowStatus = externalFollowStatus;
+    const prevFollowersCount = externalFollowersCount;
+    let newStatus: typeof externalFollowStatus = prevFollowStatus;
+    let newFollowersCount = prevFollowersCount;
+
+    // Estado optimista
     if (externalFollowStatus === 'accepted') {
-      await handleFollowAction(userData.id, 'unfollow');
+      newStatus = 'none';
+      newFollowersCount = prevFollowersCount - 1;
     } else if (externalFollowStatus === 'pending') {
-      await handleFollowAction(userData.id, 'cancel');
-    } else {
-      await handleFollowAction(userData.id, 'follow');
+      newStatus = 'none';
+    } else if (externalFollowStatus === 'none') {
+      if (userData.isPublic) {
+        newStatus = 'accepted';
+        newFollowersCount = prevFollowersCount + 1;
+      } else {
+        newStatus = 'pending';
+      }
     }
-    // Actualizar contadores y status desde Supabase
-    if (fetchFollowersCount && fetchFollowingCount && fetchFollowStatus && currentUser?.id) {
-      const stats = await getUserStatsById(
-        userData.id,
-        currentUser.id,
-        fetchFollowersCount,
-        fetchFollowingCount,
-        fetchFollowStatus
-      );
-      setExternalFollowersCount(stats.followersCount);
-      setExternalFollowingCount(stats.followingCount);
-      setExternalFollowStatus(stats.followStatus);
-    }
-    setIsFollowLoading(false);
+    setExternalFollowStatus(newStatus);
+    setExternalFollowersCount(newFollowersCount);
+    setOptimisticFollowStatus(newStatus);
+
+    // Lanzar petición en background
+    (async () => {
+      try {
+        if (prevFollowStatus === 'accepted') {
+          await handleFollowAction(userData.id, 'unfollow');
+        } else if (prevFollowStatus === 'pending') {
+          await handleFollowAction(userData.id, 'cancel');
+        } else {
+          await handleFollowAction(userData.id, 'follow');
+        }
+        // Consultar estado real tras la acción
+        refetchFollowStatusFromServer();
+      } catch (e) {
+        // Si falla, revertir estado
+        setExternalFollowStatus(prevFollowStatus);
+        setExternalFollowersCount(prevFollowersCount);
+        setOptimisticFollowStatus(prevFollowStatus);
+        if (typeof window !== 'undefined' && window.alert) {
+          window.alert('Hubo un error al actualizar el seguimiento.');
+        } else {
+          console.error('Hubo un error al actualizar el seguimiento.');
+        }
+        // Consultar estado real tras el error
+        refetchFollowStatusFromServer();
+      }
+    })();
+
+    // Quitar loading tras 300ms
+    setTimeout(() => {
+      setIsFollowLoading(false);
+    }, 300);
   };
 
   let buttonTitle = 'Seguir';
@@ -217,8 +282,9 @@ export const UserProfileScreen: React.FC = () => {
   );
 
   // Contenido adicional específico para perfiles de otros usuarios
-  const additionalContent = !userData.isPublic && externalFollowStatus !== 'accepted' ? (
-    // Cuenta privada y no la seguimos
+  const canShowPosts = userData.isPublic || optimisticFollowStatus === 'accepted';
+  const additionalContent = !canShowPosts ? (
+    // Cuenta privada y no la seguimos (según Supabase)
     <View style={styles.privateContentSection}>
       <View style={styles.privateIconContainer}>
         <Icon
@@ -246,7 +312,7 @@ export const UserProfileScreen: React.FC = () => {
       </AppText>
     </View>
   ) : (
-    // Cuenta pública o la seguimos
+    // Cuenta pública o la seguimos (según Supabase)
     <View style={styles.postsSection}>
       <AppText
         variant="h4"

@@ -19,10 +19,10 @@ export const FollowRequestSection: React.FC<FollowRequestSectionProps> = ({
   let sectionText = 'No tienes solicitudes';
   if (followRequests.length === 1) {
     const req = followRequests[0];
-    sectionText = `${req.follower_profile?.display_name || req.follower_profile?.username || 'Alguien'} quiere seguirte`;
+    sectionText = `${req.follower_profile?.username || req.follower_profile?.display_name || 'Alguien'} quiere seguirte`;
   } else if (followRequests.length > 1) {
     const first = followRequests[0];
-    sectionText = `${first.follower_profile?.display_name || first.follower_profile?.username || 'Alguien'} y ${followRequests.length - 1} persona${followRequests.length - 1 === 1 ? '' : 's'} más quieren seguirte`;
+    sectionText = `${first.follower_profile?.username || first.follower_profile?.display_name || 'Alguien'} y ${followRequests.length - 1} persona${followRequests.length - 1 === 1 ? '' : 's'} más quieren seguirte`;
   }
 
   const profile = followRequests.length > 0 ? followRequests[0].follower_profile : null;
@@ -38,7 +38,7 @@ export const FollowRequestSection: React.FC<FollowRequestSectionProps> = ({
         <DefaultAvatar
           name={profile ? (profile.display_name || profile.username || 'Alguien') : 'Sin solicitudes'}
           avatarUrl={avatarUrl}
-          size={52}
+          size={56}
           showUploadButton={false}
           disabled={true}
           {...(followRequests.length === 0 ? { renderIcon: <UsersGroup size={24} color={Colors.mutedWhite} /> } : {})}

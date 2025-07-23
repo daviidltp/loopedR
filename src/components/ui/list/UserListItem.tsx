@@ -1,8 +1,7 @@
 import React, { useMemo } from 'react';
 import { StyleSheet, View } from 'react-native';
 import { Colors } from '../../../constants/Colors';
-import { useProfile } from '../../../contexts/ProfileContext';
-import { User, mockUserRelations } from '../../../utils/mockData';
+import { User } from '../../../utils/mockData';
 import { VerifiedIcon } from '../../icons/VerifiedIcon';
 import { DefaultAvatar } from '../Avatar/DefaultAvatar';
 import { PlatformTouchable } from '../buttons/PlatformTouchable';
@@ -13,26 +12,14 @@ interface UserListItemProps {
   onPress?: (userId: string) => void;
 }
 
-const isFollowing = (currentUserId: string | undefined, userId: string): boolean => {
-  if (!currentUserId) return false;
-  return mockUserRelations.some(
-    (rel) => rel.followerId === currentUserId && rel.followingId === userId
-  );
-};
-
 
 
 const UserListItemComponent: React.FC<UserListItemProps> = ({
   user,
   onPress,
 }) => {
-  const { profile: currentUser } = useProfile();
 
   const handlePress = useMemo(() => () => onPress?.(user.id), [onPress, user.id]);
-  const siguiendo = useMemo(
-    () => isFollowing(currentUser?.id, user.id),
-    [currentUser?.id, user.id]
-  );
 
   return (
     <PlatformTouchable
@@ -51,20 +38,22 @@ const UserListItemComponent: React.FC<UserListItemProps> = ({
           <View style={styles.usernameRow}>
             <AppText 
               variant='body'
-              fontFamily="inter" 
+              fontFamily="roboto" 
               fontWeight="semiBold" 
               color={Colors.white}
               style={styles.username}
               numberOfLines={1}
             >
               {user.username}
+              
             </AppText>
             {user.isVerified && (
               <VerifiedIcon
-                size={14}
+                size={12}
               />
             )}
-            {siguiendo && (
+            
+            {user.followStatus === 'accepted' && (
               <AppText
                 variant='bodySmall'
                 fontFamily="inter"
@@ -119,11 +108,11 @@ const styles = StyleSheet.create({
   userInfo: {
     flex: 1,
     justifyContent: 'center',
+    gap: 2
   },
   usernameRow: {
     flexDirection: 'row',
     alignItems: 'center',
-    marginBottom: 2,
   },
   username: {
     marginRight: 6,

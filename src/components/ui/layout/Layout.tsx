@@ -11,17 +11,17 @@ interface LayoutProps {
   excludeBottomSafeArea?: boolean;
 }
 
-export const Layout: React.FC<LayoutProps> = ({ children, style, excludeBottomSafeArea = false}) => {
+export const Layout: React.FC<LayoutProps> = (props) => {
   const insets = useSafeAreaInsets();
   SystemNavigationBar.navigationShow();
   SystemNavigationBar.setNavigationColor(Colors.background);
 
-  const bottomPadding = excludeBottomSafeArea 
+  const bottomPadding = props.excludeBottomSafeArea 
     ? 0 
     : 0;
 
   return (
-    <View style={[styles.container, style]}>
+    <View style={[styles.container, props.style]}>
       <StatusBar style="light" translucent={true} />
 
       <View
@@ -30,12 +30,12 @@ export const Layout: React.FC<LayoutProps> = ({ children, style, excludeBottomSa
           {
             paddingLeft: insets.left,
             paddingRight: insets.right,
-            paddingBottom: excludeBottomSafeArea ? 0 : insets.bottom,
-            paddingTop: insets.top + 6,
+            paddingBottom: props.excludeBottomSafeArea ? 0 : insets.bottom,
+            paddingTop: insets.top,
           },
         ]}
       >
-        {children}
+        {props.children}
       </View>
     </View>
   );

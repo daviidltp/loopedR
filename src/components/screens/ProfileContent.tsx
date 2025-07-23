@@ -104,8 +104,8 @@ export const ProfileContent: React.FC<ProfileContentProps> = ({
                   <View style={styles.statBox}>
                     <View style={styles.statInnerRow}>
                       <AppText 
-                        variant="bodySmall" 
-                        fontFamily="inter" 
+                        variant="body" 
+                        fontFamily="roboto" 
                         fontWeight='bold'
                         color={Colors.white}
                         numberOfLines={1}
@@ -114,7 +114,7 @@ export const ProfileContent: React.FC<ProfileContentProps> = ({
                       >
                         {formatFollowersCount(followersCount)}
                           <AppText 
-                          variant="bodySmall" 
+                          variant="body" 
                           fontFamily="inter" 
                           color={Colors.mutedWhite}
                           numberOfLines={1}
@@ -130,8 +130,8 @@ export const ProfileContent: React.FC<ProfileContentProps> = ({
                   <View style={styles.statBox}>
                     <View style={styles.statInnerRow}>
                       <AppText 
-                        variant="bodySmall" 
-                        fontFamily="inter" 
+                        variant="body" 
+                        fontFamily="roboto" 
                         fontWeight='bold'
                         color={Colors.white}
                         numberOfLines={1}
@@ -140,7 +140,7 @@ export const ProfileContent: React.FC<ProfileContentProps> = ({
                       >
                         {formatFollowersCount(followingCount)}
                         <AppText 
-                        variant="bodySmall" 
+                        variant="body" 
                         fontFamily="inter" 
                         color={Colors.mutedWhite}
                         numberOfLines={1}
@@ -197,7 +197,7 @@ const styles = StyleSheet.create({
   profileRow: {
     flexDirection: 'row',
     alignItems: 'center',
-    paddingTop: 12,
+    paddingTop: 4,
     gap: 20,
   },
   // Nuevo contenedor para displayName y stats

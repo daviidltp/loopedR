@@ -1,8 +1,7 @@
 import React from 'react';
-import { Image, StyleSheet, TouchableOpacity, View } from 'react-native';
-import { IconButton } from 'react-native-paper';
-import verifiedBlue from '../../../../assets/icons/verified_blue.png';
+import { StyleSheet, TouchableOpacity, View } from 'react-native';
 import { Colors } from '../../../constants/Colors';
+import { VerifiedIcon } from '../../icons/VerifiedIcon';
 import { DefaultAvatar } from '../Avatar/DefaultAvatar';
 import { AppText } from '../Text/AppText';
 import { PlatformTouchable } from '../buttons/PlatformTouchable';
@@ -33,38 +32,38 @@ export const FollowRequestCard: React.FC<FollowRequestCardProps> = ({
   const safeUsername = (user.username || '').trim();
 
   return (
-    <View style={styles.container}>
-      <PlatformTouchable onPress={() => onUserPress(request.fromUserId, user)}>
+    <PlatformTouchable onPress={() => onUserPress(request.fromUserId, user)}>
+      <View style={styles.rowContainer}>
+        {/* Información del usuario */}
         <DefaultAvatar
           name={safeDisplayName}
-          size={48}
+          size={56}
           avatarUrl={user.avatar_url || user.avatarUrl}
           showUploadButton={false}
         />
-      </PlatformTouchable>
-      {/* Información del usuario */}
-      <View style={styles.userInfo}>
-        <PlatformTouchable onPress={() => onUserPress(request.fromUserId, user)}>
+        <View style={styles.userInfo}>
           <View style={styles.usernameRow}>
             <AppText 
-              variant='body'
+              variant='bodySmall'
               fontFamily="inter" 
               fontWeight="semiBold" 
               color={Colors.white}
               numberOfLines={1}
-              style={styles.username}
+              style={[
+                styles.username,
+                !user.is_verified && styles.usernameFullWidth
+              ]}
             >
-              {safeUsername}
+              {safeUsername}lopez
             </AppText>
             {user.is_verified && (
-              <Image 
-                source={verifiedBlue} 
-                style={styles.verifiedIcon}
+              < VerifiedIcon
+                size={12}
               />
             )}
           </View>
           <AppText 
-            variant='bodySmall'
+            variant='caption'
             fontFamily="inter" 
             fontWeight="regular" 
             color={Colors.mutedWhite}
@@ -73,72 +72,57 @@ export const FollowRequestCard: React.FC<FollowRequestCardProps> = ({
           >
             {safeDisplayName}
           </AppText>
-        </PlatformTouchable>
+        </View>
+        {/* Botones de acción */}
+        <View style={styles.buttonsContainer}>
+          <TouchableOpacity
+            style={styles.acceptButton}
+            onPress={() => onAccept(request.id)}
+            accessibilityLabel="Aceptar solicitud"
+            activeOpacity={0.8}
+          >
+            <AppText variant='bodySmall' fontFamily='inter' fontWeight='semiBold' color={Colors.white}>Aceptar</AppText>
+          </TouchableOpacity>
+          <TouchableOpacity
+            style={styles.rejectButtonCustom}
+            onPress={() => onReject(request.id)}
+            accessibilityLabel="Rechazar solicitud"
+            activeOpacity={0.8}
+          >
+            <AppText variant='bodySmall' fontFamily='inter' fontWeight='semiBold' color={Colors.white}>Rechazar</AppText>
+          </TouchableOpacity>
+        </View>
       </View>
-      {/* Botones de acción */}
-      <View style={styles.buttonsContainer}>
-        <TouchableOpacity
-          style={styles.acceptButton}
-          onPress={() => onAccept(request.id)}
-          accessibilityLabel="Aceptar solicitud"
-          activeOpacity={0.8}
-        >
-          <AppText style={styles.acceptButtonText}>Aceptar</AppText>
-        </TouchableOpacity>
-        <IconButton
-          icon="close"
-          size={22}
-          onPress={() => onReject(request.id)}
-          iconColor={Colors.white}
-          style={styles.rejectButton}
-          accessibilityLabel="Rechazar solicitud"
-        />
-      </View>
-    </View>
+    </PlatformTouchable>
   );
 };
 
 const styles = StyleSheet.create({
-  container: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    paddingVertical: 10,
-    paddingHorizontal: 12,
-    backgroundColor: Colors.background,
-    minHeight: 70,
-    borderRadius: 16,
-    marginBottom: 8,
-    shadowColor: '#000',
-    shadowOpacity: 0.04,
-    shadowRadius: 4,
-    shadowOffset: { width: 0, height: 2 },
-  },
   userInfo: {
     flex: 1,
     justifyContent: 'center',
     marginLeft: 12,
+    marginRight: 2,
     minWidth: 0,
   },
   usernameRow: {
     flexDirection: 'row',
     alignItems: 'center',
-    marginBottom: 2,
     minWidth: 0,
+    marginRight: 8,
+    gap: 6,
   },
   username: {
-    fontSize: 16,
-    marginRight: 6,
-    maxWidth: 120,
+  },
+  usernameFullWidth: {
+    maxWidth: 150, // o el valor que prefieras para más espacio
   },
   displayName: {
-    fontSize: 13,
     color: Colors.mutedWhite,
-    maxWidth: 120,
   },
   verifiedIcon: {
     width: 18,
     height: 18,
-    marginLeft: 4,
   },
   buttonsContainer: {
     flexDirection: 'row',
@@ -151,22 +135,31 @@ const styles = StyleSheet.create({
   },
   acceptButton: {
     backgroundColor: '#00b290',
-    borderRadius: 8,
     paddingVertical: 6,
-    paddingHorizontal: 30,
+    borderRadius: 8,
+    paddingHorizontal: 16,
     justifyContent: 'center',
     alignItems: 'center',
     marginRight: 8,
-    minWidth: 90,
-  },
-  acceptButtonText: {
-    color: Colors.white,
-    fontWeight: 'bold',
-    fontSize: 16,
   },
   rejectButton: {
     backgroundColor: 'transparent',
     borderRadius: 20,
     marginLeft: 0,
+  },
+  rowContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    width: '100%',
+    paddingVertical: 12,
+    paddingHorizontal: 20
+  },
+  rejectButtonCustom: {
+    backgroundColor: Colors.backgroundUltraSoft,
+    paddingVertical: 6,
+    borderRadius: 8,
+    paddingHorizontal: 12,
+    justifyContent: 'center',
+    alignItems: 'center',
   },
 }); 
