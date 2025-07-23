@@ -175,6 +175,37 @@ export const mockPosts: Post[] = [
     topSongs: [
       {
         position: 1,
+ 
+        title: 'Polaris - Remix',
+        artist: 'SAIKO, Quevedo, Feid, Mora',
+        plays: '950K',
+        albumCover: 'https://i.scdn.co/image/ab67616d00001e028f4a278cd5b5b2f65a0f87fd',
+      },
+      {
+        position: 2,
+        title: 'Sigo en la plaza',
+        artist: 'GRECAS',
+        plays: '1.2M',
+        albumCover: 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTZ2PNj3qScKTD-_E3wXh3C0ZWno5yWM5U5MQ&s',
+      },
+      {
+        position: 3,
+        title: 'Let Her Go',
+        artist: 'Passenger',
+        plays: '800K',
+        albumCover: 'https://i.scdn.co/image/ab67616d0000b273a7c10595167c713a2df0f187',
+      },
+    ],
+    description: '@angel Mano vaya 3 canciones más duras no como las del puto anormal de @alex jajajajaj ',
+  },
+  {
+    id: 'top3-2',
+    type: 'top-3-songs',
+    user: mockUsers[2], // pedrodquevedo
+    timestamp: Date.now() - 1000 * 60 * 60 * 2, // 2 horas atrás
+    topSongs: [
+      {
+        position: 1,
 
         title: 'BIRDS OF A FEATHER',
         artist: 'Billie Eilish',
@@ -196,7 +227,37 @@ export const mockPosts: Post[] = [
         albumCover: 'https://i.scdn.co/image/ab67616d0000b2734063d624ebf8ff67bc3701ee',
       },
     ],
-    description: 'Mis 3 canciones más escuchadas este mes',
+    description: 'Mis 3 canciones más escuchadas esta semana. Recién sacadas del vertedero.',
+  },
+  {
+    id: 'top3-3',
+    type: 'top-3-songs',
+    user: mockUsers[0], // david
+    timestamp: Date.now() - 1000 * 60 * 60 * 1, // 1 hora atrás
+    topSongs: [
+      {
+        position: 1,
+        title: 'MAMICHULA',
+        artist: 'Trueno, Nicki Nicole',
+        plays: '2.1M',
+        albumCover: 'https://i.scdn.co/image/ab67616d0000b273f4483d4440a89a2cab3b5141',
+      },
+      {
+        position: 2,
+        title: 'REINA',
+        artist: 'Mora, SAIKO',
+        plays: '500K', 
+        albumCover: 'https://i.scdn.co/image/ab67616d0000b273b8cc7d03ca3788f3ad7b71fd',
+      },
+      {
+        position: 3,
+        title: 'Me Porto Bonito',
+        artist: 'Bad Bunny, Chencho Corleone',
+        plays: '3.2M',
+        albumCover: 'https://i.scdn.co/image/ab67616d0000b27349d694203245f241a1bcaa72',
+      },
+    ],
+    description: 'wtf es este bucle bro',
   },
 ];
 
