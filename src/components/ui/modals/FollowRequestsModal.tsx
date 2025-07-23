@@ -1,55 +1,53 @@
+import { useNavigation } from '@react-navigation/native';
+import type { StackNavigationProp } from '@react-navigation/stack';
 import React from 'react';
-import { FlatList, Modal, StyleSheet, View } from 'react-native';
+import { FlatList, StyleSheet, View } from 'react-native';
 import DeleteUserIcon from '../../../../assets/icons/delete-user.svg';
 import { Colors } from '../../../constants/Colors';
-import { FollowRequest } from '../../../utils/mockData';
+import { useFollowers } from '../../../contexts/FollowersContext';
+import type { RootStackParamList } from '../../../navigation/AppNavigator';
+import { convertSupabaseUserToUser } from '../../../utils/userActions';
 import { FollowRequestCard } from '../cards/FollowRequestCard';
 import { GlobalHeader } from '../headers/GlobalHeader';
 import { Layout } from '../layout';
 import { AppText } from '../Text/AppText';
 
-interface FollowRequestsModalProps {
-  visible: boolean;
-  requests: FollowRequest[];
-  onClose: () => void;
-  onAccept: (requestId: string) => void;
-  onReject: (requestId: string) => void;
-}
+export const FollowRequestsModal: React.FC = () => {
+  const { followRequests, acceptFollowRequest, rejectFollowRequest, isLoading } = useFollowers();
+  const navigation = useNavigation<StackNavigationProp<RootStackParamList>>();
 
-export const FollowRequestsModal: React.FC<FollowRequestsModalProps> = ({
-  visible,
-  requests,
-  onClose,
-  onAccept,
-  onReject,
-}) => {
-  if (!visible) return null;
+  const handleUserPress = (userId: string, userData: any) => {
+    const user = convertSupabaseUserToUser(userData);
+    navigation.navigate('UserProfile', { userId, userData: user });
+  };
+
   return (
     <Layout>
-    <Modal
-      visible={visible}
-      animationType="slide"
-      presentationStyle="pageSheet"
-      onRequestClose={onClose}
-    >
       <View style={styles.container}>
         {/* Header */}
         <GlobalHeader
           goBack={true}
-          onLeftIconPress={onClose}
+          onLeftIconPress={() => navigation.goBack()}
           centerContent={<AppText variant='h4' fontFamily='raleway' fontWeight='bold' color="#fff">Solicitudes de seguimiento</AppText>}
         />
 
         {/* Lista de solicitudes */}
-        {requests.length > 0 ? (
+        {followRequests.length > 0 ? (
           <FlatList
-            data={requests}
+            data={followRequests.map(req => ({
+              id: req.id,
+              fromUserId: req.follower_id,
+              toUserId: req.following_id,
+              timestamp: new Date(req.created_at).getTime(),
+              user: req.follower_profile,
+            }))}
             keyExtractor={(item) => item.id}
             renderItem={({ item }) => (
               <FollowRequestCard
                 request={item}
-                onAccept={onAccept}
-                onReject={onReject}
+                onAccept={() => acceptFollowRequest(item.id)}
+                onReject={() => rejectFollowRequest(item.id)}
+                onUserPress={handleUserPress}
               />
             )}
             style={styles.list}
@@ -84,7 +82,6 @@ export const FollowRequestsModal: React.FC<FollowRequestsModalProps> = ({
           </View>
         )}
       </View>
-    </Modal>
     </Layout>
   );
 };

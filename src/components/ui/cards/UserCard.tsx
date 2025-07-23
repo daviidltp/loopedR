@@ -24,14 +24,14 @@ export const UserCard: React.FC<UserCardProps> = ({
   // onFollowPress,
 }) => {
   const { profile: currentUser } = useProfile();
-  const { isFollowing, follow, unfollow } = useFollowers();
+  const { getFollowStatus, follow, unfollow, cancelFollowRequest } = useFollowers();
   const [isFollowLoading, setIsFollowLoading] = React.useState(false);
 
-  const following = isFollowing(user.id);
+  const followStatus = getFollowStatus(user.id);
 
   const handleFollowPress = async () => {
     if (!user.id) return;
-    if (following) {
+    if (followStatus === 'accepted') {
       Alert.alert(
         'Dejar de seguir',
         `¿Estás seguro de que quieres dejar de seguir a @${user.username}?`,
@@ -48,6 +48,23 @@ export const UserCard: React.FC<UserCardProps> = ({
           }
         ]
       );
+    } else if (followStatus === 'pending') {
+      Alert.alert(
+        'Cancelar solicitud',
+        `¿Quieres cancelar tu solicitud de seguimiento a @${user.username}?`,
+        [
+          { text: 'No', style: 'cancel' },
+          {
+            text: 'Cancelar solicitud', style: 'destructive', onPress: async () => {
+              setIsFollowLoading(true);
+              try {
+                await cancelFollowRequest(user.id);
+              } catch {}
+              setIsFollowLoading(false);
+            }
+          }
+        ]
+      );
     } else {
       setIsFollowLoading(true);
       try {
@@ -56,6 +73,10 @@ export const UserCard: React.FC<UserCardProps> = ({
       setIsFollowLoading(false);
     }
   };
+
+  let buttonTitle = 'Seguir';
+  if (followStatus === 'pending') buttonTitle = 'Pendiente';
+  if (followStatus === 'accepted') buttonTitle = 'Siguiendo';
 
   return (
     <View style={styles.container}>
@@ -95,12 +116,12 @@ export const UserCard: React.FC<UserCardProps> = ({
 
       {/* Botón seguir */}
       <ResizingButton
-        icon={following ? <Icon source="check" size={18} color={Colors.white} /> : undefined}
-        title={following ? 'Siguiendo' : 'Seguir'}
+        icon={followStatus === 'accepted' ? <Icon source="check" size={18} color={Colors.white} /> : undefined}
+        title={buttonTitle}
         onPress={handleFollowPress}
-        backgroundColor={following ? Colors.backgroundUltraSoft : Colors.white}
-        textColor={following ? Colors.white : Colors.background}
-        borderColor={following ? undefined : 'transparent'}
+        backgroundColor={followStatus === 'accepted' ? Colors.backgroundUltraSoft : Colors.white}
+        textColor={followStatus === 'accepted' ? Colors.white : Colors.background}
+        borderColor={followStatus === 'accepted' ? undefined : 'transparent'}
         height={42}
         isLoading={isFollowLoading}
         isDisabled={isFollowLoading}

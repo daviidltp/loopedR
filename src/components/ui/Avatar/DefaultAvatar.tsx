@@ -63,7 +63,8 @@ export const DefaultAvatar: React.FC<DefaultAvatarProps> = ({
     return undefined;
   };
 
-  const initials = getInitials(name);
+  const safeName = (name || '').trim();
+  const initials = getInitials(safeName);
   const imageSource = avatarUrl ? getImageSource(avatarUrl) : selectedImage;
 
   return (
