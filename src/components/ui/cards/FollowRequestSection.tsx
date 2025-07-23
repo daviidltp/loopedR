@@ -25,18 +25,23 @@ export const FollowRequestSection: React.FC<FollowRequestSectionProps> = ({
     sectionText = `${first.follower_profile?.display_name || first.follower_profile?.username || 'Alguien'} y ${followRequests.length - 1} persona${followRequests.length - 1 === 1 ? '' : 's'} más quieren seguirte`;
   }
 
+  const profile = followRequests.length > 0 ? followRequests[0].follower_profile : null;
+  const avatarUrl = profile && profile.avatar_url && profile.avatar_url !== "default_avatar"
+    ? profile.avatar_url
+    : undefined;
+
   return (
     <PlatformTouchable 
       onPress={onPress}
     >
       <View style={styles.contentContainer}>
         <DefaultAvatar
-          name={followRequests.length > 0 ? (followRequests[0].follower_profile?.display_name || followRequests[0].follower_profile?.username || 'Alguien') : 'Sin solicitudes'}
-          avatarUrl={followRequests.length > 0 ? followRequests[0].follower_profile?.avatar_url || undefined : undefined}
+          name={profile ? (profile.display_name || profile.username || 'Alguien') : 'Sin solicitudes'}
+          avatarUrl={avatarUrl}
           size={52}
           showUploadButton={false}
-          renderIcon={<UsersGroup size={24} color={Colors.mutedWhite} />}
           disabled={true}
+          {...(followRequests.length === 0 ? { renderIcon: <UsersGroup size={24} color={Colors.mutedWhite} /> } : {})}
         />
         {/* Información de la sección */}
         <View style={styles.sectionInfo}>

@@ -128,6 +128,30 @@ export const FollowersProvider: React.FC<{ children: React.ReactNode }> = ({ chi
     fetchFollowersData();
   }, [fetchFollowersData]);
 
+  // Suscripción en tiempo real a la tabla de followers para actualizaciones automáticas
+  useEffect(() => {
+    if (!userId) return;
+    const channel = supabase
+      .channel('public:followers-realtime')
+      .on(
+        'postgres_changes',
+        {
+          event: '*',
+          schema: 'public',
+          table: 'followers',
+          filter: `following_id=eq.${userId}`
+        },
+        (payload) => {
+          // Actualiza los datos cuando hay cambios en followers relacionados con el usuario actual
+          fetchFollowersData();
+        }
+      )
+      .subscribe();
+    return () => {
+      supabase.removeChannel(channel);
+    };
+  }, [userId, fetchFollowersData]);
+
   // Saber el estado de la relación con un usuario
   const getFollowStatus = useCallback((targetUserId: string): 'none' | 'pending' | 'accepted' => {
     return relations[targetUserId] || 'none';
