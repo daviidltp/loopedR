@@ -2,14 +2,6 @@ import React, { createContext, useCallback, useContext, useEffect, useState } fr
 import { supabase } from '../utils/supabase';
 import { useAuth } from './AuthContext';
 
-interface Follower {
-  id: string;
-  follower_id: string;
-  following_id: string;
-  created_at: string;
-  status: 'pending' | 'accepted';
-}
-
 interface FollowRequest {
   id: string;
   follower_id: string;
@@ -40,6 +32,8 @@ interface FollowersContextType {
   fetchFollowersCount: (userId: string) => Promise<number>;
   fetchFollowingCount: (userId: string) => Promise<number>;
   fetchFollowStatus: (targetUserId: string, sourceUserId: string) => Promise<'none' | 'pending' | 'accepted'>;
+  refreshMyFollowersCount: () => Promise<void>;
+  refreshMyFollowingCount: () => Promise<void>;
 }
 
 const FollowersContext = createContext<FollowersContextType | undefined>(undefined);
@@ -55,6 +49,8 @@ export const FollowersProvider: React.FC<{ children: React.ReactNode }> = ({ chi
   const userId = session?.user?.id;
   const [followers, setFollowers] = useState<string[]>([]);
   const [following, setFollowing] = useState<string[]>([]);
+  const [followersCount, setFollowersCount] = useState(0);
+  const [followingCount, setFollowingCount] = useState(0);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [followRequests, setFollowRequests] = useState<FollowRequest[]>([]);
@@ -67,6 +63,8 @@ export const FollowersProvider: React.FC<{ children: React.ReactNode }> = ({ chi
       setFollowing([]);
       setFollowRequests([]);
       setRelations({});
+      setFollowersCount(0);
+      setFollowingCount(0);
       setIsLoading(false);
       return;
     }
@@ -81,6 +79,7 @@ export const FollowersProvider: React.FC<{ children: React.ReactNode }> = ({ chi
         .eq('status', 'accepted');
       if (followersError) throw followersError;
       setFollowers(followersData?.map((f: any) => f.follower_id) || []);
+      setFollowersCount(followersData?.length || 0);
 
       // Following: usuarios a los que sigo (accepted)
       const { data: followingData, error: followingError } = await supabase
@@ -90,6 +89,7 @@ export const FollowersProvider: React.FC<{ children: React.ReactNode }> = ({ chi
         .eq('status', 'accepted');
       if (followingError) throw followingError;
       setFollowing(followingData?.map((f: any) => f.following_id) || []);
+      setFollowingCount(followingData?.length || 0);
 
       // Solicitudes recibidas (pending)
       const { data: requestsData, error: requestsError } = await supabase
@@ -117,6 +117,8 @@ export const FollowersProvider: React.FC<{ children: React.ReactNode }> = ({ chi
       setFollowing([]);
       setFollowRequests([]);
       setRelations({});
+      setFollowersCount(0);
+      setFollowingCount(0);
     } finally {
       setIsLoading(false);
     }
@@ -273,8 +275,33 @@ export const FollowersProvider: React.FC<{ children: React.ReactNode }> = ({ chi
     return data.status as 'pending' | 'accepted';
   }, []);
 
-  const followersCount = followers.length;
-  const followingCount = following.length;
+  const refreshMyFollowersCount = useCallback(async () => {
+    if (!userId) return;
+    setIsLoading(true);
+    setError(null);
+    try {
+      const count = await fetchFollowersCount(userId);
+      setFollowersCount(count);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Error desconocido');
+    } finally {
+      setIsLoading(false);
+    }
+  }, [userId, fetchFollowersCount]);
+
+  const refreshMyFollowingCount = useCallback(async () => {
+    if (!userId) return;
+    setIsLoading(true);
+    setError(null);
+    try {
+      const count = await fetchFollowingCount(userId);
+      setFollowingCount(count);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Error desconocido');
+    } finally {
+      setIsLoading(false);
+    }
+  }, [userId, fetchFollowingCount]);
 
   return (
     <FollowersContext.Provider value={{
@@ -296,6 +323,8 @@ export const FollowersProvider: React.FC<{ children: React.ReactNode }> = ({ chi
       fetchFollowersCount,
       fetchFollowingCount,
       fetchFollowStatus,
+      refreshMyFollowersCount,
+      refreshMyFollowingCount,
     }}>
       {children}
     </FollowersContext.Provider>
