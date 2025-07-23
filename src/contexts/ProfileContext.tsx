@@ -1,6 +1,7 @@
 import React, { createContext, useContext, useEffect, useState } from 'react';
 import { Alert } from 'react-native';
 import { supabase } from '../utils/supabase';
+import { getSupabaseUserById } from '../utils/userActions';
 import { useAuth } from './AuthContext';
 
 // Interfaz para el perfil del usuario basada en la tabla profiles de Supabase
@@ -8,10 +9,8 @@ export interface UserProfile {
   id: string;
   username: string;
   display_name: string;
-  email: string;
   updated_at: string;
   avatar_url: string;
-  refresh_token: string | null;
   bio: string;
   is_verified: boolean;
   is_public: boolean;
@@ -64,48 +63,34 @@ export const ProfileProvider: React.FC<{ children: React.ReactNode }> = ({ child
       setIsLoading(true);
       setError(null);
 
-      const { data, error: fetchError } = await supabase
-        .from('profiles')
-        .select('id, username, display_name, email, updated_at, avatar_url, refresh_token, bio, is_verified, is_public')
-        .eq('id', session.user.id)
-        .single();
+      const data = await getSupabaseUserById(session.user.id);
 
-      if (fetchError) {
+      if (!data) {
         // Si el usuario no existe en profiles, crear un perfil básico
-        if (fetchError.code === 'PGRST116') {
-          console.log('[ProfileContext] Usuario no encontrado en profiles, creando perfil básico');
-          setProfile({
-            id: session.user.id,
-            username: '',
-            display_name: '',
-            email: session.user.email || '',
-            updated_at: new Date().toISOString(),
-            avatar_url: 'default_avatar',
-            refresh_token: null,
-            bio: '',
-            is_verified: false,
-            is_public: true,
-          });
-          return;
-        }
-        throw fetchError;
+        console.log('[ProfileContext] Usuario no encontrado en profiles, creando perfil básico');
+        setProfile({
+          id: session.user.id,
+          username: '',
+          display_name: '',
+          avatar_url: 'default_avatar',
+          bio: '',
+          is_verified: false,
+          is_public: true,
+          updated_at: new Date().toISOString(), 
+        });
+        return;
       }
 
-      if (data) {
-        // Asegurar que los campos no sean null
-        setProfile({
-          ...data,
-          username: data.username || '',
-          display_name: data.display_name || '',
-          email: data.email || '',
-          avatar_url: data.avatar_url || 'default_avatar',
-          bio: data.bio || '',
-          is_verified: data.is_verified || false,
-          is_public: data.is_public !== undefined ? data.is_public : true,
-        });
-      } else {
-        setProfile(null);
-      }
+      setProfile({
+        ...data,
+        username: data.username || '',
+        display_name: data.display_name || '',
+        avatar_url: data.avatar_url || 'default_avatar',
+        bio: data.bio || '',
+        is_verified: data.is_verified || false,
+        is_public: data.is_public !== undefined ? data.is_public : true,
+        updated_at: data.updated_at || new Date().toISOString(),
+      });
     } catch (err) {
       console.error('[ProfileContext] Error al obtener perfil:', err);
       setError(err instanceof Error ? err.message : 'Error desconocido');

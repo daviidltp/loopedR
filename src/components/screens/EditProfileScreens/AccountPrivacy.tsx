@@ -3,7 +3,6 @@ import { useEffect, useState } from 'react';
 import { StyleSheet, View } from 'react-native';
 import { Colors } from '../../../constants/Colors';
 import { useProfile } from '../../../contexts/ProfileContext';
-import { updateUserProfile } from '../../../utils/userActions';
 import { PlatformTouchable } from '../../ui/buttons/PlatformTouchable';
 import { CustomSwitch } from '../../ui/forms/CustomSwitch';
 import { GlobalHeader } from '../../ui/headers/GlobalHeader';
@@ -12,7 +11,7 @@ import { AppText } from '../../ui/Text/AppText';
 
 export const AccountPrivacy = () => {
   const navigation = useNavigation();
-  const { profile, refetch } = useProfile();
+  const {profile, updateProfile, refetch } = useProfile();
   const [isPublic, setIsPublic] = useState(true);
   const [isLoading, setIsLoading] = useState(false);
 
@@ -28,7 +27,7 @@ export const AccountPrivacy = () => {
     setIsPublic(value);
     try {
       if (profile) {
-        await updateUserProfile(profile.id, { is_public: value });
+        await updateProfile({ is_public: value });
         await refetch();
       }
     } catch (error) {

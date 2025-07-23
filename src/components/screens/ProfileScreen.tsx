@@ -43,7 +43,6 @@ export const ProfileScreen: React.FC = () => {
     id: profile.id,
     username: profile.username || '',
     displayName: profile.display_name || '',
-    email: profile.email || '',
     avatarUrl: profile.avatar_url || '',
     bio: profile.bio || '',
     isVerified: profile.is_verified || false,

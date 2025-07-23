@@ -18,7 +18,6 @@ import Animated, {
 } from 'react-native-reanimated';
 import { Colors } from '../../../constants/Colors';
 import { useProfile } from '../../../contexts/ProfileContext';
-import { updateUserProfile } from '../../../utils/userActions';
 import { ResizingButton } from '../../ui/buttons/ResizingButton';
 import { TextInput } from '../../ui/forms/TextInput';
 import { GlobalHeader } from '../../ui/headers/GlobalHeader';
@@ -36,7 +35,7 @@ export const EditProfileElement: React.FC = () => {
   const navigation = useNavigation();
   const route = useRoute();
   const { field, currentValue, title } = route.params as RouteParams;
-  const { profile, refetch } = useProfile();
+  const { profile, updateProfile, refetch } = useProfile();
   
   // Estados del formulario
   const [value, setValue] = useState(currentValue);
@@ -154,7 +153,7 @@ export const EditProfileElement: React.FC = () => {
         updateFields.bio = value.trim();
       }
 
-      await updateUserProfile(profile.id, updateFields);
+      await updateProfile(updateFields);
       await refetch();
 
       console.log(`[EditProfileElement] ${field} actualizado correctamente`);
@@ -170,7 +169,7 @@ export const EditProfileElement: React.FC = () => {
     } finally {
       setIsLoading(false);
     }
-  }, [profile, field, value, validateName, validateUsername, validateBio, updateUserProfile, refetch, navigation]);
+  }, [profile, field, value, validateName, validateUsername, validateBio, updateProfile, refetch, navigation]);
 
   const handleBackPress = useCallback(() => {
     if (hasChanges) {

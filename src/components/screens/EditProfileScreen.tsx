@@ -13,7 +13,6 @@ import {
 import { Colors } from '../../constants/Colors';
 import { useProfile } from '../../contexts/ProfileContext';
 import { useNavigation } from '../../navigation/useNavigation';
-import { updateUserProfile } from '../../utils/userActions';
 import { DefaultAvatar } from '../ui/Avatar/DefaultAvatar';
 import { TextInput } from '../ui/forms/TextInput';
 import { GlobalHeader } from '../ui/headers/GlobalHeader';
@@ -23,7 +22,7 @@ import { AppText } from '../ui/Text/AppText';
 export const EditProfileScreen: React.FC = () => {
   const navigation = useNavigation();
   const bioInputRef = useRef(null);
-    const { profile, isLoading: userLoading, updateProfile, refetch } = useProfile();
+  const { profile, isLoading: userLoading, updateProfile, refetch } = useProfile();
   
   // Estados del formulario
   const [name, setName] = useState('');
@@ -120,7 +119,7 @@ export const EditProfileScreen: React.FC = () => {
     try {
 
       // Usar la función de userActions
-      await updateUserProfile(profile.id, {
+      await updateProfile({
         username: username.trim(),
         display_name: name.trim(),
        // avatar_url: avatarUrl || undefined,

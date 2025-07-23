@@ -1,4 +1,3 @@
-import { ProfileUpdateFields } from '../contexts/ProfileContext';
 import { supabase } from './supabase';
 
 export interface SupabaseUser {
@@ -57,7 +56,7 @@ export const searchSupabaseUsers = async (
 
     let query = supabase
       .from('profiles')
-      .select('id, username, display_name, bio, avatar_url, is_public, is_verified, updated_at')
+      .select('id, username, display_name, email, bio, avatar_url, is_public, is_verified, updated_at')
       .or(`username.ilike.${searchTerm}%,display_name.ilike.${searchTerm}%`)
       .order('updated_at', { ascending: false });
 
@@ -118,32 +117,3 @@ export const convertSupabaseUserToUser = (supabaseUser: SupabaseUser) => {
   };
 };
 
-/**
- * Actualiza el perfil del usuario en Supabase
- */
-export const updateUserProfile = async (
-  userId: string, 
-  updatedFields: ProfileUpdateFields
-): Promise<void> => {
-  try {
-    const updates = {
-      id: userId,
-      ...updatedFields,
-      updated_at: new Date().toISOString(),
-    };
-
-    const { error } = await supabase
-      .from('profiles')
-      .upsert(updates);
-
-    if (error) {
-      console.error('[updateUserProfile] Error al actualizar perfil:', error);
-      throw error;
-    }
-
-    console.log('[updateUserProfile] Perfil actualizado correctamente');
-  } catch (error) {
-    console.error('[updateUserProfile] Error:', error);
-    throw error;
-  }
-}; 
