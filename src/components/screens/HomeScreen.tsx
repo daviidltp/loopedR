@@ -69,7 +69,9 @@ export const HomeScreen: React.FC = () => {
           ) : (
             <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
               <View style={styles.feedContainer}>
-                <Post post={mockPosts[0]} />
+                <Post post={mockPosts[0]} backgroundColor='#FF767622' borderColor='#FF767677' />
+                <Post post={mockPosts[1]} backgroundColor='#A876FF22' borderColor='#A876FF77' />
+                <Post post={mockPosts[2]} backgroundColor='#76D1FF22' borderColor='#76D1FF77' />
               </View>
             </TouchableWithoutFeedback>
           )}
@@ -83,10 +85,12 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: Colors.background,
+
   },
   mainScrollView: {
     flex: 1,
-    paddingTop: 24,
+    paddingTop: 12,
+    
   },
   emptyStateContainer: {
     paddingHorizontal: 24,
@@ -105,5 +109,8 @@ const styles = StyleSheet.create({
   },
   feedContainer: {
     flex: 1,
+    gap: 30,
+    marginBottom: 100,
+
   },
 }); 
