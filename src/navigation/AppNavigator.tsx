@@ -11,6 +11,7 @@ import { FollowRequestsModal } from '../components/ui/modals/FollowRequestsModal
 import { BottomNavigationBar } from '../components/ui/navigation/BottomNavigationBar';
 import { Colors } from '../constants/Colors';
 import { useAuth } from '../contexts/AuthContext';
+import type { SearchUser } from '../hooks/useUserSearch';
 
 export type RootStackParamList = {
   Welcome: undefined;
@@ -19,7 +20,11 @@ export type RootStackParamList = {
   Settings: undefined;
   EditProfile: undefined;
   EditProfileElement: { field: 'name' | 'username' | 'bio'; currentValue: string; title: string };
-  UserProfile: { userId: string; userData?: any };
+  UserProfile: {
+    userId: string;
+    userData?: SearchUser;
+    onFollowAction?: (userId: string, action: 'follow' | 'unfollow' | 'cancel') => Promise<void>;
+  };
   AccountPrivacy: undefined;
   FollowRequests: undefined;
 };
