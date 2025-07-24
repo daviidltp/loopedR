@@ -9,6 +9,19 @@ export interface User {
   followersCount: number;
   followingCount: number;
   followStatus: 'none' | 'pending' | 'accepted';
+  topArtists?: Array<{
+    position: number;
+    name: string;
+    imageUrl: string;
+    plays: string;
+  }>;
+  topAlbums?: Array<{
+    position: number;
+    title: string;
+    artist: string;
+    imageUrl: string;
+    plays: string;
+  }>;
 }
 
 export interface UserRelation {
@@ -29,6 +42,75 @@ export const mockUsers: User[] = [
     followersCount: 0,
     followingCount: 0,
     followStatus: 'none',
+    topArtists: [
+      {
+        position: 1,
+        name: 'Bad Bunny',
+        imageUrl: 'https://i.scdn.co/image/ab6761610000e5eb81f47f44084e0a09b5f0fa13',
+        plays: '2.5M',
+      },
+      {
+        position: 2,
+        name: 'Quevedo',
+        imageUrl: 'https://pbs.twimg.com/profile_images/1851626170543972353/lmBVAsTV_400x400.jpg',
+        plays: '1.8M',
+      },
+      {
+        position: 3,
+        name: 'ROSALÍA',
+        imageUrl: 'https://image-cdn-ak.spotifycdn.com/image/ab67706c0000da843dade78a7baa2943d0bbf1f5',
+        plays: '1.2M',
+      },
+      {
+        position: 4,
+        name: 'Feid',
+        imageUrl: 'https://image-cdn-ak.spotifycdn.com/image/ab67706c0000da84d1c02a362077b58da36cd418',
+        plays: '950K',
+      },
+      {
+        position: 5,
+        name: 'Mora',
+        imageUrl: 'https://i.scdn.co/image/ab67616d0000b2733c4cddfe8890b8a9d4788fa3',
+        plays: '800K',
+      },
+    ],
+    topAlbums: [
+      {
+        position: 1,
+        title: 'Un Verano Sin Ti',
+        artist: 'Bad Bunny',
+        imageUrl: 'https://i.scdn.co/image/ab67616d0000b27349d694203245f241a1bcaa72',
+        plays: '3.2M',
+      },
+      {
+        position: 2,
+        title: 'DONDE QUIERO ESTAR',
+        artist: 'Quevedo',
+        imageUrl: 'https://i.scdn.co/image/ab67616d00001e028f4a278cd5b5b2f65a0f87fd',
+        plays: '2.1M',
+      },
+      {
+        position: 3,
+        title: 'MOTOMAMI',
+        artist: 'ROSALÍA',
+        imageUrl: 'https://image-cdn-ak.spotifycdn.com/image/ab67706c0000da84f26770dc2dc1a3b360c6db01',
+        plays: '1.5M',
+      },
+      {
+        position: 4,
+        title: 'FELIZ CUMPLEAÑOS FERXXO',
+        artist: 'Feid',
+        imageUrl: 'https://i.scdn.co/image/ab67616d0000b273b8cc7d03ca3788f3ad7b71fd',
+        plays: '1.1M',
+      },
+      {
+        position: 5,
+        title: 'MICRODOSIS',
+        artist: 'Mora',
+        imageUrl: 'https://i.scdn.co/image/ab67616d0000b273f4483d4440a89a2cab3b5141',
+        plays: '900K',
+      },
+    ],
   },
   {
     id: '2',
