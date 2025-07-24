@@ -54,7 +54,7 @@ export const FollowRequestCard: React.FC<FollowRequestCardProps> = ({
                 !user.is_verified && styles.usernameFullWidth
               ]}
             >
-              {safeUsername}lopez
+              {safeUsername}
             </AppText>
             {user.is_verified && (
               < VerifiedIcon
