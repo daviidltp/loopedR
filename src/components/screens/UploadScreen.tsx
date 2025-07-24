@@ -1,3 +1,5 @@
+import { useFocusEffect, useNavigation } from '@react-navigation/native';
+import type { StackNavigationProp } from '@react-navigation/stack';
 import { LinearGradient } from 'expo-linear-gradient';
 import React, { useEffect, useState } from 'react';
 import { Dimensions, StyleSheet, View } from 'react-native';
@@ -9,12 +11,12 @@ import Animated, {
   withTiming,
 } from 'react-native-reanimated';
 import { Colors } from '../../constants/Colors';
+import type { RootStackParamList } from '../../navigation/AppNavigator';
 import { currentUser } from '../../utils/mockData';
 import { AlbumSquare, ArtistCircle } from '../ui/FloatingItems';
 import { AppText } from '../ui/Text/AppText';
 import { ResizingButton } from '../ui/buttons/ResizingButton';
 import { Layout } from '../ui/layout/Layout';
-import PreviewScreen from './PreviewScreen';
 
 const { width: screenWidth, height: screenHeight } = Dimensions.get('window');
 
@@ -265,7 +267,7 @@ export const UploadScreen: React.FC = () => {
     }
   };
 
-  const [showPreview, setShowPreview] = useState(false);
+  const navigation = useNavigation<StackNavigationProp<RootStackParamList>>();
   const {
     artistsY,
     artistsOpacity,
@@ -278,16 +280,17 @@ export const UploadScreen: React.FC = () => {
   const handleUploadPress = () => {
     setAnimateFloatingItems(true);
     animateOut(); // solo para el central y el texto
-    setTimeout(() => setShowPreview(true), PREVIEW_SHOW_DELAY + circularItems.length * FLOATING_ITEM_STAGGER);
-  };
-
-  const handleClosePreview = () => {
-    setShowPreview(false);
-    resetAnimations();
-    setAnimateFloatingItems(false);
+    setTimeout(() => navigation.navigate('Preview'), PREVIEW_SHOW_DELAY + circularItems.length * FLOATING_ITEM_STAGGER);
   };
 
   const bottomSectionAnimated = useBottomSectionAnimation(textY);
+
+  useFocusEffect(
+    React.useCallback(() => {
+      resetAnimations();
+      setAnimateFloatingItems(false);
+    }, [])
+  );
 
   return (
     <Layout>
@@ -333,11 +336,10 @@ export const UploadScreen: React.FC = () => {
             title="Ver looped"
             backgroundColor={Colors.white}
             textColor={Colors.background}
+            height={46}
           />
         </Animated.View>
 
-        {/* Mostrar preview animada si corresponde */}
-        <PreviewScreen visible={showPreview} onClose={handleClosePreview} />
       </View>
     </Layout>
   );

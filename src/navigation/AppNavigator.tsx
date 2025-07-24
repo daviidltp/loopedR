@@ -6,6 +6,7 @@ import { EditProfileScreen } from '../components/screens/EditProfileScreen';
 import { AccountPrivacy } from '../components/screens/EditProfileScreens/AccountPrivacy';
 import { EditProfileElement } from '../components/screens/EditProfileScreens/EditProfileElement';
 import { FollowRequestsScreen } from '../components/screens/FollowRequestsScreen';
+import { PreviewScreen } from '../components/screens/PreviewScreen';
 import { SettingsScreen } from '../components/screens/SettingsScreen';
 import { UserProfileScreen } from '../components/screens/UserProfileScreen';
 import { BottomNavigationBar } from '../components/ui/navigation/BottomNavigationBar';
@@ -27,6 +28,7 @@ export type RootStackParamList = {
   };
   AccountPrivacy: undefined;
   FollowRequests: undefined;
+  Preview: undefined;
 };
 
 const Stack = createStackNavigator<RootStackParamList>();
@@ -167,6 +169,19 @@ const MainAppScreens = () => (
         gestureDirection: 'horizontal',
         detachPreviousScreen: false,
         freezeOnBlur: false,
+      }}
+    />
+    <Stack.Screen 
+      name="Preview" 
+      component={PreviewScreen}
+      options={{
+        headerShown: false,
+        cardStyleInterpolator: CardStyleInterpolators.forFadeFromBottomAndroid,
+        gestureEnabled: true,
+        gestureDirection: 'vertical',
+        detachPreviousScreen: false,
+        freezeOnBlur: false,
+        cardStyle: { backgroundColor: Colors.background },
       }}
     />
   </>

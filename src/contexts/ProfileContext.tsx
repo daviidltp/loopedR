@@ -120,6 +120,7 @@ export const ProfileProvider: React.FC<{ children: React.ReactNode }> = ({ child
         .from('profiles')
         .upsert(updates);
 
+
       if (updateError) {
         throw updateError;
       }
