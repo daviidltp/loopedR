@@ -22,6 +22,7 @@ import HouseIcon from '../../../../assets/icons/house.svg';
 import HouseFilledIcon from '../../../../assets/icons/house_filled.svg';
 import SearchIcon from '../../../../assets/icons/search.svg';
 import SearchFilledIcon from '../../../../assets/icons/search_filled.svg';
+import { useFollowers } from '../../../contexts/FollowersContext';
 
 export type BottomNavigationParamList = {
   Home: undefined;
@@ -110,6 +111,8 @@ const CustomTabButton = (props: BottomTabBarButtonProps) => {
 export const BottomNavigationBar = ({ onUploadPress }: { onUploadPress?: () => void }) => {
   const insets = useSafeAreaInsets();
   const backPressedOnce = useRef(false);
+  const { followRequests } = useFollowers();
+  const hasFollowRequests = followRequests.length > 0;
 
   useEffect(() => {
     const backAction = () => {
@@ -158,6 +161,7 @@ export const BottomNavigationBar = ({ onUploadPress }: { onUploadPress?: () => v
             let iconSize = 24;
             let isSpecial = false;
             const opacity = focused ? 1 : 0.6;
+            let iconColor = Colors.white;
 
             switch (route.name) {
               case 'Home':
@@ -173,21 +177,35 @@ export const BottomNavigationBar = ({ onUploadPress }: { onUploadPress?: () => v
                 break;
               case 'Inbox':
                 IconComponent = focused ? HeartFilledIcon : HeartIcon;
-                break;
+                return (
+                  <View style={[styles.iconWrapper]}>
+                    <View style={{ position: 'relative', width: iconSize, height: iconSize }}>
+                      <IconComponent
+                        width={iconSize}
+                        height={iconSize}
+                        fill={Colors.white}
+                        opacity={opacity}
+                      />
+                      {hasFollowRequests && (
+                        <View style={styles.redDot} />
+                      )}
+                    </View>
+                  </View>
+                );
               case 'Profile':
                 return <ProfileAvatar focused={focused} />;
             }
 
             return (
-              <View style={[
-                styles.iconWrapper,
-                { opacity }
-              ]}>
-                <IconComponent
-                  width={iconSize}
-                  height={iconSize}
-                  fill={Colors.white}
-                />
+              <View style={[styles.iconWrapper]}>
+                <View style={{ position: 'relative', width: iconSize, height: iconSize }}>
+                  <IconComponent
+                    width={iconSize}
+                    height={iconSize}
+                    fill={Colors.white}
+                    opacity={opacity}
+                  />
+                </View>
               </View>
             );
           },
@@ -286,5 +304,17 @@ const styles = StyleSheet.create({
     flex: 1,
     borderTopLeftRadius: 32,
     borderTopRightRadius: 32,
+  },
+  redDot: {
+    position: 'absolute',
+    top: -2,
+    right: -2,
+    width: 10,
+    height: 10,
+    borderRadius: 5,
+    backgroundColor: Colors.appleRed,
+    borderWidth: 2,
+    borderColor: Colors.background,
+    zIndex: 10,
   },
 }); 

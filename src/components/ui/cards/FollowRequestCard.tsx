@@ -40,6 +40,7 @@ export const FollowRequestCard: React.FC<FollowRequestCardProps> = ({
           size={56}
           avatarUrl={user.avatar_url || user.avatarUrl}
           showUploadButton={false}
+          disabled={true}
         />
         <View style={styles.userInfo}>
           <View style={styles.usernameRow}>

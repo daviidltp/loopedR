@@ -73,7 +73,7 @@ export const ProfileHeader: React.FC<ProfileHeaderProps> = ({
       </AppText>
       
       {isVerified && (
-        <AnimatedVerifiedIcon size={20} />
+        <AnimatedVerifiedIcon size={16} />
       )}
     </View>
   );

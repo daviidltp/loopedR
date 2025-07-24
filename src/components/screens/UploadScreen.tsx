@@ -1,5 +1,5 @@
 import { LinearGradient } from 'expo-linear-gradient';
-import React, { useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 import { Dimensions, StyleSheet, View } from 'react-native';
 import Animated, {
   Easing,
@@ -14,8 +14,168 @@ import { AlbumSquare, ArtistCircle } from '../ui/FloatingItems';
 import { AppText } from '../ui/Text/AppText';
 import { ResizingButton } from '../ui/buttons/ResizingButton';
 import { Layout } from '../ui/layout/Layout';
+import PreviewScreen from './PreviewScreen';
 
 const { width: screenWidth, height: screenHeight } = Dimensions.get('window');
+
+// --- Constantes de animación ---
+const ARTISTS_Y_DURATION = 700;
+const ARTISTS_OPACITY_DURATION = 500;
+const TEXT_Y_DURATION = 700;
+const PREVIEW_SHOW_DELAY = 300;
+const FLOAT_MIN_DISTANCE = 3;
+const FLOAT_X_MIN_DURATION = 3000;
+const FLOAT_X_MAX_DURATION = 7500;
+const FLOAT_Y_MIN_DURATION = 3000;
+const FLOAT_Y_MAX_DURATION = 7500;
+const FLOAT_Y_OFFSET_MAX = 800;
+const FLOATING_ITEM_STAGGER = 80; // ms de delay entre cada item
+
+// --- Hooks de animación ---
+function useFloatingItemsAnimation(screenHeight: number) {
+  const artistsY = useSharedValue(0);
+  const artistsOpacity = useSharedValue(1);
+  const textY = useSharedValue(0);
+
+  const animateOut = () => {
+    artistsY.value = withTiming(-screenHeight, { duration: ARTISTS_Y_DURATION, easing: Easing.inOut(Easing.cubic) });
+    artistsOpacity.value = withTiming(0, { duration: ARTISTS_OPACITY_DURATION, easing: Easing.inOut(Easing.cubic) });
+    textY.value = withTiming(screenHeight, { duration: TEXT_Y_DURATION, easing: Easing.inOut(Easing.cubic) });
+  };
+
+  const reset = () => {
+    artistsY.value = 0;
+    artistsOpacity.value = 1;
+    textY.value = 0;
+  };
+
+  return { artistsY, artistsOpacity, textY, animateOut, reset };
+}
+
+// --- Componente de Item flotante ---
+const FloatingItem: React.FC<{
+  item: {
+    type: 'artist' | 'album';
+    data: {
+      position: number;
+      name?: string;
+      title?: string;
+      artist?: string;
+      imageUrl: string;
+      plays: string;
+    };
+    key: string;
+  };
+  index: number;
+  predefinedPositions: { x: number; y: number }[];
+  animateOut: boolean;
+}> = ({ item, index, predefinedPositions, animateOut }) => {
+  const position = predefinedPositions[index % predefinedPositions.length];
+  const floatX = useSharedValue(0);
+  const floatY = useSharedValue(0);
+  const y = useSharedValue(0);
+  const opacity = useSharedValue(1);
+
+  useEffect(() => {
+    const floatDistance = FLOAT_MIN_DISTANCE + Math.random();
+    const durationX = FLOAT_X_MIN_DURATION + Math.random() * FLOAT_X_MAX_DURATION;
+    const durationY = FLOAT_Y_MIN_DURATION + Math.random() * FLOAT_Y_MAX_DURATION;
+    floatX.value = withRepeat(
+      withTiming(floatDistance, {
+        duration: durationX,
+        easing: Easing.inOut(Easing.sin),
+      }),
+      -1,
+      true
+    );
+    setTimeout(() => {
+      floatY.value = withRepeat(
+        withTiming(floatDistance * 0.7, {
+          duration: durationY,
+          easing: Easing.inOut(Easing.sin),
+        }),
+        -1,
+        true
+      );
+    }, Math.random() * FLOAT_Y_OFFSET_MAX);
+  }, []);
+
+  useEffect(() => {
+    if (animateOut) {
+      const delay = index * FLOATING_ITEM_STAGGER + Math.random() * 40;
+      setTimeout(() => {
+        y.value = withTiming(-Dimensions.get('window').height, { duration: ARTISTS_Y_DURATION, easing: Easing.inOut(Easing.cubic) });
+        opacity.value = withTiming(0, { duration: ARTISTS_OPACITY_DURATION, easing: Easing.inOut(Easing.cubic) });
+      }, delay);
+    } else {
+      y.value = 0;
+      opacity.value = 1;
+    }
+  }, [animateOut]);
+
+  const animatedStyle = useAnimatedStyle(() => ({
+    position: 'absolute',
+    left: position.x + floatX.value - 40,
+    top: position.y + floatY.value - 40 + y.value,
+    transform: [
+      { translateX: floatX.value },
+      { translateY: floatY.value },
+    ],
+    opacity: opacity.value,
+  }));
+
+  return (
+    <Animated.View style={animatedStyle}>
+      {item.type === 'artist' ? (
+        <ArtistCircle 
+          artist={item.data as { position: number; name: string; imageUrl: string; plays: string; }} 
+          zIndex={6 - item.data.position} 
+        />
+      ) : (
+        <AlbumSquare 
+          album={item.data as { position: number; title: string; artist: string; imageUrl: string; plays: string; }} 
+          zIndex={11 - item.data.position} 
+        />
+      )}
+    </Animated.View>
+  );
+};
+
+// --- Componente del artista central ---
+const CenterFloatingItem: React.FC<{
+  artist: any;
+  centerX: number;
+  centerY: number;
+  artistsY: any;
+  artistsOpacity: any;
+}> = ({ artist, centerX, centerY, artistsY, artistsOpacity }) => {
+  const animatedStyle = useAnimatedStyle(() => ({
+    position: 'absolute',
+    left: centerX - 50,
+    top: centerY - 50 + artistsY.value,
+    width: 80,
+    height: 80,
+    justifyContent: 'center',
+    alignItems: 'center',
+    opacity: artistsOpacity.value,
+  }));
+  return (
+    <Animated.View style={animatedStyle}>
+      <ArtistCircle 
+        artist={artist} 
+        zIndex={6 - artist.position} 
+      />
+    </Animated.View>
+  );
+};
+
+// --- Animación del texto y botón ---
+function useBottomSectionAnimation(textY: any) {
+  return useAnimatedStyle(() => ({
+    transform: [{ translateY: textY.value }],
+    opacity: textY.value === 0 ? 1 : withTiming(0, { duration: 200 }),
+  }));
+}
 
 export const UploadScreen: React.FC = () => {
   // Crear arrays de artistas y álbumes
@@ -105,95 +265,29 @@ export const UploadScreen: React.FC = () => {
     }
   };
 
+  const [showPreview, setShowPreview] = useState(false);
+  const {
+    artistsY,
+    artistsOpacity,
+    textY,
+    animateOut,
+    reset: resetAnimations,
+  } = useFloatingItemsAnimation(screenHeight);
+  const [animateFloatingItems, setAnimateFloatingItems] = useState(false);
+
   const handleUploadPress = () => {
-    console.log('Upload button pressed');
-    // TODO: Implementar funcionalidad de upload
+    setAnimateFloatingItems(true);
+    animateOut(); // solo para el central y el texto
+    setTimeout(() => setShowPreview(true), PREVIEW_SHOW_DELAY + circularItems.length * FLOATING_ITEM_STAGGER);
   };
 
-  // Componente para elementos flotantes
-  const FloatingItem: React.FC<{
-    item: {
-      type: 'artist' | 'album';
-      data: {
-        position: number;
-        name?: string;
-        title?: string;
-        artist?: string;
-        imageUrl: string;
-        plays: string;
-      };
-      key: string;
-    };
-    index: number;
-  }> = ({ item, index }) => {
-    // Obtener posición aleatoria de las predefinidas
-    const position = predefinedPositions[index % predefinedPositions.length];
-    
-    // Valores para la animación de flotación
-    const floatX = useSharedValue(0);
-    const floatY = useSharedValue(0);
-    
-    useEffect(() => {
-      // Generar movimientos sutiles pero fluidos para cada elemento
-      const floatDistance = 3 + Math.random() ; // Distancia de flotación entre 3-7px
-      const durationX = 6000 + Math.random() * 7500; // Duración X entre 1.5-2.5 segundos
-      const durationY = 6000 + Math.random() * 7500; // Duración Y entre 1.4-2.6 segundos
-      
-      // Animación en X (izquierda-derecha)
-      floatX.value = withRepeat(
-        withTiming(floatDistance, {
-          duration: durationX,
-          easing: Easing.inOut(Easing.sin),
-        }),
-        -1,
-        true
-      );
-      
-      // Animación en Y (arriba-abajo) con desfase
-      setTimeout(() => {
-        floatY.value = withRepeat(
-          withTiming(floatDistance * 0.7, {
-            duration: durationY,
-            easing: Easing.inOut(Easing.sin),
-          }),
-          -1,
-          true
-        );
-      }, Math.random() * 800); // Desfase aleatorio hasta 0.8 segundos
-    }, []);
-
-    const animatedStyle = useAnimatedStyle(() => {
-      return {
-        position: 'absolute',
-        left: position.x + floatX.value - 40,
-        top: position.y + floatY.value - 40,
-        transform: [
-          {
-            translateX: floatX.value,
-          },
-          {
-            translateY: floatY.value,
-          },
-        ],
-      };
-    });
-
-    return (
-      <Animated.View style={animatedStyle}>
-        {item.type === 'artist' ? (
-          <ArtistCircle 
-            artist={item.data as { position: number; name: string; imageUrl: string; plays: string; }} 
-            zIndex={getZIndex(item.type, item.data.position)} 
-          />
-        ) : (
-          <AlbumSquare 
-            album={item.data as { position: number; title: string; artist: string; imageUrl: string; plays: string; }} 
-            zIndex={getZIndex(item.type, item.data.position)} 
-          />
-        )}
-      </Animated.View>
-    );
+  const handleClosePreview = () => {
+    setShowPreview(false);
+    resetAnimations();
+    setAnimateFloatingItems(false);
   };
+
+  const bottomSectionAnimated = useBottomSectionAnimation(textY);
 
   return (
     <Layout>
@@ -205,6 +299,8 @@ export const UploadScreen: React.FC = () => {
               key={item.key}
               item={item}
               index={index}
+              predefinedPositions={predefinedPositions}
+              animateOut={animateFloatingItems}
             />
           ))}
 
@@ -214,7 +310,8 @@ export const UploadScreen: React.FC = () => {
               artist={topArtist}
               centerX={centerX}
               centerY={centerY}
-              getZIndex={getZIndex}
+              artistsY={artistsY}
+              artistsOpacity={artistsOpacity}
             />
           )}
         </View>
@@ -227,45 +324,22 @@ export const UploadScreen: React.FC = () => {
           style={styles.gradientOverlay}
         />
 
-        <View style={styles.bottomSection}>
+        <Animated.View style={[styles.bottomSection, bottomSectionAnimated]}>
           <AppText variant="h2" fontWeight="bold" fontFamily='raleway' color={Colors.white}>
             Sube tu primer <AppText variant="h2" fontWeight="bold" fontFamily='raleway' color={Colors.secondaryGreen}>looped</AppText>
           </AppText>
-          
           <ResizingButton
             onPress={handleUploadPress}
             title="Ver looped"
             backgroundColor={Colors.white}
             textColor={Colors.background}
           />
-        </View>
+        </Animated.View>
+
+        {/* Mostrar preview animada si corresponde */}
+        <PreviewScreen visible={showPreview} onClose={handleClosePreview} />
       </View>
     </Layout>
-  );
-};
-
-// Componente separado para el artista central
-const CenterFloatingItem: React.FC<{
-  artist: any;
-  centerX: number;
-  centerY: number;
-  getZIndex: (type: 'artist' | 'album', position: number) => number;
-}> = ({ artist, centerX, centerY, getZIndex }) => {
-  return (
-    <View style={{
-      position: 'absolute',
-      left: centerX - 50,
-      top: centerY - 50,
-      width: 80,
-      height: 80,
-      justifyContent: 'center',
-      alignItems: 'center',
-    }}>
-      <ArtistCircle 
-        artist={artist} 
-        zIndex={getZIndex('artist', artist.position)} 
-      />
-    </View>
   );
 };
 
