@@ -19,12 +19,12 @@ export const useSpotifyAuth = () => {
     try {
       // 1. Comprobar si ya existen registros para este usuario
       const { data: existing, error: checkError } = await supabase
-        .from('top_month_artists')
+        .from('top_monthly_artists')
         .select('user_id')
         .eq('user_id', userId)
         .limit(1);
       if (checkError) {
-        console.error('[SpotifyAuth] Error comprobando top_month_artists:', checkError);
+        console.error('[SpotifyAuth] Error comprobando top_monthly_artists:', checkError);
         return;
       }
       if (existing && existing.length > 0) {
@@ -61,14 +61,78 @@ export const useSpotifyAuth = () => {
       }));
 
       // 4. Insertar en la tabla
-      const { error: insertError } = await supabase.from('top_month_artists').insert(records);
+      const { error: insertError } = await supabase.from('top_monthly_artists').insert(records);
       if (insertError) {
-        console.error('[SpotifyAuth] Error insertando top_month_artists:', insertError);
+        console.error('[SpotifyAuth] Error insertando top_monthly_artists:', insertError);
       } else {
         console.log('[SpotifyAuth] Top 5 artistas guardados correctamente en top_month_artists.');
       }
     } catch (err) {
       console.error('[SpotifyAuth] Error inesperado en saveInitialTopArtists:', err);
+    }
+  };
+
+  /**
+   * Guarda las 5 canciones top del usuario en el último mes en la tabla top_monthly_songs,
+   * solo si no existen registros previos para ese user_id.
+   * @param {string} userId - ID del usuario en Supabase
+   * @param {string} provider_token - Access token de Spotify
+   */
+  const saveInitialTopSongs = async (userId: string, provider_token: string) => {
+    try {
+      // 1. Comprobar si ya existen registros para este usuario
+      const { data: existing, error: checkError } = await supabase
+        .from('top_monthly_songs')
+        .select('user_id')
+        .eq('user_id', userId)
+        .limit(1);
+      if (checkError) {
+        console.error('[SpotifyAuth] Error comprobando top_monthly_songs:', checkError);
+        return;
+      }
+      if (existing && existing.length > 0) {
+        // Ya existen registros, no hacer nada
+        return;
+      }
+
+      // 2. Llamar a la API de Spotify para obtener las 5 canciones top
+      const response = await fetch('https://api.spotify.com/v1/me/top/tracks?limit=5&time_range=short_term', {
+        headers: {
+          Authorization: `Bearer ${provider_token}`,
+        },
+      });
+      if (!response.ok) {
+        console.error('[SpotifyAuth] Error obteniendo top tracks de Spotify:', response.status, await response.text());
+        return;
+      }
+      const data = await response.json();
+      const tracks = data.items || [];
+      if (tracks.length === 0) {
+        console.log('[SpotifyAuth] El usuario no tiene canciones top para guardar.');
+        return;
+      }
+
+      // 3. Preparar los registros para insertar
+      const now = new Date().toISOString();
+      const records = tracks.map((track: any, index: number) => ({
+        user_id: userId,
+        song_id: track.id || null,
+        song_name: track.name || '',
+        artist_name: track.artists?.[0]?.name || '',
+        album_cover_url: track.album?.images?.[0]?.url || null,
+        position: index + 1,
+        retrieved_at: now,
+      }));
+
+      // 4. Insertar en la tabla
+      const { error: insertError } = await supabase.from('top_monthly_songs').insert(records);
+      if (insertError) {
+        console.error('[SpotifyAuth] Error insertando top_monthly_songs:', insertError);
+      } else {
+        console.log('[SpotifyAuth] Top 5 canciones guardadas correctamente en top_monthly_songs.');
+      }
+    } catch (err) {
+      console.error('[SpotifyAuth] Error inesperado en saveInitialTopSongs:', err);
     }
   };
 
@@ -142,6 +206,7 @@ export const useSpotifyAuth = () => {
 					  }
 					  if (provider_token) {
 					    await saveInitialTopArtists(user.id, provider_token);
+                        await saveInitialTopSongs(user.id, provider_token);
 					  } else {
 					    console.warn('[SpotifyAuth] provider_token no disponible, no se puede guardar top artists');
 					  }
