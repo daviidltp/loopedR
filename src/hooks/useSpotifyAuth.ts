@@ -9,6 +9,69 @@ WebBrowser.maybeCompleteAuthSession();
 export const useSpotifyAuth = () => {
   const [loading, setLoading] = useState(false);
 
+  /**
+   * Guarda los 5 artistas top del usuario en el último mes en la tabla top_month_artists,
+   * solo si no existen registros previos para ese user_id.
+   * @param {string} userId - ID del usuario en Supabase
+   * @param {string} provider_token - Access token de Spotify
+   */
+  const saveInitialTopArtists = async (userId: string, provider_token: string) => {
+    try {
+      // 1. Comprobar si ya existen registros para este usuario
+      const { data: existing, error: checkError } = await supabase
+        .from('top_month_artists')
+        .select('user_id')
+        .eq('user_id', userId)
+        .limit(1);
+      if (checkError) {
+        console.error('[SpotifyAuth] Error comprobando top_month_artists:', checkError);
+        return;
+      }
+      if (existing && existing.length > 0) {
+        // Ya existen registros, no hacer nada
+        return;
+      }
+
+      // 2. Llamar a la API de Spotify para obtener los 5 artistas top
+      const response = await fetch('https://api.spotify.com/v1/me/top/artists?limit=5&time_range=short_term', {
+        headers: {
+          Authorization: `Bearer ${provider_token}`,
+        },
+      });
+      if (!response.ok) {
+        console.error('[SpotifyAuth] Error obteniendo top artists de Spotify:', response.status, await response.text());
+        return;
+      }
+      const data = await response.json();
+      const artists = data.items || [];
+      if (artists.length === 0) {
+        console.log('[SpotifyAuth] El usuario no tiene artistas top para guardar.');
+        return;
+      }
+
+      // 3. Preparar los registros para insertar
+      const now = new Date().toISOString();
+      const records = artists.map((artist: any, index: number) => ({
+        user_id: userId,
+        artist_id: artist.id || null,
+        artist_name: artist.name || '',
+        artist_image_url: artist.images?.[0]?.url || null,
+        position: index + 1,
+        retrieved_at: now,
+      }));
+
+      // 4. Insertar en la tabla
+      const { error: insertError } = await supabase.from('top_month_artists').insert(records);
+      if (insertError) {
+        console.error('[SpotifyAuth] Error insertando top_month_artists:', insertError);
+      } else {
+        console.log('[SpotifyAuth] Top 5 artistas guardados correctamente en top_month_artists.');
+      }
+    } catch (err) {
+      console.error('[SpotifyAuth] Error inesperado en saveInitialTopArtists:', err);
+    }
+  };
+
   const signInWithSpotify = async () => {
     setLoading(true);
     console.log('[SpotifyAuth] Iniciando autenticación con Spotify...');
@@ -50,6 +113,7 @@ export const useSpotifyAuth = () => {
             
             const accessToken = params.get('access_token');
             const refreshToken = params.get('refresh_token');
+			const provider_token = params.get('provider_token');
 			const providerRefreshToken = params.get('provider_refresh_token');
             
             if (accessToken && refreshToken) {
@@ -75,6 +139,11 @@ export const useSpotifyAuth = () => {
 					  if (updateError) {
 						console.error('[SpotifyAuth] Error guardando provider_refresh_token en profiles:', updateError);
 						Alert.alert('Error', 'No se pudo guardar el refresh token de Spotify');
+					  }
+					  if (provider_token) {
+					    await saveInitialTopArtists(user.id, provider_token);
+					  } else {
+					    console.warn('[SpotifyAuth] provider_token no disponible, no se puede guardar top artists');
 					  }
 					}
 				  }
