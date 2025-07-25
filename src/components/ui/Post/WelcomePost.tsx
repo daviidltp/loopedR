@@ -1,7 +1,5 @@
 import React, { memo } from 'react';
 import { StyleSheet, View } from 'react-native';
-import { ShadowView } from 'react-native-inner-shadow';
-import Svg, { Defs, RadialGradient, Rect, Stop } from 'react-native-svg';
 import { Colors } from '../../../constants/Colors';
 import { AppText } from '../Text';
 import { SongCover } from './SongCover';
@@ -103,41 +101,11 @@ const WelcomePostComponent: React.FC<SpotifyWrappedContentProps> = ({
   containerMargin = 12,
 }) => {
   return (
-    <View style={[styles.container, { marginHorizontal: containerMargin }]}>
-    {/* <ShadowView style={styles.container}
-      inset
-      backgroundColor="000"
-      shadowColor={borderColor}
-      shadowOffset={{ width: 0, height: 0 }}
-      shadowBlur={30}
-    > */}
+    <View style={[styles.container, { boxShadow: `0px 0px 20px 1px ${borderColor} inset` }, { marginHorizontal: containerMargin }]}>
+
       {/* Gradiente radial real usando SVG */}
-      <Svg style={styles.svg} height="100%" width="100%">
-        <Defs>
-          <RadialGradient
-            id="radialGrad"
-            cx="100%"
-            cy="100%"
-            rx="100%"
-            ry="80%"
-            gradientUnits="objectBoundingBox"
-          >
-            <Stop offset="0" stopColor={borderColor} stopOpacity={0.67} />
-            <Stop offset="1" stopColor={borderColor} stopOpacity="0" />
-          </RadialGradient>
-        </Defs>
-        <Rect x="0" y="0" width="100%" height="100%" fill="url(#radialGrad)" />
-      </Svg>
 
       {/* Sombra interna usando ShadowView */}
-      <ShadowView
-        inset
-        backgroundColor="transparent"
-        shadowColor={borderColor}
-        shadowOffset={{ width: 0, height: 0 }}
-        shadowBlur={20}
-        style={styles.shadowView}
-      />
 
       {/* Contenido principal */}
       <View style={[styles.content, { backgroundColor: backgroundColor, paddingVertical: headerPadding, gap: 16 }]}> 
@@ -155,7 +123,6 @@ const WelcomePostComponent: React.FC<SpotifyWrappedContentProps> = ({
           ))}
         </View>
       </View>
-      {/* </ShadowView> */}
     </View>
     
   );
@@ -170,6 +137,8 @@ const styles = StyleSheet.create({
     zIndex: 0,
     overflow: 'hidden',
     justifyContent: 'center',
+
+
   },
   svg: {
     position: 'absolute',
@@ -193,6 +162,7 @@ const styles = StyleSheet.create({
     zIndex: 1,
     overflow: 'hidden',
     paddingHorizontal: 32,
+
   },
   titleContainer: {
     alignItems: 'flex-start',

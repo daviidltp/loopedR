@@ -2,8 +2,9 @@ import { useNavigation, useRoute } from '@react-navigation/native';
 import { StackNavigationProp } from '@react-navigation/stack';
 import { LinearGradient } from 'expo-linear-gradient';
 import React, { useEffect, useRef, useState } from 'react';
-import { Animated, Dimensions, Keyboard, StyleSheet, TextInput, TouchableOpacity, TouchableWithoutFeedback, View } from 'react-native';
+import { Dimensions, Keyboard, Animated as RNAnimated, StyleSheet, TextInput, TouchableOpacity, TouchableWithoutFeedback, View } from 'react-native';
 import { ShadowView } from 'react-native-inner-shadow';
+import Animated, { runOnJS, useAnimatedStyle, useSharedValue, withTiming } from 'react-native-reanimated';
 import Carousel from 'react-native-reanimated-carousel';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { VerifiedIcon } from '../../components/icons/VerifiedIcon';
@@ -27,7 +28,7 @@ const ColorItem = ({ color, backgroundColor, size, selected }: { color: string; 
       width: size,
       height: size,
       borderRadius: size / 2,
-      transform: [{ scale: selected ? 1.2 : 1 }],
+
     }}
     inset={true}
     backgroundColor={"#111"}
@@ -76,7 +77,7 @@ const PreviewScreen: React.FC = () => {
   const carouselWidth = screenWidth; // igual que containerWidth
 
   // Animated value para el progreso del carrusel
-  const tabProgress = useRef(new Animated.Value(POST_TYPES.indexOf(postType))).current;
+  const tabProgress = useSharedValue(POST_TYPES.indexOf(postType));
 
   // Solo sincroniza el scroll del carrusel si el cambio viene de un tab/click
   useEffect(() => {
@@ -92,15 +93,11 @@ const PreviewScreen: React.FC = () => {
 
   // Animar el progreso del tab con el swipe
   const handleProgressChange = (_: any, absoluteProgress: number) => {
-    Animated.timing(tabProgress, {
-      toValue: absoluteProgress,
-      duration: 0,
-      useNativeDriver: true,
-    }).start();
-    // Actualiza el postType solo cuando cambia el índice
+    tabProgress.value = absoluteProgress; // sin animación
+    console.log('absoluteProgress', absoluteProgress);
     const nextIndex = Math.round(absoluteProgress);
     if (POST_TYPES[nextIndex] && postType !== POST_TYPES[nextIndex]) {
-      setPostType(POST_TYPES[nextIndex]);
+      runOnJS(setPostType)(POST_TYPES[nextIndex]);
     }
   };
 
@@ -132,19 +129,19 @@ const PreviewScreen: React.FC = () => {
   const top3ArtistsDescription = 'Tus 3 artistas más escuchados este mes.';
 
   // Animación de fade para el post
-  const fadeAnim = React.useRef(new Animated.Value(1)).current;
+  const fadeAnim = React.useRef(new RNAnimated.Value(1)).current;
 
   React.useEffect(() => {
     if (postType !== internalType) {
       // Fade out
-      Animated.timing(fadeAnim, {
+      RNAnimated.timing(fadeAnim, {
         toValue: 0,
         duration: 100,
         useNativeDriver: true,
       }).start(() => {
         setInternalType(postType);
         // Fade in
-        Animated.timing(fadeAnim, {
+        RNAnimated.timing(fadeAnim, {
           toValue: 1,
           duration: 200,
           useNativeDriver: true,
@@ -154,22 +151,24 @@ const PreviewScreen: React.FC = () => {
   }, [postType]);
 
   // Para animar el scroll del carrusel de colores
-  const scrollX = React.useRef(new Animated.Value(0)).current;
+  const scrollX = React.useRef(new RNAnimated.Value(0)).current;
 
   // Para la animación del fondo resaltado de los tabs
-  const tabAnim = React.useRef(new Animated.Value(POST_TYPES.indexOf(postType))).current;
   const TAB_WIDTH = 100;
   const TAB_HEIGHT = 40;
   const TAB_RADIUS = 32;
   const TAB_MARGIN = 6;
 
+  const animatedTabStyle = useAnimatedStyle(() => ({
+    transform: [
+      {
+        translateX: tabProgress.value * (TAB_WIDTH + 2 * TAB_MARGIN),
+      },
+    ],
+  }));
+
   React.useEffect(() => {
-    Animated.spring(tabAnim, {
-      toValue: POST_TYPES.indexOf(postType),
-      useNativeDriver: true,
-      speed: 16,
-      bounciness: 8,
-    }).start();
+    tabProgress.value = withTiming(POST_TYPES.indexOf(postType), { duration: 300 });
   }, [postType]);
 
   // Subida de publicación a Supabase
@@ -308,8 +307,10 @@ const PreviewScreen: React.FC = () => {
                       style={{
                         textAlignVertical: 'top',
                         fontSize: 16,
-                        height: 50,
+                        minHeight: 30,
+                        maxHeight: 60,
                         color: Colors.white,
+                        padding: 0
                       }}
                     />
                   </View>
@@ -324,8 +325,7 @@ const PreviewScreen: React.FC = () => {
           height={440}
           data={POST_TYPES}
           loop={false}
-          mode="parallax"
-          modeConfig={{ parallaxScrollingScale: 0.95, parallaxScrollingOffset: 70, parallaxAdjacentItemScale: 0.8}}
+
           
           style={{justifyContent: 'center', alignItems: 'center', alignSelf: 'center', alignContent: 'center'}}
           pagingEnabled={true}
@@ -349,11 +349,11 @@ const PreviewScreen: React.FC = () => {
             } else if (item === 'top-3-songs') {
               return (
                 <View style={{ width: carouselWidth, justifyContent: 'center', alignItems: 'center', flex: 1 }}>
-                  <Post
+                 <Post
                     colorName={selectedColor}
-                    type="top-3-songs"
-                    topSongs={top3Songs}
-                    description={top3SongsDescription}
+                    type="welcome"
+                    topSongs={welcomeTopSongs}
+                    description={welcomeDescription}
                     user={profile}
                     showHeader={false}
                     showDescription={false}
@@ -366,9 +366,9 @@ const PreviewScreen: React.FC = () => {
                 <View style={{ width: carouselWidth, justifyContent: 'center', alignItems: 'center', flex: 1}}>
                   <Post
                     colorName={selectedColor}
-                    type="top-3-artists"
-                    artists={top3Artists}
-                    description={top3ArtistsDescription}
+                    type="welcome"
+                    topSongs={welcomeTopSongs}
+                    description={welcomeDescription}
                     user={profile}
                     showHeader={false}
                     showDescription={false}
@@ -385,20 +385,19 @@ const PreviewScreen: React.FC = () => {
         <View style={{ flexDirection: 'row', justifyContent: 'center', alignItems: 'center', marginBottom: 8, position: 'relative', height: TAB_HEIGHT }}>
           {/* Fondo animado */}
           <Animated.View
-            style={{
-              position: 'absolute',
-              left: TAB_MARGIN,
-              top: 0,
-              width: TAB_WIDTH,
-              height: TAB_HEIGHT,
-              borderRadius: TAB_RADIUS,
-              backgroundColor: '#151515',
-              transform: [{ translateX: tabProgress.interpolate({
-                inputRange: [0, 1, 2],
-                outputRange: [0, TAB_WIDTH + 2 * TAB_MARGIN, (TAB_WIDTH + 2 * TAB_MARGIN) * 2],
-              }) }],
-              zIndex: 1,
-            }}
+            style={[
+              {
+                position: 'absolute',
+                left: TAB_MARGIN,
+                top: 0,
+                width: TAB_WIDTH,
+                height: TAB_HEIGHT,
+                borderRadius: TAB_RADIUS,
+                backgroundColor: '#151515',
+                zIndex: 1,
+              },
+              animatedTabStyle,
+            ]}
           />
           {POST_TYPES.map((type, idx) => {
             let label = '';
@@ -464,7 +463,7 @@ const PreviewScreen: React.FC = () => {
                 <Animated.View style={{
                   borderRadius: itemSize / 2,
                   overflow: 'hidden',
-                  transform: [{ scale }],
+
                 }}>
                   <ColorItem
                     color={LoopColors[colorName].basicColor}
