@@ -1,16 +1,17 @@
-import { useNavigation } from '@react-navigation/native';
+import { useNavigation, useRoute } from '@react-navigation/native';
 import { StackNavigationProp } from '@react-navigation/stack';
 import { LinearGradient } from 'expo-linear-gradient';
 import React, { useEffect, useRef, useState } from 'react';
-import { Animated, Dimensions, Platform, ScrollView, StatusBar, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import { Animated, Dimensions, ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import { ShadowView } from 'react-native-inner-shadow';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Colors } from '../../constants/Colors';
 import { LoopColors } from '../../constants/LoopColors';
+import { useProfile } from '../../contexts/ProfileContext';
 import { RootStackParamList } from '../../navigation/AppNavigator';
-import { mockPosts } from '../../utils/mockData';
 import { Post } from '../ui/Post/Post';
 import { PlatformTouchable } from '../ui/buttons/PlatformTouchable';
+import { ResizingButton } from '../ui/buttons/ResizingButton';
 import { GlobalHeader } from '../ui/headers/GlobalHeader';
 import { Layout } from '../ui/layout/Layout';
 
@@ -35,22 +36,15 @@ const { height: screenHeight, width: screenWidth } = Dimensions.get('window');
 
 const POST_TYPES: Array<'welcome' | 'top-3-songs' | 'top-3-artists'> = ['welcome', 'top-3-songs', 'top-3-artists'];
 
-const PreviewScreen: React.FC<{ }> = ({ }) => {
+// Elimina la interfaz PreviewScreenProps y la definición con props directos
+const PreviewScreen: React.FC = () => {
   const navigation = useNavigation<StackNavigationProp<RootStackParamList>>();
+  const route = useRoute();
   const insets = useSafeAreaInsets();
+  const { profile, topMonthlySongs, topWeeklySongs, topMonthlyArtists } = useProfile();
 
   const handleBackPress = () => {
     navigation.goBack();
-  };
-  
-  // Calcular el top padding considerando Android
-  const getTopPadding = () => {
-    if (Platform.OS === 'android') {
-      // En Android, usar el StatusBar height + un poco más de espacio
-      const statusBarHeight = StatusBar.currentHeight || 0;
-      return Math.max(statusBarHeight + 20, insets.top + 20);
-    }
-    return insets.top + 20; // iOS usa safe area normalmente
   };
 
   const colorNames = Object.keys(LoopColors) as (keyof typeof LoopColors)[];
@@ -140,11 +134,30 @@ const PreviewScreen: React.FC<{ }> = ({ }) => {
     }
   };
 
-  // Buscar el primer post de cada tipo
-  const welcomePost = mockPosts.find(p => p.type === 'welcome');
-  const top3Post = mockPosts.find(p => p.type === 'top-3-songs');
-  // Para artistas, usamos el primer usuario con topArtists
-  const topArtistsUser = mockPosts[0]?.user?.topArtists ? mockPosts[0].user : undefined;
+  // Buscar los datos para cada tipo de post
+  const welcomeTopSongs = topMonthlySongs.slice(0, 3).map(song => ({
+    position: song.position,
+    title: song.song_name,
+    artist: song.artist_name,
+    plays: '',
+    albumCover: song.album_cover_url,
+  }));
+  const top3Songs = topWeeklySongs.slice(0, 3).map(song => ({
+    position: song.position,
+    title: song.song_name,
+    artist: song.artist_name,
+    plays: song.total_play_count?.toString() || '',
+    albumCover: song.album_cover_url,
+  }));
+  const top3Artists = topMonthlyArtists.slice(0, 3).map(artist => ({
+    position: artist.position,
+    artist_name: artist.artist_name,
+    artist_image_url: artist.artist_image_url,
+    plays: '',
+  }));
+  const welcomeDescription = '¡Bienvenido a tu resumen mensual!';
+  const top3SongsDescription = 'Tus 3 canciones más escuchadas esta semana.';
+  const top3ArtistsDescription = 'Tus 3 artistas más escuchados este mes.';
 
   // Animación de fade para el post
   const fadeAnim = React.useRef(new Animated.Value(1)).current;
@@ -180,7 +193,7 @@ const PreviewScreen: React.FC<{ }> = ({ }) => {
         />
         <View style={styles.contentContainer}>
           {/* Botones para cambiar el tipo de post */}
-          <View style={styles.buttonRow}>
+          <View style={[styles.buttonRow, { marginBottom: 8, marginTop: 0 }]}> 
             <PlatformTouchable onPress={() => setPostType('welcome')} style={[styles.typeButton, ...(postType === 'welcome' ? [styles.typeButtonActive] : [])]}>
               <Text style={[styles.typeButtonText, ...(postType === 'welcome' ? [styles.typeButtonTextActive] : [])]}>Welcome</Text>
             </PlatformTouchable>
@@ -198,7 +211,7 @@ const PreviewScreen: React.FC<{ }> = ({ }) => {
             horizontal
             pagingEnabled
             showsHorizontalScrollIndicator={false}
-            style={{ width: carouselWidth, alignSelf: 'center' }}
+            style={{ width: carouselWidth, alignSelf: 'center', marginBottom: 8 }} // Menos separación abajo
             contentContainerStyle={{ alignItems: 'center' }}
             onMomentumScrollEnd={handleCarouselScrollEnd}
             scrollEventThrottle={16}
@@ -206,50 +219,50 @@ const PreviewScreen: React.FC<{ }> = ({ }) => {
           >
             {/* Welcome */}
             <View style={{ width: carouselWidth }}>
-              {welcomePost && (
-                <Post 
-                  post={welcomePost} 
-                  colorName={selectedColor} 
-                  type="welcome" 
-                  showHeader={false} 
-                  showDescription={false} 
-                  preview={true} 
-                  style={{ marginBottom: 0, paddingBottom: 0 }} 
-                />
-              )}
+              <Post
+                colorName={selectedColor}
+                type="welcome"
+                topSongs={welcomeTopSongs}
+                description={welcomeDescription}
+                user={profile}
+                showHeader={false}
+                showDescription={false}
+                preview={true}
+                style={{ marginBottom: 0, paddingBottom: 0 }}
+              />
             </View>
             {/* Bucles */}
             <View style={{ width: carouselWidth }}>
-              {top3Post && (
-                <Post 
-                  post={top3Post} 
-                  colorName={selectedColor} 
-                  type="top-3-songs" 
-                  showHeader={false} 
-                  showDescription={false} 
-                  preview={true} 
-                  style={{ marginBottom: 0, paddingBottom: 0 }} 
-                />
-              )}
+              <Post
+                colorName={selectedColor}
+                type="top-3-songs"
+                topSongs={top3Songs}
+                description={top3SongsDescription}
+                user={profile}
+                showHeader={false}
+                showDescription={false}
+                preview={true}
+                style={{ marginBottom: 0, paddingBottom: 0 }}
+              />
             </View>
             {/* Artistas */}
             <View style={{ width: carouselWidth }}>
-              {welcomePost && (
-                <Post 
-                  post={welcomePost} 
-                  colorName={selectedColor} 
-                  type="top-3-artists" 
-                  showHeader={false} 
-                  showDescription={false} 
-                  preview={true} 
-                  style={{ marginBottom: 0, paddingBottom: 0 }} 
-                />
-              )}
+              <Post
+                colorName={selectedColor}
+                type="top-3-artists"
+                artists={top3Artists}
+                description={top3ArtistsDescription}
+                user={profile}
+                showHeader={false}
+                showDescription={false}
+                preview={true}
+                style={{ marginBottom: 0, paddingBottom: 0 }}
+              />
             </View>
           </ScrollView>
 
           {/* Carrusel de colores mejorado */}
-         <View style={{ width: containerWidth, height: 120, justifyContent: 'center', marginTop: 16, position: 'relative' }}>
+         <View style={{ width: containerWidth, height: 120, justifyContent: 'center', marginTop: 8, position: 'relative' }}> {/* Menos separación arriba */}
            <Animated.ScrollView
              ref={scrollRef}
              horizontal
@@ -341,6 +354,17 @@ const PreviewScreen: React.FC<{ }> = ({ }) => {
              }}
            />
          </View>
+        </View>
+        {/* Botón fijo abajo para subir publicación */}
+        <View style={{ width: '100%', position: 'absolute', bottom: insets.bottom + 16, left: 0, paddingHorizontal: 24 }}>
+          <ResizingButton
+            title="Subir publicación"
+            onPress={() => alert('Publicación subida (placeholder)')}
+            backgroundColor={Colors.white}
+            textColor={Colors.background}
+            height={48}
+            borderColor={Colors.background}
+          />
         </View>
       </View>
     </Layout>

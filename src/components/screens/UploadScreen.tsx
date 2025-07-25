@@ -11,6 +11,7 @@ import Animated, {
   withTiming,
 } from 'react-native-reanimated';
 import { Colors } from '../../constants/Colors';
+import { useProfile } from '../../contexts/ProfileContext';
 import type { RootStackParamList } from '../../navigation/AppNavigator';
 import { currentUser } from '../../utils/mockData';
 import { AlbumSquare, ArtistCircle } from '../ui/FloatingItems';
@@ -180,13 +181,71 @@ function useBottomSectionAnimation(textY: any) {
 }
 
 export const UploadScreen: React.FC = () => {
-  // Crear arrays de artistas y álbumes
-  const artists = currentUser.topArtists || [];
-  const albums = currentUser.topAlbums || [];
-  
+  const { profile, topMonthlySongs, topWeeklySongs, topMonthlyArtists } = useProfile();
+
+  // Usar datos del contexto si existen, si no, usar los del mock
+  let artists = (topMonthlyArtists && topMonthlyArtists.length > 0)
+    ? topMonthlyArtists.map(a => ({
+        position: a.position,
+        name: a.artist_name,
+        imageUrl: a.artist_image_url,
+        plays: '',
+      }))
+    : [];
+  let albums = (topMonthlySongs && topMonthlySongs.length > 0)
+    ? topMonthlySongs.map(a => ({
+        position: a.position,
+        title: a.song_name,
+        artist: a.artist_name,
+        imageUrl: a.album_cover_url,
+        plays: '',
+      }))
+    : [];
+
+  // Rellenar hasta 5 posiciones (1 a 5) con mockData si faltan para artistas
+  const mockArtists = (currentUser.topArtists || []);
+  const artistsByPosition: { [pos: number]: any } = {};
+  for (const a of artists) {
+    if (a.position >= 1 && a.position <= 5) {
+      artistsByPosition[a.position] = a;
+    }
+  }
+  for (const m of mockArtists) {
+    if (m.position >= 1 && m.position <= 5 && !artistsByPosition[m.position]) {
+      artistsByPosition[m.position] = {
+        position: m.position,
+        name: m.name,
+        imageUrl: m.imageUrl,
+        plays: m.plays,
+      };
+    }
+  }
+  artists = [1,2,3,4,5].map(pos => artistsByPosition[pos]).filter(Boolean);
+
+  // Rellenar hasta 5 posiciones (1 a 5) con mockData si faltan para álbumes
+  const mockAlbums = (currentUser.topAlbums || []);
+  const albumsByPosition: { [pos: number]: any } = {};
+  for (const a of albums) {
+    if (a.position >= 1 && a.position <= 5) {
+      albumsByPosition[a.position] = a;
+    }
+  }
+  for (const m of mockAlbums) {
+    if (m.position >= 1 && m.position <= 5 && !albumsByPosition[m.position]) {
+      albumsByPosition[m.position] = {
+        position: m.position,
+        title: m.title,
+        artist: m.artist,
+        imageUrl: m.imageUrl,
+        plays: m.plays,
+      };
+    }
+  }
+  albums = [1,2,3,4,5].map(pos => albumsByPosition[pos]).filter(Boolean);
+
   // Obtener el artista top 1 para el centro
   const topArtist = artists.find(artist => artist.position === 1);
-  
+
   // Crear elementos para el círculo (excluyendo el artista top 1)
   const circularArtists = artists.filter(artist => artist.position !== 1);
   const circularAlbums = albums;
@@ -276,6 +335,31 @@ export const UploadScreen: React.FC = () => {
     reset: resetAnimations,
   } = useFloatingItemsAnimation(screenHeight);
   const [animateFloatingItems, setAnimateFloatingItems] = useState(false);
+
+  // Calcular los datos para PreviewScreen
+  const welcomeTopSongs = topMonthlySongs.slice(0, 3).map(song => ({
+    position: song.position,
+    title: song.song_name,
+    artist: song.artist_name,
+    plays: '',
+    albumCover: song.album_cover_url,
+  }));
+  const top3Songs = topWeeklySongs.slice(0, 3).map(song => ({
+    position: song.position,
+    title: song.song_name,
+    artist: song.artist_name,
+    plays: song.total_play_count?.toString() || '',
+    albumCover: song.album_cover_url,
+  }));
+  const top3Artists = topMonthlyArtists.slice(0, 3).map(artist => ({
+    position: artist.position,
+    artist_name: artist.artist_name,
+    artist_image_url: artist.artist_image_url,
+    plays: '',
+  }));
+  const welcomeDescription = '¡Bienvenido a tu resumen mensual!';
+  const top3SongsDescription = 'Tus 3 canciones más escuchadas esta semana.';
+  const top3ArtistsDescription = 'Tus 3 artistas más escuchados este mes.';
 
   const handleUploadPress = () => {
     setAnimateFloatingItems(true);

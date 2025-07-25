@@ -80,7 +80,7 @@ export const ArtistsPost: React.FC<ArtistsPostProps> = ({
         </View>
         <View style={[styles.artistsList, { gap: itemGap }]}> 
           {artists.map((artist, idx) => (
-            <View key={artist.artist_id} style={styles.artistItem}> 
+            <View key={(artist.artist_id || artist.artist_name || '') + '-' + (artist.position || idx)} style={styles.artistItem}> 
               <AppText variant='body' fontFamily='inter' fontWeight='bold' color={Colors.white} style={{ fontStyle: 'italic' }}>{idx + 1}. {artist.artist_name}</AppText>
             </View>
           ))}

@@ -1,6 +1,6 @@
 import { CardStyleInterpolators, createStackNavigator } from '@react-navigation/stack';
 
-import { ActivityIndicator, Easing, View } from 'react-native';
+import { ActivityIndicator, Easing, Platform, View } from 'react-native';
 import { CreateProfileScreen, WelcomeScreen } from '../components';
 import { EditProfileScreen } from '../components/screens/EditProfileScreen';
 import { AccountPrivacy } from '../components/screens/EditProfileScreens/AccountPrivacy';
@@ -177,8 +177,8 @@ const MainAppScreens = () => (
       options={{
         headerShown: false,
         cardStyleInterpolator: CardStyleInterpolators.forFadeFromBottomAndroid,
-        gestureEnabled: true,
-        gestureDirection: 'vertical',
+        gestureEnabled: Platform.OS === 'ios' ? true : false,
+        gestureDirection: 'horizontal',
         detachPreviousScreen: false,
         freezeOnBlur: false,
         cardStyle: { backgroundColor: Colors.background },

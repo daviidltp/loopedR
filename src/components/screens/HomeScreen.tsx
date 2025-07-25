@@ -14,8 +14,6 @@ import type { BottomNavigationParamList } from '../ui/navigation/BottomNavigatio
 import { Post } from '../ui/Post/Post';
 import { AppText } from '../ui/Text/AppText';
 
-type HomeScreenNavigationProp = BottomTabNavigationProp<BottomNavigationParamList, 'Home'>;
-
 const SEARCH_BAR_INITIAL_POSITION = 230;
 
 export const HomeScreen: React.FC = () => {
@@ -69,10 +67,10 @@ export const HomeScreen: React.FC = () => {
           ) : (
             <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
               <View style={styles.feedContainer}>
-              <Post post={mockPosts[3]} colorName='yellow' type='welcome' />
-                <Post post={mockPosts[0]} colorName='red' type='top-3-songs' showDescription={false} />
-                <Post post={mockPosts[1]} colorName='purple' type='top-3-songs' />
-                <Post post={mockPosts[2]} colorName='blue' type='top-3-songs' />
+              <Post user={mockPosts[3].user} description={mockPosts[3].description} topSongs={mockPosts[3].topSongs} colorName='yellow' type='welcome' />
+                <Post user={mockPosts[0].user} description={mockPosts[0].description} topSongs={mockPosts[0].topSongs} colorName='red' type='top-3-songs'/>
+                <Post user={mockPosts[1].user} description={mockPosts[1].description} topSongs={mockPosts[1].topSongs} colorName='purple' type='top-3-songs' />
+                <Post user={mockPosts[2].user} description={mockPosts[2].description} topSongs={mockPosts[2].topSongs} colorName='blue' type='top-3-songs' />
               </View>
             </TouchableWithoutFeedback>
           )}

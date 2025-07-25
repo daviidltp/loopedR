@@ -1,8 +1,6 @@
 import React from 'react';
 import { StyleSheet, View } from 'react-native';
 import { LoopColorName, LoopColors } from '../../../constants/LoopColors';
-import { useProfile } from '../../../contexts/ProfileContext';
-import type { Post as Top3SongsPost } from '../../../utils/mockData';
 import { ArtistsPost } from './ArtistsPost';
 import { PostDescription } from './PostDescription';
 import { PostHeader } from './PostHeader';
@@ -10,21 +8,36 @@ import { WeeklyLoops } from './WeeklyLoops';
 import { WelcomePost } from './WelcomePost';
 
 interface PostProps {
-  post: Top3SongsPost;
   colorName?: LoopColorName;
   type?: 'top-3-songs' | 'top-3-albums' | 'top-3-artists' | 'welcome';
   showHeader?: boolean;
   showDescription?: boolean;
   style?: any; // Nuevo prop para estilos externos
   preview?: boolean; // Nuevo prop para versión mini
+  // Props de datos
+  topSongs?: Array<{
+    position: number;
+    title: string;
+    artist: string;
+    plays: string; // Siempre string, no opcional
+    albumCover: string;
+  }>;
+  artists?: Array<{
+    position: number;
+    artist_name: string;
+    artist_image_url: string;
+    plays?: string;
+  }>;
+  description?: string;
+  user?: any;
 }
 
 // Definir tipos para variantes
 import type {
-	SpotifyWrappedContentProps as WeeklyLoopsProps
+  SpotifyWrappedContentProps as WeeklyLoopsProps
 } from './WeeklyLoops';
 
-export const Post: React.FC<PostProps> = ({ post, colorName, type, showHeader = true, showDescription = true, style, preview = false }) => {
+export const Post: React.FC<PostProps> = ({ colorName, type, showHeader = true, showDescription = true, style, preview = false, topSongs, artists, description, user }) => {
   // Si colorName está definido, sobrescribe los colores
   const postColor = colorName ? LoopColors[colorName] : LoopColors.purple;
 
@@ -46,17 +59,8 @@ export const Post: React.FC<PostProps> = ({ post, colorName, type, showHeader = 
   }
 
   let content = null;
-  if (type === 'top-3-songs') {
-    const { topWeeklySongs } = useProfile();
-    // Adaptar los datos al formato esperado por WeeklyLoops (solo top 3)
-    const topSongs = topWeeklySongs.slice(0, 3).map(song => ({
-      position: song.position,
-      title: song.song_name,
-      artist: song.artist_name,
-      plays: song.total_play_count?.toString() || '',
-      albumCover: song.album_cover_url,
-    }));
-    content = topSongs.length === 0 ? null : (
+  if (type === 'top-3-songs' && topSongs && topSongs.length > 0) {
+    content = (
       <WeeklyLoops
         topSongs={topSongs}
         coverSize={itemCoverSize}
@@ -70,17 +74,8 @@ export const Post: React.FC<PostProps> = ({ post, colorName, type, showHeader = 
         headerPadding={headerPadding}
       />
     );
-  } else if (type === 'welcome') {
-    const { topMonthlySongs } = useProfile();
-    // Adaptar los datos al formato esperado por WelcomePost (solo top 3)
-    const topSongs = topMonthlySongs.slice(0, 3).map(song => ({
-      position: song.position,
-      title: song.song_name,
-      artist: song.artist_name,
-      plays: '', // Puedes mapear plays si existe en la tabla
-      albumCover: song.album_cover_url,
-    }));
-    content = topSongs.length === 0 ? null : (
+  } else if (type === 'welcome' && topSongs && topSongs.length > 0) {
+    content = (
       <WelcomePost
         topSongs={topSongs}
         coverSize={itemCoverSize}
@@ -94,12 +89,10 @@ export const Post: React.FC<PostProps> = ({ post, colorName, type, showHeader = 
         headerPadding={headerPadding}
       />
     );
-  } else if (type === 'top-3-artists') {
-    const { topMonthlyArtists } = useProfile();
-    const artists = topMonthlyArtists.slice(0, 3);
-    content = artists.length === 0 ? null : (
+  } else if (type === 'top-3-artists' && artists && artists.length > 0) {
+    content = (
       <ArtistsPost
-        artists={artists}
+        artists={artists as any} // Forzamos el tipo para evitar error de tipado, ya que ArtistsPost solo usa estas props
         borderColor={postColor.borderColor}
         backgroundColor={postColor.backgroundColor}
         titleColor={postColor.titleColor}
@@ -113,8 +106,8 @@ export const Post: React.FC<PostProps> = ({ post, colorName, type, showHeader = 
   return (
     <View style={[styles.container, preview && { padding: 8 }, style]}>
       <View style={styles.headerContainer} >
-        {showHeader && <PostHeader user={post.user} />}
-        {showDescription && <PostDescription description={post.description} />}
+        {showHeader && user && <PostHeader user={user} />}
+        {showDescription && description && <PostDescription description={description} />}
       </View>
       <View style={styles.contentContainer}>
         {content}
