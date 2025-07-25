@@ -1,7 +1,9 @@
 import React from 'react';
 import { StyleSheet, View } from 'react-native';
 import { LoopColorName, LoopColors } from '../../../constants/LoopColors';
+import { useProfile } from '../../../contexts/ProfileContext';
 import type { Post as Top3SongsPost } from '../../../utils/mockData';
+import { ArtistsPost } from './ArtistsPost';
 import { PostDescription } from './PostDescription';
 import { PostHeader } from './PostHeader';
 import { WeeklyLoops } from './WeeklyLoops';
@@ -19,7 +21,7 @@ interface PostProps {
 
 // Definir tipos para variantes
 import type {
-  SpotifyWrappedContentProps as WeeklyLoopsProps
+	SpotifyWrappedContentProps as WeeklyLoopsProps
 } from './WeeklyLoops';
 
 export const Post: React.FC<PostProps> = ({ post, colorName, type, showHeader = true, showDescription = true, style, preview = false }) => {
@@ -45,9 +47,18 @@ export const Post: React.FC<PostProps> = ({ post, colorName, type, showHeader = 
 
   let content = null;
   if (type === 'top-3-songs') {
-    content = (
+    const { topWeeklySongs } = useProfile();
+    // Adaptar los datos al formato esperado por WeeklyLoops (solo top 3)
+    const topSongs = topWeeklySongs.slice(0, 3).map(song => ({
+      position: song.position,
+      title: song.song_name,
+      artist: song.artist_name,
+      plays: song.total_play_count?.toString() || '',
+      albumCover: song.album_cover_url,
+    }));
+    content = topSongs.length === 0 ? null : (
       <WeeklyLoops
-        topSongs={post.topSongs}
+        topSongs={topSongs}
         coverSize={itemCoverSize}
         backgroundColor={postColor.backgroundColor}
         borderColor={postColor.borderColor}
@@ -60,9 +71,18 @@ export const Post: React.FC<PostProps> = ({ post, colorName, type, showHeader = 
       />
     );
   } else if (type === 'welcome') {
-    content = (
+    const { topMonthlySongs } = useProfile();
+    // Adaptar los datos al formato esperado por WelcomePost (solo top 3)
+    const topSongs = topMonthlySongs.slice(0, 3).map(song => ({
+      position: song.position,
+      title: song.song_name,
+      artist: song.artist_name,
+      plays: '', // Puedes mapear plays si existe en la tabla
+      albumCover: song.album_cover_url,
+    }));
+    content = topSongs.length === 0 ? null : (
       <WelcomePost
-        topSongs={post.topSongs}
+        topSongs={topSongs}
         coverSize={itemCoverSize}
         backgroundColor={postColor.backgroundColor}
         borderColor={postColor.borderColor}
@@ -70,6 +90,20 @@ export const Post: React.FC<PostProps> = ({ post, colorName, type, showHeader = 
         headerVariant={headerVariant}
         songTitleVariant={songTitleVariant}
         songArtistVariant={songArtistVariant}
+        itemGap={itemGap}
+        headerPadding={headerPadding}
+      />
+    );
+  } else if (type === 'top-3-artists') {
+    const { topMonthlyArtists } = useProfile();
+    const artists = topMonthlyArtists.slice(0, 3);
+    content = artists.length === 0 ? null : (
+      <ArtistsPost
+        artists={artists}
+        borderColor={postColor.borderColor}
+        backgroundColor={postColor.backgroundColor}
+        titleColor={postColor.titleColor}
+        headerVariant={headerVariant}
         itemGap={itemGap}
         headerPadding={headerPadding}
       />

@@ -9,7 +9,6 @@ import { Colors } from '../../constants/Colors';
 import { LoopColors } from '../../constants/LoopColors';
 import { RootStackParamList } from '../../navigation/AppNavigator';
 import { mockPosts } from '../../utils/mockData';
-import { ArtistCircle } from '../ui/FloatingItems/ArtistCircle';
 import { Post } from '../ui/Post/Post';
 import { PlatformTouchable } from '../ui/buttons/PlatformTouchable';
 import { GlobalHeader } from '../ui/headers/GlobalHeader';
@@ -192,12 +191,16 @@ const PreviewScreen: React.FC<{ }> = ({ }) => {
                 style={{ marginBottom: 0, paddingBottom: 0 }} 
               />
             )}
-            {internalType === 'top-3-artists' && topArtistsUser && (
-              <View style={styles.artistsRow}>
-                {topArtistsUser.topArtists?.slice(0, 3).map((artist, idx) => (
-                  <ArtistCircle key={artist.name} artist={artist} zIndex={3-idx} />
-                ))}
-              </View>
+            {internalType === 'top-3-artists' && welcomePost && (
+              <Post 
+                post={welcomePost} 
+                colorName={selectedColor} 
+                type="top-3-artists" 
+                showHeader={false} 
+                showDescription={false} 
+                preview={true} 
+                style={{ marginBottom: 0, paddingBottom: 0 }} 
+              />
             )}
           </Animated.View>
 
@@ -352,3 +355,4 @@ const styles = StyleSheet.create({
 });
 
 export { PreviewScreen };
+
