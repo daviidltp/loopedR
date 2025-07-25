@@ -9,6 +9,7 @@ import { Colors } from '../../constants/Colors';
 import { LoopColors } from '../../constants/LoopColors';
 import { useProfile } from '../../contexts/ProfileContext';
 import { RootStackParamList } from '../../navigation/AppNavigator';
+import { supabase } from '../../utils/supabase';
 import { Post } from '../ui/Post/Post';
 import { PlatformTouchable } from '../ui/buttons/PlatformTouchable';
 import { ResizingButton } from '../ui/buttons/ResizingButton';
@@ -184,6 +185,72 @@ const PreviewScreen: React.FC = () => {
   // Para animar el scroll del carrusel de colores
   const scrollX = React.useRef(new Animated.Value(0)).current;
 
+  // Subida de publicación a Supabase
+  const [uploading, setUploading] = useState(false);
+
+  // Utilidad para generar UUID si no existe crypto.randomUUID
+  function generateUUID() {
+    if (typeof crypto !== 'undefined' && crypto.randomUUID) {
+      return crypto.randomUUID();
+    }
+    // Fallback simple (no tan seguro como crypto.randomUUID)
+    return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function(c) {
+      const r = Math.random() * 16 | 0, v = c === 'x' ? r : (r & 0x3 | 0x8);
+      return v.toString(16);
+    });
+  }
+
+  const handleUploadPost = async () => {
+    try {
+      setUploading(true);
+      // 1. Obtener user_id autenticado
+      const { data: { user }, error: userError } = await supabase.auth.getUser();
+      if (userError || !user) throw new Error('No se pudo obtener el usuario autenticado.');
+      // 2. Preparar datos según tipo
+      let content: any = {};
+      let description = '';
+      if (postType === 'welcome') {
+        content = {
+          topSongs: welcomeTopSongs,
+        };
+        description = welcomeDescription;
+      } else if (postType === 'top-3-songs') {
+        content = {
+          topSongs: top3Songs,
+        };
+        description = top3SongsDescription;
+      } else if (postType === 'top-3-artists') {
+        content = {
+          topArtists: top3Artists,
+        };
+        description = top3ArtistsDescription;
+      }
+      // 3. Color
+      const color_hex = LoopColors[selectedColor].basicColor;
+      // 4. Generar id único
+      const id = generateUUID();
+      // 5. Insertar en Supabase
+      const { error } = await supabase.from('posts').insert([
+        {
+          id,
+          user_id: user.id,
+          description,
+          type: postType,
+          content,
+          color_hex,
+        },
+      ]);
+      if (error) throw error;
+      // 6. Animación de éxito (puedes mejorar esto con un modal/toast)
+      // 7. Redirigir a HomeScreen
+      navigation.navigate('MainApp');
+    } catch (err: any) {
+      alert('Error al subir la publicación: ' + (err.message || err));
+    } finally {
+      setUploading(false);
+    }
+  };
+
   return (
     <Layout style={{flex: 1}}>
       <View style={styles.modalContainer}>
@@ -356,14 +423,15 @@ const PreviewScreen: React.FC = () => {
          </View>
         </View>
         {/* Botón fijo abajo para subir publicación */}
-        <View style={{ width: '100%', position: 'absolute', bottom: insets.bottom + 16, left: 0, paddingHorizontal: 24 }}>
+        <View style={{ width: '100%', position: 'absolute', bottom: insets.bottom, left: 0, paddingHorizontal: 24 }}>
           <ResizingButton
-            title="Subir publicación"
-            onPress={() => alert('Publicación subida (placeholder)')}
+            title={uploading ? 'Subiendo...' : 'Subir publicación'}
+            onPress={uploading ? () => {} : handleUploadPost}
             backgroundColor={Colors.white}
             textColor={Colors.background}
             height={48}
             borderColor={Colors.background}
+            isDisabled={uploading}
           />
         </View>
       </View>
