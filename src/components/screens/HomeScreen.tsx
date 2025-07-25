@@ -67,10 +67,10 @@ export const HomeScreen: React.FC = () => {
           ) : (
             <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
               <View style={styles.feedContainer}>
-              <Post user={mockPosts[3].user} description={mockPosts[3].description} topSongs={mockPosts[3].topSongs} colorName='yellow' type='welcome' />
-                <Post user={mockPosts[0].user} description={mockPosts[0].description} topSongs={mockPosts[0].topSongs} colorName='red' type='top-3-songs'/>
-                <Post user={mockPosts[1].user} description={mockPosts[1].description} topSongs={mockPosts[1].topSongs} colorName='purple' type='top-3-songs' />
-                <Post user={mockPosts[2].user} description={mockPosts[2].description} topSongs={mockPosts[2].topSongs} colorName='blue' type='top-3-songs' />
+              <Post  preview={true} user={mockPosts[3].user} description={mockPosts[3].description} topSongs={mockPosts[3].topSongs} colorName='yellow' type='welcome' />
+                <Post preview={true} user={mockPosts[0].user} description={mockPosts[0].description} topSongs={mockPosts[0].topSongs} colorName='red' type='top-3-songs'/>
+                <Post preview={true} user={mockPosts[1].user} description={mockPosts[1].description} topSongs={mockPosts[1].topSongs} colorName='purple' type='top-3-songs' />
+                <Post preview={true} user={mockPosts[2].user} description={mockPosts[2].description} topSongs={mockPosts[2].topSongs} colorName='blue' type='top-3-songs' />
               </View>
             </TouchableWithoutFeedback>
           )}

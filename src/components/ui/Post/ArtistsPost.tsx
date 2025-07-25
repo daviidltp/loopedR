@@ -1,9 +1,10 @@
-import React from 'react';
-import { Image, StyleSheet, View } from 'react-native';
+import React, { memo } from 'react';
+import { StyleSheet, View } from 'react-native';
 import { ShadowView } from 'react-native-inner-shadow';
 import Svg, { Defs, RadialGradient, Rect, Stop } from 'react-native-svg';
 import { Colors } from '../../../constants/Colors';
 import { TopMonthlyArtist } from '../../../contexts/ProfileContext';
+import { DefaultAvatar } from '../Avatar/DefaultAvatar';
 import { AppText } from '../Text';
 
 interface ArtistsPostProps {
@@ -22,9 +23,10 @@ interface ArtistsPostProps {
     | undefined;
   itemGap?: number;
   headerPadding?: number;
-}
+  containerMargin?: number;
+  }
 
-export const ArtistsPost: React.FC<ArtistsPostProps> = ({
+const ArtistsPostComponent: React.FC<ArtistsPostProps> = ({
   artists,
   borderColor = '#A876FF77',
   backgroundColor = '#A876FF22',
@@ -32,16 +34,19 @@ export const ArtistsPost: React.FC<ArtistsPostProps> = ({
   headerVariant = 'h2',
   itemGap = 16,
   headerPadding = 40,
+  containerMargin = 12,
 }) => {
   if (!artists || artists.length === 0) return null;
+
   const mainArtist = artists[0];
   return (
-    <ShadowView style={styles.container}
-      inset
-      backgroundColor="000"
-      shadowColor={borderColor}
-      shadowOffset={{ width: 0, height: 0 }}
-      shadowBlur={30}
+    <View style={[styles.container, { marginHorizontal: containerMargin }]}>
+    {/* <ShadowView style={styles.container}
+    //   inset
+    //   backgroundColor="000"
+    //   shadowColor={borderColor}
+    //   shadowOffset={{ width: 0, height: 0 }}
+    //   shadowBlur={30}
     >
       {/* Gradiente radial real usando SVG */}
       <Svg style={styles.svg} height="100%" width="100%">
@@ -72,27 +77,32 @@ export const ArtistsPost: React.FC<ArtistsPostProps> = ({
       />
 
       {/* Contenido principal */}
-      <View style={[styles.content, { backgroundColor: backgroundColor, paddingVertical: headerPadding, gap: 16 }]}> 
-        <AppText variant={headerVariant} fontFamily='raleway' fontWeight='bold' color={titleColor} letterSpacing={0}>#{mainArtist.artist_name}</AppText>
+      <View style={[styles.content, { backgroundColor: backgroundColor, paddingVertical: headerPadding, gap: 0 }]}> 
+        <AppText variant={headerVariant} fontFamily='raleway' fontWeight='bold' color={titleColor} letterSpacing={0}>{mainArtist.artist_name}</AppText>
         <AppText variant='body' fontFamily='raleway' fontWeight='bold' color={Colors.lessMutedWhite} letterSpacing={0} style={{ marginBottom: 0 }}>es tu estrella de la semana</AppText>
         <View style={{ alignItems: 'center', marginVertical: 12 }}>
-          <Image source={{ uri: mainArtist.artist_image_url }} style={styles.artistImage} />
+          <DefaultAvatar avatarUrl={mainArtist.artist_image_url} size={160} name={mainArtist.artist_name} disabled={true} showUploadButton={false} />
         </View>
         <View style={[styles.artistsList, { gap: itemGap }]}> 
           {artists.map((artist, idx) => (
             <View key={(artist.artist_id || artist.artist_name || '') + '-' + (artist.position || idx)} style={styles.artistItem}> 
-              <AppText variant='body' fontFamily='inter' fontWeight='bold' color={Colors.white} style={{ fontStyle: 'italic' }}>{idx + 1}. {artist.artist_name}</AppText>
+              <View style={{width: 50}}>
+                <AppText variant='h3' fontFamily='inter' fontWeight='bold' color={Colors.white}>#{idx + 1}</AppText>
+              </View>
+              <AppText variant='h4' fontFamily='inter' fontWeight='bold' color={Colors.white}>{artist.artist_name}</AppText>
             </View>
           ))}
         </View>
       </View>
-    </ShadowView>
+      {/* </ShadowView> */}
+    </View>
   );
 };
 
+export const ArtistsPost = memo(ArtistsPostComponent);
+
 const styles = StyleSheet.create({
   container: {
-    marginHorizontal: 12,
     borderRadius: 30,
     position: 'relative',
     zIndex: 0,

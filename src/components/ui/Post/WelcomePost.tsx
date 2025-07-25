@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { memo } from 'react';
 import { StyleSheet, View } from 'react-native';
 import { ShadowView } from 'react-native-inner-shadow';
 import Svg, { Defs, RadialGradient, Rect, Stop } from 'react-native-svg';
@@ -86,9 +86,10 @@ export interface SpotifyWrappedContentProps {
     | undefined;
   itemGap?: number;
   headerPadding?: number;
+  containerMargin?: number;
 }
 
-export const WelcomePost: React.FC<SpotifyWrappedContentProps> = ({
+const WelcomePostComponent: React.FC<SpotifyWrappedContentProps> = ({
   topSongs,
   coverSize = 96,
   borderColor = '#A876FF77',
@@ -99,15 +100,17 @@ export const WelcomePost: React.FC<SpotifyWrappedContentProps> = ({
   songArtistVariant = 'body',
   itemGap = 16,
   headerPadding = 40,
+  containerMargin = 12,
 }) => {
   return (
-    <ShadowView style={styles.container}
-    inset
-    backgroundColor="000"
-    shadowColor={borderColor}
-    shadowOffset={{ width: 0, height: 0 }}
-    shadowBlur={30}
->
+    <View style={[styles.container, { marginHorizontal: containerMargin }]}>
+    {/* <ShadowView style={styles.container}
+      inset
+      backgroundColor="000"
+      shadowColor={borderColor}
+      shadowOffset={{ width: 0, height: 0 }}
+      shadowBlur={30}
+    > */}
       {/* Gradiente radial real usando SVG */}
       <Svg style={styles.svg} height="100%" width="100%">
         <Defs>
@@ -152,14 +155,16 @@ export const WelcomePost: React.FC<SpotifyWrappedContentProps> = ({
           ))}
         </View>
       </View>
-    </ShadowView>
+      {/* </ShadowView> */}
+    </View>
     
   );
 };
 
+export const WelcomePost = memo(WelcomePostComponent);
+
 const styles = StyleSheet.create({
   container: {
-    marginHorizontal: 12,
     borderRadius: 30,
     position: 'relative',
     zIndex: 0,

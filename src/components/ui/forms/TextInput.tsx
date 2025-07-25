@@ -20,6 +20,10 @@ interface CustomTextInputProps extends TextInputProps {
   inputHeight?: number;
   readOnly?: boolean;
   onReadOnlyPress?: () => void;
+  backgroundColor?: string;
+  showCharacterCountInInput?: boolean;
+  maxFontSizeMultiplier?: number;
+  fontSize?: number;
 }
 
 export const TextInput = forwardRef<RNTextInput, CustomTextInputProps>(({ 
@@ -31,6 +35,8 @@ export const TextInput = forwardRef<RNTextInput, CustomTextInputProps>(({
   showFixedAtSymbol = false,
   helperText,
   textTransform,
+  fontSize,
+  backgroundColor,
   onFocus,
   onBlur,
   value = '',
@@ -43,6 +49,7 @@ export const TextInput = forwardRef<RNTextInput, CustomTextInputProps>(({
   inputHeight,
   readOnly = false,
   onReadOnlyPress,
+  showCharacterCountInInput = false,
   ...props
 }, ref) => {
   const [isFocused, setIsFocused] = useState(false);
@@ -89,7 +96,7 @@ export const TextInput = forwardRef<RNTextInput, CustomTextInputProps>(({
         style={[
           styles.inputContainer, 
           { 
-            backgroundColor: readOnly ? 'rgba(255, 255, 255, 0.05)' : (isFocused ? 'rgba(255, 255, 255, 0.12)' : 'rgba(255, 255, 255, 0.07)'),
+            backgroundColor: backgroundColor || (readOnly ? 'rgba(255, 255, 255, 0.05)' : (isFocused ? 'rgba(255, 255, 255, 0.12)' : 'rgba(255, 255, 255, 0.07)')),
             height: inputHeight || (multiline ? 'auto' : 52),
             minHeight: inputHeight || (multiline ? 52 : 52),
             justifyContent: inputHeight ? 'flex-start' : 'center',
@@ -108,6 +115,7 @@ export const TextInput = forwardRef<RNTextInput, CustomTextInputProps>(({
               value={value}
               style={[
                 styles.input,
+                { fontSize: fontSize || textStyles.bodyLarge.fontSize },
                 showUserPrefix && { paddingLeft: shouldShowPrefixUp ? 18 : 35 },
                 showFixedAtSymbol && { paddingLeft: 35 },
                 (error || isValid) && { paddingRight: 45 },
@@ -142,6 +150,7 @@ export const TextInput = forwardRef<RNTextInput, CustomTextInputProps>(({
             onChangeText={onChangeText}
             style={[
               styles.input,
+              { fontSize: fontSize || textStyles.bodyLarge.fontSize },
               showUserPrefix && { paddingLeft: shouldShowPrefixUp ? 18 : 35 },
               showFixedAtSymbol && { paddingLeft: 35 },
               (error || isValid) && { paddingRight: 45 },
@@ -179,32 +188,30 @@ export const TextInput = forwardRef<RNTextInput, CustomTextInputProps>(({
             ) : null}
           </View>
         )}
+        {/* Character count dentro del input, abajo a la derecha */}
+        {showCharacterCountInInput && showCharacterCount && maxLength && !readOnly && (
+          <View style={styles.characterCountInInput}>
+            <AppText style={[styles.characterCount, value.length === maxLength && { color: Colors.appleRed }]}>
+              {value.length}/{maxLength}
+            </AppText>
+          </View>
+        )}
       </Animated.View>
-      {!readOnly && (error || helperText) && (
-        <View style={styles.helperTextContainer}>
-          <AppText 
-            variant='bodySmall' 
-            color={error ? Colors.appleRed : Colors.mutedWhite}
-          >
-            {error || helperText}
-          </AppText>
-        </View>
-      )}
     </View>
   );
 
   return (
     <View style={styles.container}>
+      {/* Character count en la label, solo si no está en el input */}
       <View style={styles.labelContainer}>
         {label && <AppText variant='bodySmall' fontFamily='inter' color={Colors.white} style={styles.label}>{label}</AppText>}
-        {showCharacterCount && maxLength && !readOnly && (
-          <AppText style={[styles.characterCount, value.length === maxLength && { color: Colors.appleRed }]}>
+        {showCharacterCount && maxLength && !readOnly && !showCharacterCountInInput && (
+          <AppText style={[styles.characterCount, value.length === maxLength && { color: Colors.appleRed }]}> 
             {value.length}/{maxLength}
           </AppText>
         )}
       </View>
       {description && <AppText variant='bodySmall' fontFamily='inter' color={Colors.mutedWhite} style={styles.description}>{description}</AppText>}
-      
       {readOnly ? (
         <TouchableOpacity onPress={handleReadOnlyPress} activeOpacity={0.7}>
           {inputContent}
@@ -219,6 +226,7 @@ export const TextInput = forwardRef<RNTextInput, CustomTextInputProps>(({
 const styles = StyleSheet.create({
   container: {
     marginBottom: 0,
+    width: '100%',
   },
   labelContainer: {
     flexDirection: 'row',
@@ -233,6 +241,13 @@ const styles = StyleSheet.create({
   characterCount: {
     color: Colors.mutedWhite,
     fontSize: 12,
+  },
+  characterCountInInput: {
+    position: 'absolute',
+    right: 12,
+    bottom: 6,
+    zIndex: 2,
+    backgroundColor: 'transparent',
   },
   description: {
     marginBottom: 0,
@@ -250,11 +265,11 @@ const styles = StyleSheet.create({
   input: {
     flex: 1,
     paddingHorizontal: 18,
-    fontSize: textStyles.bodyLarge.fontSize,
     color: Colors.white,
     fontFamily: 'Inter-Regular',
     includeFontPadding: false,
     textAlignVertical: 'center',
+
   },
   fixedAtSymbol: {
     position: 'absolute',

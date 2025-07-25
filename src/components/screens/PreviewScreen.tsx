@@ -2,19 +2,23 @@ import { useNavigation, useRoute } from '@react-navigation/native';
 import { StackNavigationProp } from '@react-navigation/stack';
 import { LinearGradient } from 'expo-linear-gradient';
 import React, { useEffect, useRef, useState } from 'react';
-import { Animated, Dimensions, ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import { Animated, Dimensions, Keyboard, StyleSheet, TextInput, TouchableOpacity, TouchableWithoutFeedback, View } from 'react-native';
 import { ShadowView } from 'react-native-inner-shadow';
+import Carousel from 'react-native-reanimated-carousel';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { VerifiedIcon } from '../../components/icons/VerifiedIcon';
 import { Colors } from '../../constants/Colors';
 import { LoopColors } from '../../constants/LoopColors';
 import { useProfile } from '../../contexts/ProfileContext';
 import { RootStackParamList } from '../../navigation/AppNavigator';
 import { supabase } from '../../utils/supabase';
-import { Post } from '../ui/Post/Post';
-import { PlatformTouchable } from '../ui/buttons/PlatformTouchable';
+import { DefaultAvatar } from '../ui/Avatar/DefaultAvatar';
 import { ResizingButton } from '../ui/buttons/ResizingButton';
+import { HorizontalPicker } from '../ui/carousels/HorizontalPicker';
 import { GlobalHeader } from '../ui/headers/GlobalHeader';
 import { Layout } from '../ui/layout/Layout';
+import { Post } from '../ui/Post/Post';
+import { AppText } from '../ui/Text/AppText';
 
 // Componente ColorItem con ShadowView
 const ColorItem = ({ color, backgroundColor, size, selected }: { color: string; backgroundColor: string; size: number; selected?: boolean }) => (
@@ -51,7 +55,6 @@ const PreviewScreen: React.FC = () => {
   const colorNames = Object.keys(LoopColors) as (keyof typeof LoopColors)[];
   const [selectedColor, setSelectedColor] = useState<keyof typeof LoopColors>(colorNames[0]);
   const [selectedIndex, setSelectedIndex] = useState(0);
-  const scrollRef = useRef<ScrollView>(null);
   
   // Cambiar tamaño de los círculos y layout relacionado
   // Configuración del carrusel
@@ -61,80 +64,48 @@ const PreviewScreen: React.FC = () => {
   const containerWidth = screenWidth - 24; // Considerando marginHorizontal del contenedor
   const sidePadding = (containerWidth - itemWidth) / 2;
 
-  // Centrar el elemento seleccionado al abrir la pantalla
-  useEffect(() => {
-    if (scrollRef.current) {
-      const initialIndex = colorNames.indexOf(selectedColor);
-      if (initialIndex !== -1) {
-        setTimeout(() => {
-          scrollToIndex(initialIndex, false);
-        }, 100);
-      }
-    }
-  }, []);
 
-  // Función para hacer scroll a un índice específico
-  const scrollToIndex = (index: number, animated: boolean = true) => {
-    if (scrollRef.current) {
-      const scrollX = index * itemWidth;
-      scrollRef.current.scrollTo({
-        x: scrollX,
-        animated,
-      });
-    }
-  };
-
-  // Detectar el elemento más centrado durante el scroll
-  const handleScroll = (event: any) => {
-    const scrollX = event.nativeEvent.contentOffset.x;
-    
-    // Calcular el índice del elemento centrado
-    const centeredIndex = Math.round(scrollX / itemWidth);
-    const clampedIndex = Math.max(0, Math.min(colorNames.length - 1, centeredIndex));
-    
-    if (clampedIndex !== selectedIndex) {
-      setSelectedIndex(clampedIndex);
-      setSelectedColor(colorNames[clampedIndex]);
-    }
-  };
-
-  // Manejar el final del scroll
-  const handleScrollEnd = (event: any) => {
-    const scrollX = event.nativeEvent.contentOffset.x;
-    const targetIndex = Math.round(scrollX / itemWidth);
-    const clampedIndex = Math.max(0, Math.min(colorNames.length - 1, targetIndex));
-    
-    setSelectedIndex(clampedIndex);
-    setSelectedColor(colorNames[clampedIndex]);
-  };
+  // Ref para saber si el cambio de postType viene de un tab/click
+  const isTabPressRef = useRef(false);
 
   // Estado para el tipo de post
   const [postType, setPostType] = useState<'welcome' | 'top-3-songs' | 'top-3-artists'>('welcome');
   const [internalType, setInternalType] = useState(postType);
-
   // Carrusel de posts
-  const carouselRef = useRef<ScrollView>(null);
-  const carouselWidth = screenWidth - 24; // igual que containerWidth
+  const carouselRef = useRef<any>(null);
+  const carouselWidth = screenWidth; // igual que containerWidth
 
-  // Sincronizar scroll con el botón
+  // Animated value para el progreso del carrusel
+  const tabProgress = useRef(new Animated.Value(POST_TYPES.indexOf(postType))).current;
+
+  // Solo sincroniza el scroll del carrusel si el cambio viene de un tab/click
   useEffect(() => {
-    const idx = POST_TYPES.indexOf(postType);
-    if (carouselRef.current && idx !== -1) {
-      carouselRef.current.scrollTo({ x: idx * carouselWidth, animated: true });
+    if (isTabPressRef.current) {
+      const idx = POST_TYPES.indexOf(postType);
+      if (carouselRef.current && idx !== -1) {
+        carouselRef.current.scrollTo({ index: idx, animated: true });
+      }
+      isTabPressRef.current = false;
     }
     setInternalType(postType);
   }, [postType]);
 
-  // Cuando se hace scroll, actualizar el postType al soltar
-  const handleCarouselScrollEnd = (event: any) => {
-    const x = event.nativeEvent.contentOffset.x;
-    const idx = Math.round(x / carouselWidth);
-    // Solo permitir welcome <-> bucles <-> artistas (no saltar de welcome a artistas directamente)
-    if (idx >= 0 && idx < POST_TYPES.length) {
-      setPostType(POST_TYPES[idx]);
+  // Animar el progreso del tab con el swipe
+  const handleProgressChange = (_: any, absoluteProgress: number) => {
+    Animated.timing(tabProgress, {
+      toValue: absoluteProgress,
+      duration: 0,
+      useNativeDriver: true,
+    }).start();
+    // Actualiza el postType solo cuando cambia el índice
+    const nextIndex = Math.round(absoluteProgress);
+    if (POST_TYPES[nextIndex] && postType !== POST_TYPES[nextIndex]) {
+      setPostType(POST_TYPES[nextIndex]);
     }
   };
 
+  // El carrusel ya no actualiza el picker ni el estado postType
+  // Solo el picker controla el carrusel
   // Buscar los datos para cada tipo de post
   const welcomeTopSongs = topMonthlySongs.slice(0, 3).map(song => ({
     position: song.position,
@@ -185,6 +156,22 @@ const PreviewScreen: React.FC = () => {
   // Para animar el scroll del carrusel de colores
   const scrollX = React.useRef(new Animated.Value(0)).current;
 
+  // Para la animación del fondo resaltado de los tabs
+  const tabAnim = React.useRef(new Animated.Value(POST_TYPES.indexOf(postType))).current;
+  const TAB_WIDTH = 100;
+  const TAB_HEIGHT = 40;
+  const TAB_RADIUS = 32;
+  const TAB_MARGIN = 6;
+
+  React.useEffect(() => {
+    Animated.spring(tabAnim, {
+      toValue: POST_TYPES.indexOf(postType),
+      useNativeDriver: true,
+      speed: 16,
+      bounciness: 8,
+    }).start();
+  }, [postType]);
+
   // Subida de publicación a Supabase
   const [uploading, setUploading] = useState(false);
 
@@ -199,6 +186,20 @@ const PreviewScreen: React.FC = () => {
       return v.toString(16);
     });
   }
+
+  // Estado para la descripción del post
+  const [description, setDescription] = useState('');
+
+  const handleDescriptionChange = (text: string) => {
+    // Divide el texto en líneas
+    const lines = text.split('\n');
+    if (lines.length <= 3) {
+      setDescription(text);
+    } else {
+      // Si ya hay 3 líneas, ignora el cambio o recorta
+      setDescription(lines.slice(0, 3).join('\n'));
+    }
+  };
 
   const handleUploadPost = async () => {
     try {
@@ -252,178 +253,256 @@ const PreviewScreen: React.FC = () => {
   };
 
   return (
-    <Layout style={{flex: 1}}>
-      <View style={styles.modalContainer}>
-        <GlobalHeader
-          goBack={true}
-          onLeftIconPress={handleBackPress}
+    <Layout  >
+      <TouchableWithoutFeedback onPress={Keyboard.dismiss} accessible={false}>
+        <View style={styles.modalContainer}>
+          <GlobalHeader
+            goBack={true}
+            onLeftIconPress={handleBackPress}
+          />
+          <View style={styles.contentContainer}>
+            {/* TextInput de ancho completo encima del carrusel */}
+            <View style={{ width: '100%', paddingHorizontal: 24 }}>
+              <View style={{ flexDirection: 'row', alignItems: 'flex-start' }}>
+                <DefaultAvatar 
+                  size={40} 
+                  name={profile?.display_name || profile?.username || ''} 
+                  avatarUrl={profile?.avatar_url}
+                  showUploadButton={false}
+                />
+                <View style={{ flex: 1, marginLeft: 12, flexDirection: 'row', alignItems: 'flex-start' }}>
+                  <View style={{ flex: 1 }}>
+                    {/* Username + verificado */}
+                    <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between'}}>
+                      <View style={{ flexDirection: 'row', alignItems: 'center'}}>
+                      <AppText
+                        fontFamily="inter"
+                        fontWeight="semiBold"
+                        color={Colors.white}
+                        fontSize={16}
+                        numberOfLines={1}
+                        style={{ marginRight: 6 }}
+                      >
+                        {profile?.username}
+                      </AppText>
+                      {profile?.is_verified && (
+                        <VerifiedIcon size={12} />
+                      )}
+                      </View>
+                      <AppText
+                      fontFamily="inter"
+                      fontSize={13}
+                      color={description.length === 80 ? Colors.appleRed : Colors.mutedWhite}
+                    >
+                      {description.length}/80
+                    </AppText>
+                    </View>
+                    <TextInput 
+                      placeholder="Añade una descripción"
+                      value={description}
+                      onChangeText={handleDescriptionChange}
+                      maxLength={80}
+                      multiline
+                      numberOfLines={2}
+                      placeholderTextColor={Colors.mutedWhite}
+                      style={{
+                        textAlignVertical: 'top',
+                        fontSize: 16,
+                        height: 50,
+                        color: Colors.white,
+                      }}
+                    />
+                  </View>
+
+                </View>
+              </View>
+            </View>
+            {/* Carrusel animado de posts con react-native-reanimated-carousel */}
+        <Carousel
+          ref={carouselRef}
+          width={carouselWidth}
+          height={440}
+          data={POST_TYPES}
+          loop={false}
+          mode="parallax"
+          modeConfig={{ parallaxScrollingScale: 0.95, parallaxScrollingOffset: 70, parallaxAdjacentItemScale: 0.8}}
+          
+          style={{justifyContent: 'center', alignItems: 'center', alignSelf: 'center', alignContent: 'center'}}
+          pagingEnabled={true}
+          onProgressChange={handleProgressChange}
+          renderItem={({ item }) => {
+            if (item === 'welcome') {
+              return (
+                <View style={{ width: carouselWidth, justifyContent: 'center', alignItems: 'center', flex: 1}}>
+                  <Post
+                    colorName={selectedColor}
+                    type="welcome"
+                    topSongs={welcomeTopSongs}
+                    description={welcomeDescription}
+                    user={profile}
+                    showHeader={false}
+                    showDescription={false}
+                    preview={true}
+                  />
+                </View>
+              );
+            } else if (item === 'top-3-songs') {
+              return (
+                <View style={{ width: carouselWidth, justifyContent: 'center', alignItems: 'center', flex: 1 }}>
+                  <Post
+                    colorName={selectedColor}
+                    type="top-3-songs"
+                    topSongs={top3Songs}
+                    description={top3SongsDescription}
+                    user={profile}
+                    showHeader={false}
+                    showDescription={false}
+                    preview={true}
+                  />
+                </View>
+              );
+            } else if (item === 'top-3-artists') {
+              return (
+                <View style={{ width: carouselWidth, justifyContent: 'center', alignItems: 'center', flex: 1}}>
+                  <Post
+                    colorName={selectedColor}
+                    type="top-3-artists"
+                    artists={top3Artists}
+                    description={top3ArtistsDescription}
+                    user={profile}
+                    showHeader={false}
+                    showDescription={false}
+                    preview={true}
+                  />
+                </View>
+              );
+            }
+            return <View />;
+          }}
         />
-        <View style={styles.contentContainer}>
-          {/* Botones para cambiar el tipo de post */}
-          <View style={[styles.buttonRow, { marginBottom: 8, marginTop: 0 }]}> 
-            <PlatformTouchable onPress={() => setPostType('welcome')} style={[styles.typeButton, ...(postType === 'welcome' ? [styles.typeButtonActive] : [])]}>
-              <Text style={[styles.typeButtonText, ...(postType === 'welcome' ? [styles.typeButtonTextActive] : [])]}>Welcome</Text>
-            </PlatformTouchable>
-            <PlatformTouchable onPress={() => setPostType('top-3-songs')} style={[styles.typeButton, ...(postType === 'top-3-songs' ? [styles.typeButtonActive] : [])]}>
-              <Text style={[styles.typeButtonText, ...(postType === 'top-3-songs' ? [styles.typeButtonTextActive] : [])]}>Bucles</Text>
-            </PlatformTouchable>
-            <PlatformTouchable onPress={() => setPostType('top-3-artists')} style={[styles.typeButton, ...(postType === 'top-3-artists' ? [styles.typeButtonActive] : [])]}>
-              <Text style={[styles.typeButtonText, ...(postType === 'top-3-artists' ? [styles.typeButtonTextActive] : [])]}>Artistas</Text>
-            </PlatformTouchable>
-          </View>
 
-          {/* Carrusel de posts */}
-          <ScrollView
-            ref={carouselRef}
-            horizontal
-            pagingEnabled
-            showsHorizontalScrollIndicator={false}
-            style={{ width: carouselWidth, alignSelf: 'center', marginBottom: 8 }} // Menos separación abajo
-            contentContainerStyle={{ alignItems: 'center' }}
-            onMomentumScrollEnd={handleCarouselScrollEnd}
-            scrollEventThrottle={16}
-            bounces={false}
-          >
-            {/* Welcome */}
-            <View style={{ width: carouselWidth }}>
-              <Post
-                colorName={selectedColor}
-                type="welcome"
-                topSongs={welcomeTopSongs}
-                description={welcomeDescription}
-                user={profile}
-                showHeader={false}
-                showDescription={false}
-                preview={true}
-                style={{ marginBottom: 0, paddingBottom: 0 }}
-              />
-            </View>
-            {/* Bucles */}
-            <View style={{ width: carouselWidth }}>
-              <Post
-                colorName={selectedColor}
-                type="top-3-songs"
-                topSongs={top3Songs}
-                description={top3SongsDescription}
-                user={profile}
-                showHeader={false}
-                showDescription={false}
-                preview={true}
-                style={{ marginBottom: 0, paddingBottom: 0 }}
-              />
-            </View>
-            {/* Artistas */}
-            <View style={{ width: carouselWidth }}>
-              <Post
-                colorName={selectedColor}
-                type="top-3-artists"
-                artists={top3Artists}
-                description={top3ArtistsDescription}
-                user={profile}
-                showHeader={false}
-                showDescription={false}
-                preview={true}
-                style={{ marginBottom: 0, paddingBottom: 0 }}
-              />
-            </View>
-          </ScrollView>
-
-          {/* Carrusel de colores mejorado */}
-         <View style={{ width: containerWidth, height: 120, justifyContent: 'center', marginTop: 8, position: 'relative' }}> {/* Menos separación arriba */}
-           <Animated.ScrollView
-             ref={scrollRef}
-             horizontal
-             showsHorizontalScrollIndicator={false}
-             style={{ height: 120 }}
-             contentContainerStyle={{
-               alignItems: 'center',
-               paddingLeft: sidePadding,
-               paddingRight: sidePadding,
-               paddingVertical: 15,
-             }}
-             onScroll={Animated.event(
-               [{ nativeEvent: { contentOffset: { x: scrollX } } }],
-               { useNativeDriver: true, listener: handleScroll }
-             )}
-             onMomentumScrollEnd={handleScrollEnd}
-             scrollEventThrottle={16}
-             snapToInterval={itemWidth}
-             decelerationRate="fast"
-             bounces={false}
-           >
-             {colorNames.map((colorName, idx) => {
-               // Calcular la posición central del ítem
-               const inputRange = [
-                 (idx - 2) * itemWidth,
-                 (idx - 1) * itemWidth,
-                 idx * itemWidth,
-                 (idx + 1) * itemWidth,
-                 (idx + 2) * itemWidth,
-               ];
-               // El scrollX va de 0 a colorNames.length * itemWidth
-               const translateY = scrollX.interpolate({
-                 inputRange,
-                 outputRange: [24, 12, 0, 12, 24],
-                 extrapolate: 'clamp',
-               });
-               const scale = scrollX.interpolate({
-                 inputRange,
-                 outputRange: [0.85, 0.92, 1.15, 0.92, 0.85],
-                 extrapolate: 'clamp',
-               });
-               return (
-                 <View
-                   key={colorName}
-                   style={{
-                     width: itemWidth,
-                     height: itemSize,
-                     justifyContent: 'center',
-                     alignItems: 'center',
-                   }}
-                 >
-                   <TouchableOpacity onPress={() => {
-                     setSelectedColor(colorName);
-                     scrollToIndex(idx);
-                   }}>
-                     <Animated.View style={{
-                       borderRadius: itemSize / 2,
-                       overflow: 'hidden',
-                       transform: [{ translateY }, { scale }],
-                     }}>
-                       <ColorItem
-                         color={LoopColors[colorName].basicColor}
-                         backgroundColor={LoopColors[colorName].backgroundColor}
-                         size={itemSize}
-                         selected={selectedIndex === idx}
-                       />
-                     </Animated.View>
-                   </TouchableOpacity>
-                 </View>
-               );
-             })}
-           </Animated.ScrollView>
-           {/* LinearGradient overlay encima de los círculos */}
-           <LinearGradient
-             colors={["#000000E0", "transparent", "transparent", "#000000E0"]}
-             locations={[0, 0.18, 0.82, 1]}
-             start={{ x: 0, y: 0.5 }}
-             end={{ x: 1, y: 0.5 }}
-             style={{
-               position: 'absolute',
-               left: 0,
-               right: 0,
-               top: 0,
-               bottom: 0,
-               width: '100%',
-               height: '100%',
-               zIndex: 10,
-               pointerEvents: 'none',
-             }}
-           />
-         </View>
+        {/* Botones de tipo de post debajo del carrusel con fondo animado */}
+        <View style={{ flexDirection: 'row', justifyContent: 'center', alignItems: 'center', marginBottom: 8, position: 'relative', height: TAB_HEIGHT }}>
+          {/* Fondo animado */}
+          <Animated.View
+            style={{
+              position: 'absolute',
+              left: TAB_MARGIN,
+              top: 0,
+              width: TAB_WIDTH,
+              height: TAB_HEIGHT,
+              borderRadius: TAB_RADIUS,
+              backgroundColor: '#151515',
+              transform: [{ translateX: tabProgress.interpolate({
+                inputRange: [0, 1, 2],
+                outputRange: [0, TAB_WIDTH + 2 * TAB_MARGIN, (TAB_WIDTH + 2 * TAB_MARGIN) * 2],
+              }) }],
+              zIndex: 1,
+            }}
+          />
+          {POST_TYPES.map((type, idx) => {
+            let label = '';
+            if (type === 'welcome') label = 'Welcome';
+            else if (type === 'top-3-songs') label = 'Bucles';
+            else if (type === 'top-3-artists') label = 'Artistas';
+            const isSelected = postType === type;
+            return (
+              <TouchableOpacity
+                key={type}
+                onPress={() => {
+                  if (!isSelected) {
+                    isTabPressRef.current = true;
+                    setPostType(type);
+                  }
+                }}
+                activeOpacity={0.8}
+                style={{
+                  width: TAB_WIDTH,
+                  height: TAB_HEIGHT,
+                  borderRadius: TAB_RADIUS,
+                  justifyContent: 'center',
+                  alignItems: 'center',
+                  marginHorizontal: TAB_MARGIN,
+                  zIndex: 2,
+                }}
+              >
+                <AppText
+                  fontWeight="bold"
+                  fontFamily="inter"
+                  fontSize={14}
+                  color={isSelected ? Colors.white : Colors.lessMutedWhite}
+                >
+                  {label}
+                </AppText>
+              </TouchableOpacity>
+            );
+          })}
         </View>
+
+        <HorizontalPicker
+            items={colorNames}
+            selectedIndex={selectedIndex}
+            onSelect={idx => {
+              setSelectedIndex(idx);
+              setSelectedColor(colorNames[idx]);
+            }}
+            renderItem={(colorName, idx, scrollX) => {
+              // Animaciones igual que antes
+              const inputRange = [
+                (idx - 2) * itemWidth,
+                (idx - 1) * itemWidth,
+                idx * itemWidth,
+                (idx + 1) * itemWidth,
+                (idx + 2) * itemWidth,
+              ];
+              const scale = scrollX.interpolate({
+                inputRange,
+                outputRange: [0.85, 0.92, 1.15, 0.92, 0.85],
+                extrapolate: 'clamp',
+              });
+              return (
+                <Animated.View style={{
+                  borderRadius: itemSize / 2,
+                  overflow: 'hidden',
+                  transform: [{ scale }],
+                }}>
+                  <ColorItem
+                    color={LoopColors[colorName].basicColor}
+                    backgroundColor={LoopColors[colorName].backgroundColor}
+                    size={itemSize}
+                    selected={selectedIndex === idx}
+                  />
+                </Animated.View>
+              );
+            }}
+            itemWidth={itemWidth}
+            itemSize={itemSize}
+            containerWidth={containerWidth}
+            gradientOverlay={
+              <LinearGradient
+                colors={["#000000E0", "transparent", "transparent", "#000000E0"]}
+                locations={[0, 0.18, 0.82, 1]}
+                start={{ x: 0, y: 0.5 }}
+                end={{ x: 1, y: 0.5 }}
+                style={{
+                  position: 'absolute',
+                  left: 0,
+                  right: 0,
+                  top: 0,
+                  bottom: 0,
+                  width: '100%',
+                  height: '100%',
+                  zIndex: 10,
+                  pointerEvents: 'none',
+                }}
+              />
+            }
+          />
+
+        </View>
+
         {/* Botón fijo abajo para subir publicación */}
-        <View style={{ width: '100%', position: 'absolute', bottom: insets.bottom, left: 0, paddingHorizontal: 24 }}>
+        <View style={{ width: '100%', position: 'absolute', bottom: 15, left: 0, paddingHorizontal: 24 }}>
           <ResizingButton
             title={uploading ? 'Subiendo...' : 'Subir publicación'}
             onPress={uploading ? () => {} : handleUploadPost}
@@ -435,24 +514,24 @@ const PreviewScreen: React.FC = () => {
           />
         </View>
       </View>
-    </Layout>
-  );
+    </TouchableWithoutFeedback>
+  </Layout>
+);
 };
 
 const styles = StyleSheet.create({
   modalContainer: {
     flex: 1,
-    backgroundColor: '#000',
+    backgroundColor: Colors.background,
     justifyContent: 'center',
     alignItems: 'center',
-    paddingHorizontal: 12,
-    paddingBottom: 80,
+    paddingBottom: 0
   },
   contentContainer: {
-    justifyContent: 'center',
+
+    alignSelf: 'center',
     alignItems: 'center',
     width: '100%',
-    
     flex: 1,
   },
   buttonRow: {

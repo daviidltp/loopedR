@@ -37,7 +37,7 @@ import type {
   SpotifyWrappedContentProps as WeeklyLoopsProps
 } from './WeeklyLoops';
 
-export const Post: React.FC<PostProps> = ({ colorName, type, showHeader = true, showDescription = true, style, preview = false, topSongs, artists, description, user }) => {
+export const Post: React.FC<PostProps> = ({ colorName, type, showHeader = true, showDescription = true, style, preview = false, topSongs, artists, description, user}) => {
   // Si colorName está definido, sobrescribe los colores
   const postColor = colorName ? LoopColors[colorName] : LoopColors.purple;
 
@@ -48,6 +48,7 @@ export const Post: React.FC<PostProps> = ({ colorName, type, showHeader = true, 
   let itemCoverSize = 96;
   let itemGap = 16;
   let headerPadding = 40;
+  let containerMargin = 12;
 
   if (preview) {
     headerVariant = type === 'top-3-songs' ? 'h3' : 'h3';
@@ -56,6 +57,7 @@ export const Post: React.FC<PostProps> = ({ colorName, type, showHeader = true, 
     itemCoverSize = 84;
     itemGap = 12;
     headerPadding = 32;
+    containerMargin = 12;
   }
 
   let content = null;
@@ -72,6 +74,7 @@ export const Post: React.FC<PostProps> = ({ colorName, type, showHeader = true, 
         songArtistVariant={songArtistVariant}
         itemGap={itemGap}
         headerPadding={headerPadding}
+        containerMargin={containerMargin}
       />
     );
   } else if (type === 'welcome' && topSongs && topSongs.length > 0) {
@@ -87,6 +90,7 @@ export const Post: React.FC<PostProps> = ({ colorName, type, showHeader = true, 
         songArtistVariant={songArtistVariant}
         itemGap={itemGap}
         headerPadding={headerPadding}
+        containerMargin={containerMargin}
       />
     );
   } else if (type === 'top-3-artists' && artists && artists.length > 0) {
@@ -99,12 +103,13 @@ export const Post: React.FC<PostProps> = ({ colorName, type, showHeader = true, 
         headerVariant={headerVariant}
         itemGap={itemGap}
         headerPadding={headerPadding}
+        containerMargin={containerMargin}
       />
     );
   }
   if (!content) return null;
   return (
-    <View style={[styles.container, preview && { padding: 8 }, style]}>
+    <View style={[styles.container, preview && { paddingHorizontal: 8}, style]}>
       <View style={styles.headerContainer} >
         {showHeader && user && <PostHeader user={user} />}
         {showDescription && description && <PostDescription description={description} />}
