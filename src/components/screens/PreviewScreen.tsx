@@ -33,6 +33,8 @@ const ColorItem = ({ color, backgroundColor, size, selected }: { color: string; 
 
 const { height: screenHeight, width: screenWidth } = Dimensions.get('window');
 
+const POST_TYPES: Array<'welcome' | 'top-3-songs' | 'top-3-artists'> = ['welcome', 'top-3-songs', 'top-3-artists'];
+
 const PreviewScreen: React.FC<{ }> = ({ }) => {
   const navigation = useNavigation<StackNavigationProp<RootStackParamList>>();
   const insets = useSafeAreaInsets();
@@ -113,6 +115,30 @@ const PreviewScreen: React.FC<{ }> = ({ }) => {
 
   // Estado para el tipo de post
   const [postType, setPostType] = useState<'welcome' | 'top-3-songs' | 'top-3-artists'>('welcome');
+  const [internalType, setInternalType] = useState(postType);
+
+  // Carrusel de posts
+  const carouselRef = useRef<ScrollView>(null);
+  const carouselWidth = screenWidth - 24; // igual que containerWidth
+
+  // Sincronizar scroll con el botón
+  useEffect(() => {
+    const idx = POST_TYPES.indexOf(postType);
+    if (carouselRef.current && idx !== -1) {
+      carouselRef.current.scrollTo({ x: idx * carouselWidth, animated: true });
+    }
+    setInternalType(postType);
+  }, [postType]);
+
+  // Cuando se hace scroll, actualizar el postType al soltar
+  const handleCarouselScrollEnd = (event: any) => {
+    const x = event.nativeEvent.contentOffset.x;
+    const idx = Math.round(x / carouselWidth);
+    // Solo permitir welcome <-> bucles <-> artistas (no saltar de welcome a artistas directamente)
+    if (idx >= 0 && idx < POST_TYPES.length) {
+      setPostType(POST_TYPES[idx]);
+    }
+  };
 
   // Buscar el primer post de cada tipo
   const welcomePost = mockPosts.find(p => p.type === 'welcome');
@@ -122,7 +148,6 @@ const PreviewScreen: React.FC<{ }> = ({ }) => {
 
   // Animación de fade para el post
   const fadeAnim = React.useRef(new Animated.Value(1)).current;
-  const [internalType, setInternalType] = useState(postType);
 
   React.useEffect(() => {
     if (postType !== internalType) {
@@ -167,42 +192,61 @@ const PreviewScreen: React.FC<{ }> = ({ }) => {
             </PlatformTouchable>
           </View>
 
-          {/* Renderizado condicional del Post con animación */}
-          <Animated.View style={[{ width: '100%' }, styles.fadeAnim, { opacity: fadeAnim }]}>
-            {internalType === 'welcome' && welcomePost && (
-              <Post 
-                post={welcomePost} 
-                colorName={selectedColor} 
-                type="welcome" 
-                showHeader={false} 
-                showDescription={false} 
-                preview={true} 
-                style={{ marginBottom: 0, paddingBottom: 0 }} 
-              />
-            )}
-            {internalType === 'top-3-songs' && top3Post && (
-              <Post 
-                post={top3Post} 
-                colorName={selectedColor} 
-                type="top-3-songs" 
-                showHeader={false} 
-                showDescription={false} 
-                preview={true} 
-                style={{ marginBottom: 0, paddingBottom: 0 }} 
-              />
-            )}
-            {internalType === 'top-3-artists' && welcomePost && (
-              <Post 
-                post={welcomePost} 
-                colorName={selectedColor} 
-                type="top-3-artists" 
-                showHeader={false} 
-                showDescription={false} 
-                preview={true} 
-                style={{ marginBottom: 0, paddingBottom: 0 }} 
-              />
-            )}
-          </Animated.View>
+          {/* Carrusel de posts */}
+          <ScrollView
+            ref={carouselRef}
+            horizontal
+            pagingEnabled
+            showsHorizontalScrollIndicator={false}
+            style={{ width: carouselWidth, alignSelf: 'center' }}
+            contentContainerStyle={{ alignItems: 'center' }}
+            onMomentumScrollEnd={handleCarouselScrollEnd}
+            scrollEventThrottle={16}
+            bounces={false}
+          >
+            {/* Welcome */}
+            <View style={{ width: carouselWidth }}>
+              {welcomePost && (
+                <Post 
+                  post={welcomePost} 
+                  colorName={selectedColor} 
+                  type="welcome" 
+                  showHeader={false} 
+                  showDescription={false} 
+                  preview={true} 
+                  style={{ marginBottom: 0, paddingBottom: 0 }} 
+                />
+              )}
+            </View>
+            {/* Bucles */}
+            <View style={{ width: carouselWidth }}>
+              {top3Post && (
+                <Post 
+                  post={top3Post} 
+                  colorName={selectedColor} 
+                  type="top-3-songs" 
+                  showHeader={false} 
+                  showDescription={false} 
+                  preview={true} 
+                  style={{ marginBottom: 0, paddingBottom: 0 }} 
+                />
+              )}
+            </View>
+            {/* Artistas */}
+            <View style={{ width: carouselWidth }}>
+              {welcomePost && (
+                <Post 
+                  post={welcomePost} 
+                  colorName={selectedColor} 
+                  type="top-3-artists" 
+                  showHeader={false} 
+                  showDescription={false} 
+                  preview={true} 
+                  style={{ marginBottom: 0, paddingBottom: 0 }} 
+                />
+              )}
+            </View>
+          </ScrollView>
 
           {/* Carrusel de colores mejorado */}
          <View style={{ width: containerWidth, height: 120, justifyContent: 'center', marginTop: 16, position: 'relative' }}>
